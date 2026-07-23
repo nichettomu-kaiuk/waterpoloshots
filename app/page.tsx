@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { CalendarDays, Trophy, ListOrdered } from "lucide-react";
 import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
@@ -53,8 +52,6 @@ export default async function HomePage() {
           {settings?.tournament_subtitle && (
             <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>
           )}
-
-          {news.length > 0 && <NewsStrip news={news} />}
         </div>
       </section>
 
@@ -97,6 +94,12 @@ export default async function HomePage() {
               <span className="text-[11px] font-medium">Marcatori</span>
             </Link>
           </section>
+
+          {news.length > 0 && (
+            <section className="px-5 pb-2">
+              <NewsStrip news={news} />
+            </section>
+          )}
 
           {live.length > 0 && (
             <section className="px-5 pb-2">

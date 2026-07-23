@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Plus, Trash2, Upload, Pencil, X } from "lucide-react";
+import { Plus, Trash2, Upload, Pencil, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { NewsPost } from "@/lib/supabase/types";
 
@@ -15,10 +15,26 @@ export default function AdminNewsPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Every Supabase call below surfaces its error instead of failing
+  // silently — if the `news_posts` table doesn't exist yet (schema.sql not
+  // applied) or RLS blocks the write, you'll see exactly why here instead
+  // of a post that "looks" published but never actually saved.
   async function load() {
-    const { data } = await supabase.from("news_posts").select("*").order("created_at", { ascending: false });
-    setPosts(data ?? []);
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("news_posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      setError(`Impossibile caricare le news: ${error.message}`);
+    } else {
+      setError(null);
+      setPosts(data ?? []);
+    }
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -29,6 +45,7 @@ export default function AdminNewsPage() {
     setEditingId(post.id);
     setForm({ title: post.title, content: post.content });
     setImageFile(null);
+    setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -42,16 +59,22 @@ export default function AdminNewsPage() {
     e.preventDefault();
     if (!form.title.trim() || !form.content.trim()) return;
     setSaving(true);
+    setError(null);
 
     let image_url: string | null | undefined = undefined;
     if (imageFile) {
       const path = `news/${Date.now()}-${imageFile.name}`;
-      const { error } = await supabase.storage.from("branding").upload(path, imageFile);
-      if (!error) image_url = supabase.storage.from("branding").getPublicUrl(path).data.publicUrl;
+      const { error: uploadError } = await supabase.storage.from("branding").upload(path, imageFile);
+      if (uploadError) {
+        setError(`Caricamento immagine fallito: ${uploadError.message}`);
+        setSaving(false);
+        return;
+      }
+      image_url = supabase.storage.from("branding").getPublicUrl(path).data.publicUrl;
     }
 
     if (editingId) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("news_posts")
         .update({
           title: form.title.trim(),
@@ -59,12 +82,26 @@ export default function AdminNewsPage() {
           ...(image_url !== undefined ? { image_url } : {}),
         })
         .eq("id", editingId);
+      if (updateError) {
+        setError(`Salvataggio fallito: ${updateError.message}`);
+        setSaving(false);
+        return;
+      }
     } else {
-      await supabase.from("news_posts").insert({
+      const { error: insertError } = await supabase.from("news_posts").insert({
         title: form.title.trim(),
         content: form.content.trim(),
         image_url: image_url ?? null,
       });
+      if (insertError) {
+        setError(
+          insertError.message.includes("does not exist") || insertError.code === "42P01"
+            ? "La tabella \"news_posts\" non esiste ancora sul tuo progetto Supabase. Esegui la sezione news_posts di supabase/schema.sql nell'SQL Editor, poi riprova."
+            : `Pubblicazione fallita: ${insertError.message}`
+        );
+        setSaving(false);
+        return;
+      }
     }
 
     cancelEdit();
@@ -74,7 +111,11 @@ export default function AdminNewsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questo post?")) return;
-    await supabase.from("news_posts").delete().eq("id", id);
+    const { error: deleteError } = await supabase.from("news_posts").delete().eq("id", id);
+    if (deleteError) {
+      setError(`Eliminazione fallita: ${deleteError.message}`);
+      return;
+    }
     if (editingId === id) cancelEdit();
     load();
   }
@@ -82,6 +123,13 @@ export default function AdminNewsPage() {
   return (
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">News</h2>
+
+      {error && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs text-primary">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         {editingId && (
@@ -119,40 +167,46 @@ export default function AdminNewsPage() {
         </button>
       </form>
 
-      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
-        {posts.map((p) => (
-          <div key={p.id} className="rounded-xl border border-line bg-surface p-3">
-            <div className="flex gap-3">
-              {p.image_url ? (
-                <Image src={p.image_url} alt={p.title} width={56} height={56} className="h-14 w-14 shrink-0 rounded-lg object-cover" />
-              ) : (
-                <div className="h-14 w-14 shrink-0 rounded-lg bg-surface-raised" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{p.title}</p>
-                <p className="line-clamp-2 text-[11px] text-muted">{p.content}</p>
-                <p className="mt-1 text-[10px] text-muted">
-                  {new Date(p.created_at).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric" })}
-                </p>
+      {loading ? (
+        <p className="text-sm text-muted">Caricamento...</p>
+      ) : posts.length === 0 ? (
+        <p className="text-sm text-muted">Nessun post pubblicato ancora.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
+          {posts.map((p) => (
+            <div key={p.id} className="rounded-xl border border-line bg-surface p-3">
+              <div className="flex gap-3">
+                {p.image_url ? (
+                  <Image src={p.image_url} alt={p.title} width={56} height={56} className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                ) : (
+                  <div className="h-14 w-14 shrink-0 rounded-lg bg-surface-raised" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{p.title}</p>
+                  <p className="line-clamp-2 text-[11px] text-muted">{p.content}</p>
+                  <p className="mt-1 text-[10px] text-muted">
+                    {new Date(p.created_at).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric" })}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => startEdit(p)}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-full border border-line py-1.5 text-[11px] text-muted hover:border-primary hover:text-white"
+                >
+                  <Pencil size={12} /> Modifica
+                </button>
+                <button
+                  onClick={() => handleDelete(p.id)}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-full border border-line py-1.5 text-[11px] text-muted hover:border-primary hover:text-primary"
+                >
+                  <Trash2 size={12} /> Elimina
+                </button>
               </div>
             </div>
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => startEdit(p)}
-                className="flex flex-1 items-center justify-center gap-1 rounded-full border border-line py-1.5 text-[11px] text-muted hover:border-primary hover:text-white"
-              >
-                <Pencil size={12} /> Modifica
-              </button>
-              <button
-                onClick={() => handleDelete(p.id)}
-                className="flex flex-1 items-center justify-center gap-1 rounded-full border border-line py-1.5 text-[11px] text-muted hover:border-primary hover:text-primary"
-              >
-                <Trash2 size={12} /> Elimina
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

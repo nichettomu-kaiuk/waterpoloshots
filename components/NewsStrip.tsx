@@ -18,7 +18,7 @@ export default function NewsStrip({ news }: { news: NewsPost[] }) {
   if (news.length === 0) return null;
 
   return (
-    <div className="mt-5">
+    <div>
       <div className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-gold">
         <Newspaper size={13} />
         News
