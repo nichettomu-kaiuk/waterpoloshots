@@ -6,7 +6,7 @@ export default async function ClassifichePage() {
   const [standings, scorers] = await Promise.all([getStandings(), getTopScorers(15)]);
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 py-6">
+    <main className="mx-auto w-full max-w-md px-5 py-6 lg:max-w-5xl lg:px-8 xl:max-w-6xl">
       <h1 className="mb-5 font-display text-2xl font-bold">Classifiche</h1>
 
       <section className="mb-8">

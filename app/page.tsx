@@ -13,7 +13,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-md">
+    <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
       <section
         className="relative overflow-hidden border-b border-line water-texture px-5 pb-8 pt-10"
         style={
