@@ -63,6 +63,14 @@ export interface Settings {
   active_round: string | null;
 }
 
+export interface NewsPost {
+  id: string;
+  title: string;
+  content: string;
+  image_url: string | null;
+  created_at: string;
+}
+
 export interface StandingRow {
   team: Team;
   played: number;

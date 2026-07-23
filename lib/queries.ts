@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Match, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
+import type { Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
 
 // Every function degrades gracefully to `null`/`[]` if Supabase env vars are
 // missing, so the UI can be previewed before the project is connected.
@@ -81,6 +81,20 @@ export async function getAllMatches(roundType?: string, search?: string): Promis
       );
     }
     return matches;
+  } catch {
+    return [];
+  }
+}
+
+export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("news_posts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return data ?? [];
   } catch {
     return [];
   }

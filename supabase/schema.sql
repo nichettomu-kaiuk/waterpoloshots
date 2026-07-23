@@ -64,11 +64,20 @@ create table settings (
   active_round text
 );
 
+create table news_posts (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  content text not null,
+  image_url text,
+  created_at timestamptz not null default now()
+);
+
 -- Convenience indexes for the queries used by the app
 create index matches_status_idx on matches(status);
 create index matches_date_time_idx on matches(date_time);
 create index players_team_id_idx on players(team_id);
 create index match_goals_match_id_idx on match_goals(match_id);
+create index news_posts_created_at_idx on news_posts(created_at desc);
 
 -- ── Row Level Security ───────────────────────────────────────────────────
 -- Public (anon) role: read-only access to everything.
@@ -80,6 +89,7 @@ alter table players enable row level security;
 alter table matches enable row level security;
 alter table match_goals enable row level security;
 alter table settings enable row level security;
+alter table news_posts enable row level security;
 
 create policy "public read teams" on teams for select using (true);
 create policy "public read venues" on venues for select using (true);
@@ -87,6 +97,7 @@ create policy "public read players" on players for select using (true);
 create policy "public read matches" on matches for select using (true);
 create policy "public read match_goals" on match_goals for select using (true);
 create policy "public read settings" on settings for select using (true);
+create policy "public read news_posts" on news_posts for select using (true);
 
 create policy "admin write teams" on teams for all
   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
@@ -99,6 +110,8 @@ create policy "admin write matches" on matches for all
 create policy "admin write match_goals" on match_goals for all
   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "admin write settings" on settings for all
+  using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "admin write news_posts" on news_posts for all
   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
 -- ── Storage ──────────────────────────────────────────────────────────────
@@ -128,3 +141,4 @@ values ('Torneo di Pallanuoto', 'Stagione 2026', 'Girone di andata');
 alter publication supabase_realtime add table matches;
 alter publication supabase_realtime add table match_goals;
 alter publication supabase_realtime add table players;
+alter publication supabase_realtime add table news_posts;

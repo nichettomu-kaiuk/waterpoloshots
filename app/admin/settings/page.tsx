@@ -111,8 +111,8 @@ export default function AdminSettingsPage() {
 
   const imageFields: { field: ImageField; label: string; hint: string }[] = [
     { field: "logo_url", label: "Logo torneo", hint: "Consigliato: quadrato, sfondo trasparente" },
-    { field: "home_bg_url", label: "Sfondo Home", hint: "Consigliato: orizzontale, 1600×900px" },
-    { field: "header_bg_url", label: "Sfondo Header", hint: "Consigliato: orizzontale, 1600×600px" },
+    { field: "home_bg_url", label: "Sfondo Home", hint: "Sfondo dell'header/hero in cima alla home" },
+    { field: "header_bg_url", label: "Bg home", hint: "Sfondo del corpo della home page, sotto l'header" },
   ];
 
   return (

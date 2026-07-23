@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { CalendarDays, Trophy, ListOrdered } from "lucide-react";
-import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults } from "@/lib/queries";
+import Image from "next/image";
+import { CalendarDays, Trophy, ListOrdered, Newspaper } from "lucide-react";
+import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
 import LiveBadge from "@/components/LiveBadge";
 
 export default async function HomePage() {
-  const [settings, live, upcoming, recent] = await Promise.all([
+  const [settings, live, upcoming, recent, news] = await Promise.all([
     getSettings(),
     getLiveMatches(),
     getUpcomingMatches(4),
     getRecentResults(4),
+    getNewsPosts(6),
   ]);
 
   return (
@@ -40,6 +42,18 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Body of the home page — background configurable in Admin → Branding → "Bg home" */}
+      <div
+        className="relative"
+        style={
+          settings?.header_bg_url
+            ? { backgroundImage: `url(${settings.header_bg_url})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }
+            : undefined
+        }
+      >
+        {settings?.header_bg_url && <div className="absolute inset-0 bg-ink/88" />}
+        <div className="relative">
 
       <section className="grid grid-cols-3 gap-3 px-5 py-5">
         <Link
@@ -113,6 +127,44 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {news.length > 0 && (
+        <section className="px-5 py-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Newspaper size={15} className="text-gold" />
+            <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
+              News
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
+            {news.map((post) => (
+              <article
+                key={post.id}
+                className="animate-rise overflow-hidden rounded-2xl border border-line bg-surface"
+              >
+                {post.image_url && (
+                  <div className="relative h-36 w-full">
+                    <Image src={post.image_url} alt={post.title} fill className="object-cover" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <p className="mb-1 text-[11px] text-muted">
+                    {new Date(post.created_at).toLocaleDateString("it-IT", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                  <h3 className="mb-1.5 font-display text-base font-bold leading-snug">{post.title}</h3>
+                  <p className="whitespace-pre-line text-sm text-muted">{post.content}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+        </div>
+      </div>
     </main>
   );
 }

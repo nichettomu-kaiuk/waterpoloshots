@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Shield, Users, UserRound, MapPinned, Palette } from "lucide-react";
+import { LayoutDashboard, Shield, Users, UserRound, MapPinned, Palette, Newspaper } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -10,6 +10,7 @@ const links = [
   { href: "/admin/teams", label: "Squadre", icon: Users },
   { href: "/admin/players", label: "Giocatori", icon: UserRound },
   { href: "/admin/venues", label: "Campi", icon: MapPinned },
+  { href: "/admin/news", label: "News", icon: Newspaper },
   { href: "/admin/settings", label: "Branding", icon: Palette },
 ];
 
