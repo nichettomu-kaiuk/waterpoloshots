@@ -100,6 +100,16 @@ export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
   }
 }
 
+export async function getNewsPost(id: string): Promise<NewsPost | null> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase.from("news_posts").select("*").eq("id", id).maybeSingle();
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getTeams(): Promise<Team[]> {
   try {
     const supabase = createClient();

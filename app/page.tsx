@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { CalendarDays, Trophy, ListOrdered } from "lucide-react";
+import { CalendarDays, Trophy, ListOrdered, Newspaper } from "lucide-react";
 import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
 import LiveBadge from "@/components/LiveBadge";
-import NewsStrip from "@/components/NewsStrip";
+import NewsCard from "@/components/NewsCard";
 
 export default async function HomePage() {
   const [settings, live, upcoming, recent, news] = await Promise.all([
@@ -11,7 +11,7 @@ export default async function HomePage() {
     getLiveMatches(),
     getUpcomingMatches(4),
     getRecentResults(4),
-    getNewsPosts(6),
+    getNewsPosts(2),
   ]);
 
   return (
@@ -71,7 +71,7 @@ export default async function HomePage() {
       >
         {settings?.header_bg_url && <div className="absolute inset-0 bg-ink/88" />}
         <div className="relative">
-          <section className="grid grid-cols-3 gap-3 px-5 py-5">
+          <section className="grid grid-cols-4 gap-3 px-5 py-5">
             <Link
               href="/calendario"
               className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
@@ -93,11 +93,28 @@ export default async function HomePage() {
               <ListOrdered size={20} className="text-gold" />
               <span className="text-[11px] font-medium">Marcatori</span>
             </Link>
+            <Link
+              href="/news"
+              className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
+            >
+              <Newspaper size={20} className="text-gold" />
+              <span className="text-[11px] font-medium">News</span>
+            </Link>
           </section>
 
           {news.length > 0 && (
             <section className="px-5 pb-2">
-              <NewsStrip news={news} />
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
+                  News
+                </h2>
+                <Link href="/news" className="text-xs text-primary">Archivio News</Link>
+              </div>
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {news.map((post) => (
+                  <NewsCard key={post.id} post={post} />
+                ))}
+              </div>
             </section>
           )}
 
