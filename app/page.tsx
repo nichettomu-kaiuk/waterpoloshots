@@ -77,28 +77,28 @@ export default async function HomePage() {
               className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
             >
               <CalendarDays size={20} className="text-primary" />
-              <span className="text-[11px] font-medium">Calendario</span>
+              <span className="text-[10px] font-medium leading-tight">Calendario</span>
             </Link>
             <Link
               href="/classifiche"
               className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
             >
               <Trophy size={20} className="text-gold" />
-              <span className="text-[11px] font-medium">Classifiche</span>
+              <span className="text-[10px] font-medium leading-tight">Classifica</span>
             </Link>
             <Link
               href="/classifiche#marcatori"
               className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
             >
               <ListOrdered size={20} className="text-gold" />
-              <span className="text-[11px] font-medium">Marcatori</span>
+              <span className="text-[10px] font-medium leading-tight">Classifica<br />Marcatori</span>
             </Link>
             <Link
               href="/news"
               className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
             >
               <Newspaper size={20} className="text-gold" />
-              <span className="text-[11px] font-medium">News</span>
+              <span className="text-[10px] font-medium leading-tight">News</span>
             </Link>
           </section>
 
@@ -110,9 +110,9 @@ export default async function HomePage() {
                 </h2>
                 <Link href="/news" className="text-xs text-primary">Archivio News</Link>
               </div>
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div className="flex flex-col gap-3">
                 {news.map((post) => (
-                  <NewsCard key={post.id} post={post} />
+                  <NewsCard key={post.id} post={post} variant="horizontal" />
                 ))}
               </div>
             </section>
