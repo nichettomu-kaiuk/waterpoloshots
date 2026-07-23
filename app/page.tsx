@@ -91,7 +91,7 @@ export default async function HomePage() {
               className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface py-4 text-center transition active:scale-95"
             >
               <ListOrdered size={20} className="text-gold" />
-              <span className="text-[10px] font-medium leading-tight">Classifica<br />Marcatori</span>
+              <span className="text-[10px] font-medium leading-tight">Marcatori</span>
             </Link>
             <Link
               href="/news"
@@ -131,23 +131,21 @@ export default async function HomePage() {
             </section>
           )}
 
-          <section className="px-5 py-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
-                Prossimi match
-              </h2>
-              <Link href="/calendario" className="text-xs text-primary">Vedi tutti</Link>
-            </div>
-            {upcoming.length === 0 ? (
-              <p className="text-sm text-muted">Nessun match in programma al momento.</p>
-            ) : (
+          {upcoming.length > 0 && (
+            <section className="px-5 py-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
+                  Prossimi match
+                </h2>
+                <Link href="/calendario" className="text-xs text-primary">Vedi tutti</Link>
+              </div>
               <div className="space-y-3">
                 {upcoming.map((m) => (
                   <MatchCard key={m.id} match={m} />
                 ))}
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
           <section className="px-5 py-4">
             <div className="mb-3 flex items-center justify-between">
