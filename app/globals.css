@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Championship Dark — default brand tokens, overridden at runtime from `settings` table */
+  --color-ink: #0a0a0b;
+  --color-surface: #131316;
+  --color-surface-raised: #1b1b1f;
+  --color-primary: #e10f21;
+  --color-primary-dim: #8c0a16;
+  --color-gold: #d4af37;
+  --color-gold-dim: #8a6f22;
+  --color-line: #232327;
+  --color-muted: #8f8f97;
+}
+
+html {
+  background: var(--color-ink);
+}
+
+body {
+  background-color: var(--color-ink);
+  color: #f5f5f6;
+}
+
+.lane-divider {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-line) 0px,
+    var(--color-line) 18px,
+    transparent 18px,
+    transparent 30px
+  );
+  height: 2px;
+}
+
+.water-texture {
+  background-image: radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.06), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(225, 15, 33, 0.12), transparent 45%);
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
