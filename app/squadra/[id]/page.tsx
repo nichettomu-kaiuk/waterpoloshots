@@ -7,12 +7,12 @@ export default async function SquadraPage({ params }: { params: { id: string } }
 
   if (!team) {
     return (
-      <main className="px-5 py-10 text-center text-sm text-muted">Squadra non trovata.</main>
+      <main className="mx-auto w-full max-w-md px-5 py-10 text-center text-sm text-muted">Squadra non trovata.</main>
     );
   }
 
   return (
-    <main className="px-5 py-6">
+    <main className="mx-auto w-full max-w-md px-5 py-6">
       <div className="mb-6 flex items-center gap-4">
         {team.logo_url ? (
           <Image

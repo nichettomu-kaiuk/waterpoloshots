@@ -6,11 +6,11 @@ export default async function GiocatorePage({ params }: { params: { id: string }
   const { player, team } = await getPlayer(params.id);
 
   if (!player) {
-    return <main className="px-5 py-10 text-center text-sm text-muted">Giocatore non trovato.</main>;
+    return <main className="mx-auto w-full max-w-md px-5 py-10 text-center text-sm text-muted">Giocatore non trovato.</main>;
   }
 
   return (
-    <main className="px-5 py-8 text-center">
+    <main className="mx-auto w-full max-w-md px-5 py-8 text-center">
       {player.photo_url ? (
         <Image
           src={player.photo_url}

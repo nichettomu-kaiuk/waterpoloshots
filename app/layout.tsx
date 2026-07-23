@@ -35,9 +35,7 @@ export default async function RootLayout({
   return (
     <html lang="it" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="font-body min-h-screen antialiased" style={brandVars}>
-        <div className="mx-auto flex min-h-screen max-w-md flex-col pb-24">
-          {children}
-        </div>
+        <div className="flex min-h-screen flex-col pb-24">{children}</div>
         <BottomNav />
       </body>
     </html>

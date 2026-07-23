@@ -15,16 +15,16 @@ const links = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/admin/login") return <div>{children}</div>;
+  if (pathname === "/admin/login") return <div className="mx-auto w-full max-w-sm">{children}</div>;
 
   return (
-    <div>
-      <header className="border-b border-line px-5 py-4">
+    <div className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
+      <header className="border-b border-line px-5 py-4 lg:px-8">
         <p className="text-[11px] uppercase tracking-widest text-gold">Pannello di controllo</p>
         <h1 className="font-display text-xl font-bold">Admin</h1>
       </header>
 
-      <nav className="scrollbar-none flex gap-2 overflow-x-auto border-b border-line px-5 py-3">
+      <nav className="scrollbar-none flex gap-2 overflow-x-auto border-b border-line px-5 py-3 lg:px-8">
         {links.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ))}
       </nav>
 
-      <div className="px-5 py-5">{children}</div>
+      <div className="px-5 py-5 lg:px-8">{children}</div>
     </div>
   );
 }

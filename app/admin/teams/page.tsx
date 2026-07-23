@@ -53,7 +53,7 @@ export default function AdminTeamsPage() {
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Squadre</h2>
 
-      <form onSubmit={handleAdd} className="mb-6 space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -79,7 +79,7 @@ export default function AdminTeamsPage() {
         </button>
       </form>
 
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
         {teams.map((t) => (
           <div key={t.id} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
             {t.logo_url ? (

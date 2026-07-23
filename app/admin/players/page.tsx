@@ -75,7 +75,7 @@ export default function AdminPlayersPage() {
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Giocatori</h2>
 
-      <form onSubmit={handleAdd} className="mb-6 space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <select
           value={form.team_id}
           onChange={(e) => setForm({ ...form, team_id: e.target.value })}
@@ -132,7 +132,7 @@ export default function AdminPlayersPage() {
         </button>
       </form>
 
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
         {players.map((p) => (
           <div key={p.id} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
             {p.photo_url ? (

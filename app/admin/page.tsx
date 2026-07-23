@@ -21,7 +21,7 @@ export default async function AdminDashboard() {
   return (
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Panoramica</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon }) => (
           <div key={label} className="rounded-2xl border border-line bg-surface p-4">
             <Icon size={18} className="mb-2 text-primary" />

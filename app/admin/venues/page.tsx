@@ -44,7 +44,7 @@ export default function AdminVenuesPage() {
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Campi / Piscine</h2>
 
-      <form onSubmit={handleAdd} className="mb-6 space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <input
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -72,7 +72,7 @@ export default function AdminVenuesPage() {
         </button>
       </form>
 
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 xl:grid-cols-3">
         {venues.map((v) => (
           <div key={v.id} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
             <div className="flex-1">

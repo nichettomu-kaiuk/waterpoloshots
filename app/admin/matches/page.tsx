@@ -70,7 +70,7 @@ export default function AdminMatchesPage() {
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Partite</h2>
 
-      <form onSubmit={handleAdd} className="mb-6 space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <div className="flex gap-2">
           <select
             value={form.home_team_id}
