@@ -77,15 +77,64 @@ export interface StandingRow {
 
 // Minimal typed schema for the Supabase client generic. Regenerate with
 // `supabase gen types typescript` once the project is linked for full safety.
+//
+// IMPORTANT: this must match the exact shape @supabase/supabase-js expects
+// (Row/Insert/Update/Relationships per table, plus Views/Functions/Enums/
+// CompositeTypes on the schema) — otherwise its generic helper types quietly
+// resolve to `never` for insert()/update() calls, which fails `next build`
+// under strict TypeScript even though `npm run dev` may not surface it.
+
+// Row types without the DB-generated/joined fields, used for Insert/Update
+type TeamRow = Omit<Team, "id" | "created_at">;
+type PlayerRow = Omit<Player, "id">;
+type VenueRow = Omit<Venue, "id">;
+type MatchRow = Omit<Match, "id" | "home_team" | "away_team" | "venue">;
+type MatchGoalRow = Omit<MatchGoal, "id">;
+type SettingsRow = Omit<Settings, "id">;
+
 export interface Database {
   public: {
     Tables: {
-      teams: { Row: Team; Insert: Partial<Team>; Update: Partial<Team> };
-      players: { Row: Player; Insert: Partial<Player>; Update: Partial<Player> };
-      venues: { Row: Venue; Insert: Partial<Venue>; Update: Partial<Venue> };
-      matches: { Row: Match; Insert: Partial<Match>; Update: Partial<Match> };
-      match_goals: { Row: MatchGoal; Insert: Partial<MatchGoal>; Update: Partial<MatchGoal> };
-      settings: { Row: Settings; Insert: Partial<Settings>; Update: Partial<Settings> };
+      teams: {
+        Row: Team;
+        Insert: Partial<TeamRow> & Pick<TeamRow, "name">;
+        Update: Partial<TeamRow>;
+        Relationships: [];
+      };
+      players: {
+        Row: Player;
+        Insert: Partial<PlayerRow> & Pick<PlayerRow, "team_id" | "first_name" | "last_name" | "cap_number">;
+        Update: Partial<PlayerRow>;
+        Relationships: [];
+      };
+      venues: {
+        Row: Venue;
+        Insert: Partial<VenueRow> & Pick<VenueRow, "name">;
+        Update: Partial<VenueRow>;
+        Relationships: [];
+      };
+      matches: {
+        Row: Match;
+        Insert: Partial<MatchRow> & Pick<MatchRow, "home_team_id" | "away_team_id" | "date_time">;
+        Update: Partial<MatchRow>;
+        Relationships: [];
+      };
+      match_goals: {
+        Row: MatchGoal;
+        Insert: Partial<MatchGoalRow> & Pick<MatchGoalRow, "match_id" | "player_id" | "team_id">;
+        Update: Partial<MatchGoalRow>;
+        Relationships: [];
+      };
+      settings: {
+        Row: Settings;
+        Insert: Partial<SettingsRow>;
+        Update: Partial<SettingsRow>;
+        Relationships: [];
+      };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }
