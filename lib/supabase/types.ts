@@ -75,66 +75,16 @@ export interface StandingRow {
   points: number;
 }
 
-// Minimal typed schema for the Supabase client generic. Regenerate with
-// `supabase gen types typescript` once the project is linked for full safety.
+// NOTE ON TYPE SAFETY: the Supabase clients in lib/supabase/client.ts and
+// lib/supabase/server.ts are intentionally left untyped (no Database
+// generic). A hand-written Database type that doesn't match
+// @supabase/supabase-js's exact expected shape can make its insert()/
+// update() argument types silently collapse to `never`, which fails
+// `next build`. Once the Supabase project is linked, generate real types
+// with the Supabase CLI and wire them in for full type safety:
 //
-// IMPORTANT: this must match the exact shape @supabase/supabase-js expects
-// (Row/Insert/Update/Relationships per table, plus Views/Functions/Enums/
-// CompositeTypes on the schema) — otherwise its generic helper types quietly
-// resolve to `never` for insert()/update() calls, which fails `next build`
-// under strict TypeScript even though `npm run dev` may not surface it.
-
-// Row types without the DB-generated/joined fields, used for Insert/Update
-type TeamRow = Omit<Team, "id" | "created_at">;
-type PlayerRow = Omit<Player, "id">;
-type VenueRow = Omit<Venue, "id">;
-type MatchRow = Omit<Match, "id" | "home_team" | "away_team" | "venue">;
-type MatchGoalRow = Omit<MatchGoal, "id">;
-type SettingsRow = Omit<Settings, "id">;
-
-export interface Database {
-  public: {
-    Tables: {
-      teams: {
-        Row: Team;
-        Insert: Partial<TeamRow> & Pick<TeamRow, "name">;
-        Update: Partial<TeamRow>;
-        Relationships: [];
-      };
-      players: {
-        Row: Player;
-        Insert: Partial<PlayerRow> & Pick<PlayerRow, "team_id" | "first_name" | "last_name" | "cap_number">;
-        Update: Partial<PlayerRow>;
-        Relationships: [];
-      };
-      venues: {
-        Row: Venue;
-        Insert: Partial<VenueRow> & Pick<VenueRow, "name">;
-        Update: Partial<VenueRow>;
-        Relationships: [];
-      };
-      matches: {
-        Row: Match;
-        Insert: Partial<MatchRow> & Pick<MatchRow, "home_team_id" | "away_team_id" | "date_time">;
-        Update: Partial<MatchRow>;
-        Relationships: [];
-      };
-      match_goals: {
-        Row: MatchGoal;
-        Insert: Partial<MatchGoalRow> & Pick<MatchGoalRow, "match_id" | "player_id" | "team_id">;
-        Update: Partial<MatchGoalRow>;
-        Relationships: [];
-      };
-      settings: {
-        Row: Settings;
-        Insert: Partial<SettingsRow>;
-        Update: Partial<SettingsRow>;
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
-}
+//   npx supabase gen types typescript --project-id <id> --schema public > lib/supabase/database.types.ts
+//
+// then in client.ts / server.ts:
+//   import type { Database } from "./database.types";
+//   createBrowserClient<Database>(...) / createServerClient<Database>(...)
