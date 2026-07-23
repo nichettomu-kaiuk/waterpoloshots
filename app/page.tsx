@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarDays, Trophy, ListOrdered, Newspaper } from "lucide-react";
+import { CalendarDays, Trophy, ListOrdered } from "lucide-react";
 import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
 import LiveBadge from "@/components/LiveBadge";
+import NewsStrip from "@/components/NewsStrip";
 
 export default async function HomePage() {
   const [settings, live, upcoming, recent, news] = await Promise.all([
@@ -52,6 +53,8 @@ export default async function HomePage() {
           {settings?.tournament_subtitle && (
             <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>
           )}
+
+          {news.length > 0 && <NewsStrip news={news} />}
         </div>
       </section>
 
@@ -94,42 +97,6 @@ export default async function HomePage() {
               <span className="text-[11px] font-medium">Marcatori</span>
             </Link>
           </section>
-
-          {news.length > 0 && (
-            <section className="px-5 py-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Newspaper size={15} className="text-gold" />
-                <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
-                  News
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-                {news.map((post) => (
-                  <article
-                    key={post.id}
-                    className="animate-rise overflow-hidden rounded-2xl border border-line bg-surface"
-                  >
-                    {post.image_url && (
-                      <div className="relative h-36 w-full">
-                        <Image src={post.image_url} alt={post.title} fill className="object-cover" />
-                      </div>
-                    )}
-                    <div className="p-4">
-                      <p className="mb-1 text-[11px] text-muted">
-                        {new Date(post.created_at).toLocaleDateString("it-IT", {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <h3 className="mb-1.5 font-display text-base font-bold leading-snug">{post.title}</h3>
-                      <p className="whitespace-pre-line text-sm text-muted">{post.content}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
 
           {live.length > 0 && (
             <section className="px-5 pb-2">
