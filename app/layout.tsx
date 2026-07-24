@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Oswald, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import AdminAccessButton from "@/components/AdminAccessButton";
 import { getSettings } from "@/lib/queries";
 
 const display = Oswald({
@@ -36,6 +37,7 @@ export default async function RootLayout({
     <html lang="it" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="font-body min-h-screen antialiased" style={brandVars}>
         <div className="flex min-h-screen flex-col pb-24">{children}</div>
+        <AdminAccessButton />
         <BottomNav />
       </body>
     </html>

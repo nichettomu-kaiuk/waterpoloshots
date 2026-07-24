@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, Trophy, ShieldCheck } from "lucide-react";
+import { Home, CalendarDays, Trophy, ListOrdered, Users, UserRound, Newspaper } from "lucide-react";
 import clsx from "clsx";
 
+// Mirrors the quick-nav bento-grid on the home page, plus Home restored in
+// its original first position.
 const items = [
   { href: "/", label: "Home", icon: Home },
   { href: "/calendario", label: "Calendario", icon: CalendarDays },
-  { href: "/classifiche", label: "Classifiche", icon: Trophy },
-  { href: "/admin", label: "Admin", icon: ShieldCheck },
+  { href: "/classifiche", label: "Classifica", icon: Trophy },
+  { href: "/classifiche#marcatori", label: "Marcatori", icon: ListOrdered },
+  { href: "/squadre", label: "Squadre", icon: Users },
+  { href: "/giocatori", label: "Giocatori", icon: UserRound },
+  { href: "/news", label: "News", icon: Newspaper },
 ];
 
 export default function BottomNav() {
@@ -17,21 +22,24 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-line bg-ink/95 backdrop-blur lg:max-w-5xl xl:max-w-6xl">
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-7">
         {items.map(({ href, label, icon: Icon }) => {
-          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const basePath = href.split("#")[0];
+          const active = pathname === basePath;
           return (
             <li key={href}>
               <Link
                 href={href}
-                className="flex flex-col items-center gap-1 py-3 text-[11px] font-medium tracking-wide"
+                className="flex flex-col items-center gap-0.5 px-0.5 py-2 text-center"
               >
                 <Icon
-                  size={20}
+                  size={15}
                   strokeWidth={2.2}
                   className={clsx(active ? "text-primary" : "text-muted")}
                 />
-                <span className={clsx(active ? "text-white" : "text-muted")}>{label}</span>
+                <span className={clsx("text-[7px] font-medium leading-tight", active ? "text-white" : "text-muted")}>
+                  {label}
+                </span>
               </Link>
             </li>
           );

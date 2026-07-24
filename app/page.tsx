@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { CalendarDays, Trophy, ListOrdered, Newspaper, Users, UserRound } from "lucide-react";
 import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
@@ -46,9 +47,20 @@ export default async function HomePage() {
           <p className="text-xs uppercase tracking-[0.2em] text-gold">
             {settings?.active_round ?? "Girone di andata"}
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold leading-tight tracking-tight">
-            {settings?.tournament_title ?? "Torneo di Pallanuoto"}
-          </h1>
+          <div className="mt-1 flex items-center gap-3">
+            {settings?.logo_url && (
+              <Image
+                src={settings.logo_url}
+                alt={settings.tournament_title ?? "Logo torneo"}
+                width={48}
+                height={48}
+                className="h-12 w-12 shrink-0 rounded-full border border-gold/50 object-cover"
+              />
+            )}
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
+              {settings?.tournament_title ?? "Torneo di Pallanuoto"}
+            </h1>
+          </div>
           {settings?.tournament_subtitle && (
             <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>
           )}
@@ -71,48 +83,48 @@ export default async function HomePage() {
       >
         {settings?.header_bg_url && <div className="absolute inset-0 bg-ink/88" />}
         <div className="relative">
-          <section className="grid grid-cols-3 gap-2 px-5 py-5">
+          <section className="grid grid-cols-6 gap-1 px-3 py-4">
             <Link
               href="/calendario"
-              className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface py-2.5 text-center transition active:scale-95"
+              className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 px-0.5 text-center transition active:scale-95"
             >
-              <CalendarDays size={16} className="text-primary" />
-              <span className="text-[9px] font-medium leading-tight">Calendario</span>
+              <CalendarDays size={14} className="text-primary" />
+              <span className="text-[7px] font-medium leading-tight">Calendario</span>
             </Link>
             <Link
               href="/classifiche"
-              className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface py-2.5 text-center transition active:scale-95"
+              className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 px-0.5 text-center transition active:scale-95"
             >
-              <Trophy size={16} className="text-gold" />
-              <span className="text-[9px] font-medium leading-tight">Classifica</span>
+              <Trophy size={14} className="text-gold" />
+              <span className="text-[7px] font-medium leading-tight">Classifica</span>
             </Link>
             <Link
               href="/classifiche#marcatori"
-              className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface py-2.5 text-center transition active:scale-95"
+              className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 px-0.5 text-center transition active:scale-95"
             >
-              <ListOrdered size={16} className="text-gold" />
-              <span className="text-[9px] font-medium leading-tight">Marcatori</span>
+              <ListOrdered size={14} className="text-gold" />
+              <span className="text-[7px] font-medium leading-tight">Marcatori</span>
             </Link>
             <Link
               href="/squadre"
-              className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface py-2.5 text-center transition active:scale-95"
+              className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 px-0.5 text-center transition active:scale-95"
             >
-              <Users size={16} className="text-primary" />
-              <span className="text-[9px] font-medium leading-tight">Squadre</span>
+              <Users size={14} className="text-primary" />
+              <span className="text-[7px] font-medium leading-tight">Squadre</span>
             </Link>
             <Link
               href="/giocatori"
-              className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface py-2.5 text-center transition active:scale-95"
+              className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 px-0.5 text-center transition active:scale-95"
             >
-              <UserRound size={16} className="text-primary" />
-              <span className="text-[9px] font-medium leading-tight">Giocatori</span>
+              <UserRound size={14} className="text-primary" />
+              <span className="text-[7px] font-medium leading-tight">Giocatori</span>
             </Link>
             <Link
               href="/news"
-              className="flex flex-col items-center gap-1 rounded-xl border border-line bg-surface py-2.5 text-center transition active:scale-95"
+              className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 px-0.5 text-center transition active:scale-95"
             >
-              <Newspaper size={16} className="text-gold" />
-              <span className="text-[9px] font-medium leading-tight">News</span>
+              <Newspaper size={14} className="text-gold" />
+              <span className="text-[7px] font-medium leading-tight">News</span>
             </Link>
           </section>
 
