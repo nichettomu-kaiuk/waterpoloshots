@@ -5,18 +5,19 @@ create extension if not exists "pgcrypto";
 
 -- ── Tables ────────────────────────────────────────────────────────────────
 
-create table teams (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  logo_url text,
-  created_at timestamptz not null default now()
-);
-
 create table venues (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   location_tag text,
   address text
+);
+
+create table teams (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  logo_url text,
+  venue_id uuid references venues(id) on delete set null,
+  created_at timestamptz not null default now()
 );
 
 create table players (
@@ -80,6 +81,7 @@ create index matches_round_giornata_idx on matches(round_type, giornata);
 create index players_team_id_idx on players(team_id);
 create index match_goals_match_id_idx on match_goals(match_id);
 create index news_posts_created_at_idx on news_posts(created_at desc);
+create index teams_venue_id_idx on teams(venue_id);
 
 -- ── Row Level Security ───────────────────────────────────────────────────
 -- Public (anon) role: read-only access to everything.
@@ -158,3 +160,7 @@ update matches set round_type = 'andata' where round_type is null;
 alter table matches alter column round_type set not null;
 
 create index if not exists matches_round_giornata_idx on matches(round_type, giornata);
+
+-- Adds: teams.venue_id (the team's home pool, editable in Admin → Squadre).
+alter table teams add column if not exists venue_id uuid references venues(id) on delete set null;
+create index if not exists teams_venue_id_idx on teams(venue_id);

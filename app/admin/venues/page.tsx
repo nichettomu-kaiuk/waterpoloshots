@@ -35,20 +35,20 @@ export default function AdminVenuesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Eliminare questo campo?")) return;
+    if (!confirm("Eliminare questa piscina?")) return;
     await supabase.from("venues").delete().eq("id", id);
     load();
   }
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-lg font-bold">Campi / Piscine</h2>
+      <h2 className="mb-4 font-display text-lg font-bold">Piscine</h2>
 
       <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <input
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="Nome campo (es. Stadio del Nuoto)"
+          placeholder="Nome Piscina (es. Stadio del Nuoto)"
           className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
         />
         <input
@@ -68,7 +68,7 @@ export default function AdminVenuesPage() {
           disabled={saving}
           className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
-          <Plus size={15} /> {saving ? "Salvataggio..." : "Aggiungi campo"}
+          <Plus size={15} /> {saving ? "Salvataggio..." : "Aggiungi piscina"}
         </button>
       </form>
 

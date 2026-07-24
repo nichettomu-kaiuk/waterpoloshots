@@ -98,9 +98,9 @@ export default function CalendarClient({
                     <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">
                       Giornata {giornataNum}
                     </p>
-                    <div className="space-y-3">
+                    <div className="animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                       {giornataMatches.map((m) => (
-                        <MatchCard key={m.id} match={m} />
+                        <MatchCard key={m.id} match={m} bare />
                       ))}
                     </div>
                   </div>

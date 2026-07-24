@@ -36,7 +36,7 @@ function TeamLogo({ url, name }: { url: string | null | undefined; name: string 
   );
 }
 
-export default function MatchCard({ match }: { match: Match }) {
+export default function MatchCard({ match, bare = false }: { match: Match; bare?: boolean }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -76,7 +76,10 @@ export default function MatchCard({ match }: { match: Match }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full animate-rise rounded-2xl border border-line bg-surface p-4 text-left transition active:scale-[0.99]"
+        className={clsx(
+          "w-full text-left transition active:scale-[0.99]",
+          bare ? "p-4" : "animate-rise rounded-2xl border border-line bg-surface p-4"
+        )}
       >
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] text-muted">

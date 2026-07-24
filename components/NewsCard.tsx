@@ -51,7 +51,7 @@ export default function NewsCard({
   return (
     <article className="animate-rise overflow-hidden rounded-2xl border border-line bg-surface">
       {post.image_url && (
-        <div className="relative h-40 w-full">
+        <div className="relative h-28 w-full">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" />
         </div>
       )}

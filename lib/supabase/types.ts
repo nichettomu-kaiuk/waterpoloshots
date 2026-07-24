@@ -6,7 +6,9 @@ export interface Team {
   id: string;
   name: string;
   logo_url: string | null;
+  venue_id: string | null;
   created_at: string;
+  venue?: Venue;
 }
 
 export interface Player {

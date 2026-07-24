@@ -9,7 +9,7 @@ const links = [
   { href: "/admin/matches", label: "Partite", icon: Shield },
   { href: "/admin/teams", label: "Squadre", icon: Users },
   { href: "/admin/players", label: "Giocatori", icon: UserRound },
-  { href: "/admin/venues", label: "Campi", icon: MapPinned },
+  { href: "/admin/venues", label: "Piscine", icon: MapPinned },
   { href: "/admin/news", label: "News", icon: Newspaper },
   { href: "/admin/settings", label: "Impostazioni", icon: Palette },
 ];
