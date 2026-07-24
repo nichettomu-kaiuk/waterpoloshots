@@ -14,8 +14,8 @@ function formatDate(iso: string) {
 
 // "horizontal": compact full-width row with a small image — used on the home
 // page where cards stack one above another and text needs the extra room.
-// "vertical" (default): image on top, full card — used in the News archive
-// grid where cards sit side by side.
+// "vertical" (default): image to the left of the whole post — used in the
+// News archive grid where cards sit side by side.
 export default function NewsCard({
   post,
   variant = "vertical",
@@ -49,16 +49,20 @@ export default function NewsCard({
   }
 
   return (
-    <article className="animate-rise overflow-hidden rounded-2xl border border-line bg-surface">
-      {post.image_url && (
-        <div className="relative h-28 w-full">
+    <article className="flex animate-rise overflow-hidden rounded-2xl border border-line bg-surface">
+      {post.image_url ? (
+        <div className="relative w-28 shrink-0 sm:w-36">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" />
         </div>
+      ) : (
+        <div className="flex w-28 shrink-0 items-center justify-center bg-surface-raised sm:w-36">
+          <Newspaper size={22} className="text-gold" />
+        </div>
       )}
-      <div className="p-4">
+      <div className="min-w-0 flex-1 p-4">
         <p className="mb-1 text-[11px] text-muted">{formatDate(post.created_at)}</p>
         <h3 className="mb-1.5 font-display text-base font-bold leading-snug">{post.title}</h3>
-        <p className="mb-3 text-sm text-muted">{excerpt(post.content)}</p>
+        <p className="mb-3 line-clamp-3 text-sm text-muted">{excerpt(post.content)}</p>
         <Link
           href={`/news/${post.id}`}
           className="inline-flex items-center gap-1 text-xs font-semibold text-primary"
