@@ -30,14 +30,14 @@ export default function BottomNav() {
             <li key={href}>
               <Link
                 href={href}
-                className="mx-auto flex w-full max-w-[44px] flex-col items-center gap-0.5 py-2 text-center"
+                className="flex w-full flex-col items-center gap-0.5 py-2 text-center"
               >
                 <Icon
-                  size={16}
+                  size={18}
                   strokeWidth={2.2}
                   className={clsx(active ? "text-primary" : "text-muted")}
                 />
-                <span className={clsx("text-[8px] font-medium leading-tight", active ? "text-white" : "text-muted")}>
+                <span className={clsx("text-[10px] font-medium leading-tight", active ? "text-white" : "text-muted")}>
                   {label}
                 </span>
               </Link>

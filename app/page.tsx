@@ -6,6 +6,12 @@ import MatchCard from "@/components/MatchCard";
 import LiveBadge from "@/components/LiveBadge";
 import NewsCard from "@/components/NewsCard";
 
+// Set to true to bring back the quick-nav bento-grid (Calendario, Classifica,
+// Marcatori, Squadre, Giocatori, News) below the hero. Kept in the code and
+// simply toggled off rather than removed, so it's a one-line change to
+// restore it.
+const SHOW_QUICK_NAV = false;
+
 export default async function HomePage() {
   const [settings, live, upcoming, recent, news] = await Promise.all([
     getSettings(),
@@ -85,50 +91,52 @@ export default async function HomePage() {
       >
         {settings?.header_bg_url && <div className="absolute inset-0 bg-ink/88" />}
         <div className="relative">
-          <section className="grid grid-cols-6 gap-1 px-3 py-4">
-            <Link
-              href="/calendario"
-              className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-            >
-              <CalendarDays size={16} className="text-primary" />
-              <span className="text-[8px] font-medium leading-tight">Calendario</span>
-            </Link>
-            <Link
-              href="/classifiche"
-              className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-            >
-              <Trophy size={16} className="text-gold" />
-              <span className="text-[8px] font-medium leading-tight">Classifica</span>
-            </Link>
-            <Link
-              href="/classifiche#marcatori"
-              className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-            >
-              <ListOrdered size={16} className="text-gold" />
-              <span className="text-[8px] font-medium leading-tight">Marcatori</span>
-            </Link>
-            <Link
-              href="/squadre"
-              className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-            >
-              <Users size={16} className="text-primary" />
-              <span className="text-[8px] font-medium leading-tight">Squadre</span>
-            </Link>
-            <Link
-              href="/giocatori"
-              className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-            >
-              <UserRound size={16} className="text-primary" />
-              <span className="text-[8px] font-medium leading-tight">Giocatori</span>
-            </Link>
-            <Link
-              href="/news"
-              className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-            >
-              <Newspaper size={16} className="text-gold" />
-              <span className="text-[8px] font-medium leading-tight">News</span>
-            </Link>
-          </section>
+          {SHOW_QUICK_NAV && (
+            <section className="grid grid-cols-6 gap-1 px-3 py-4">
+              <Link
+                href="/calendario"
+                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
+              >
+                <CalendarDays size={16} className="text-primary" />
+                <span className="text-[8px] font-medium leading-tight">Calendario</span>
+              </Link>
+              <Link
+                href="/classifiche"
+                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
+              >
+                <Trophy size={16} className="text-gold" />
+                <span className="text-[8px] font-medium leading-tight">Classifica</span>
+              </Link>
+              <Link
+                href="/classifiche#marcatori"
+                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
+              >
+                <ListOrdered size={16} className="text-gold" />
+                <span className="text-[8px] font-medium leading-tight">Marcatori</span>
+              </Link>
+              <Link
+                href="/squadre"
+                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
+              >
+                <Users size={16} className="text-primary" />
+                <span className="text-[8px] font-medium leading-tight">Squadre</span>
+              </Link>
+              <Link
+                href="/giocatori"
+                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
+              >
+                <UserRound size={16} className="text-primary" />
+                <span className="text-[8px] font-medium leading-tight">Giocatori</span>
+              </Link>
+              <Link
+                href="/news"
+                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
+              >
+                <Newspaper size={16} className="text-gold" />
+                <span className="text-[8px] font-medium leading-tight">News</span>
+              </Link>
+            </section>
+          )}
 
           {news.length > 0 && (
             <section className="px-5 pb-2">
