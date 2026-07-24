@@ -36,12 +36,16 @@ export default async function HomePage() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 WebkitMaskImage:
-                  "radial-gradient(ellipse 75% 80% at 50% 40%, black 25%, transparent 100%)",
+                  "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
                 maskImage:
-                  "radial-gradient(ellipse 75% 80% at 50% 40%, black 25%, transparent 100%)",
+                  "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
               }}
             />
             <div className="absolute inset-0 bg-ink/45" />
+            {/* Extra fade concentrated on the bottom edge, so the hero melts
+                into the body of the page rather than the vignette above
+                doing all the work uniformly. */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink via-ink/80 to-transparent" />
           </>
         )}
         <div className="relative">
