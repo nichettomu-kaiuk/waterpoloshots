@@ -36,9 +36,9 @@ export default async function HomePage() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 WebkitMaskImage:
-                  "radial-gradient(ellipse 85% 90% at 50% 40%, black 45%, transparent 100%)",
+                  "radial-gradient(ellipse 75% 80% at 50% 40%, black 25%, transparent 100%)",
                 maskImage:
-                  "radial-gradient(ellipse 85% 90% at 50% 40%, black 45%, transparent 100%)",
+                  "radial-gradient(ellipse 75% 80% at 50% 40%, black 25%, transparent 100%)",
               }}
             />
             <div className="absolute inset-0 bg-ink/45" />
@@ -58,9 +58,9 @@ export default async function HomePage() {
               <Image
                 src={settings.logo_url}
                 alt={settings.tournament_title ?? "Logo torneo"}
-                width={48}
-                height={48}
-                className="h-12 w-12 shrink-0 self-center rounded-full border border-gold/50 object-cover"
+                width={60}
+                height={60}
+                className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
               />
             )}
             <div>
@@ -108,7 +108,7 @@ export default async function HomePage() {
                 <span className="text-[8px] font-medium leading-tight">Classifica</span>
               </Link>
               <Link
-                href="/classifiche#marcatori"
+                href="/marcatori"
                 className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
               >
                 <ListOrdered size={16} className="text-gold" />

@@ -11,7 +11,7 @@ const items = [
   { href: "/", label: "Home", icon: Home },
   { href: "/calendario", label: "Calendario", icon: CalendarDays },
   { href: "/classifiche", label: "Classifica", icon: Trophy },
-  { href: "/classifiche#marcatori", label: "Marcatori", icon: ListOrdered },
+  { href: "/marcatori", label: "Marcatori", icon: ListOrdered },
   { href: "/squadre", label: "Squadre", icon: Users },
   { href: "/giocatori", label: "Giocatori", icon: UserRound },
   { href: "/news", label: "News", icon: Newspaper },
