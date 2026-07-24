@@ -11,7 +11,7 @@ const links = [
   { href: "/admin/players", label: "Giocatori", icon: UserRound },
   { href: "/admin/venues", label: "Campi", icon: MapPinned },
   { href: "/admin/news", label: "News", icon: Newspaper },
-  { href: "/admin/settings", label: "Branding", icon: Palette },
+  { href: "/admin/settings", label: "Impostazioni", icon: Palette },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

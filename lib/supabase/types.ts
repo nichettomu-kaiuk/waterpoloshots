@@ -32,11 +32,12 @@ export interface Match {
   home_team_id: string;
   away_team_id: string;
   venue_id: string | null;
-  date_time: string;
+  date_time: string | null;
   status: MatchStatus;
   home_score: number;
   away_score: number;
-  round_type: RoundType | null;
+  round_type: RoundType;
+  giornata: number;
   home_team?: Team;
   away_team?: Team;
   venue?: Venue;

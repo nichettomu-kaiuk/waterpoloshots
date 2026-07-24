@@ -8,10 +8,12 @@ import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 import MatchDetailModal from "./MatchDetailModal";
 
-function formatTime(iso: string) {
+function formatTime(iso: string | null) {
+  if (!iso) return null;
   return new Date(iso).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 }
-function formatDate(iso: string) {
+function formatDate(iso: string | null) {
+  if (!iso) return null;
   return new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "short" });
 }
 
@@ -47,7 +49,9 @@ export default function MatchCard({ match }: { match: Match }) {
     const away = match.away_team?.name ?? "Ospiti";
     const scoreText =
       match.status === "scheduled"
-        ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}`
+        ? match.date_time
+          ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}`
+          : "Data da definire"
         : `${match.home_score} - ${match.away_score}`;
     const text = `🤽 ${home} vs ${away}\n${scoreText}${match.venue ? `\n📍 ${match.venue.name}` : ""}`;
 
@@ -83,7 +87,9 @@ export default function MatchCard({ match }: { match: Match }) {
                 {statusLabel}
               </span>
             )}
-            <span>{formatDate(match.date_time)} · {formatTime(match.date_time)}</span>
+            <span>
+              {match.date_time ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}` : "Data da definire"}
+            </span>
           </div>
           <button
             onClick={handleShare}

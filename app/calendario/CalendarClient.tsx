@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import clsx from "clsx";
-import type { Match } from "@/lib/supabase/types";
+import type { Match, RoundType } from "@/lib/supabase/types";
 import MatchCard from "@/components/MatchCard";
 
 const filters = [
@@ -35,6 +35,25 @@ export default function CalendarClient({
     });
   }, [matches, activeGirone, search]);
 
+  // Girone di Andata first, then Girone di Ritorno; within each, grouped by
+  // giornata number ascending — mirrors how the admin manages the calendar.
+  const grouped = useMemo(() => {
+    const girons: RoundType[] = ["andata", "ritorno"];
+    return girons
+      .map((round) => {
+        const roundMatches = filtered.filter((m) => m.round_type === round);
+        const giornateMap = new Map<number, Match[]>();
+        for (const m of roundMatches) {
+          const list = giornateMap.get(m.giornata) ?? [];
+          list.push(m);
+          giornateMap.set(m.giornata, list);
+        }
+        const giornate = Array.from(giornateMap.entries()).sort((a, b) => a[0] - b[0]);
+        return { round, giornate };
+      })
+      .filter((g) => g.giornate.length > 0);
+  }, [filtered]);
+
   return (
     <div>
       <div className="mb-4 flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2">
@@ -64,12 +83,30 @@ export default function CalendarClient({
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {grouped.length === 0 ? (
         <p className="py-10 text-center text-sm text-muted">Nessun match trovato.</p>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((m) => (
-            <MatchCard key={m.id} match={m} />
+        <div className="space-y-8">
+          {grouped.map(({ round, giornate }) => (
+            <div key={round}>
+              <h2 className="mb-3 font-display text-base font-bold uppercase tracking-wide text-gold">
+                Girone di {round === "andata" ? "Andata" : "Ritorno"}
+              </h2>
+              <div className="space-y-6">
+                {giornate.map(([giornataNum, giornataMatches]) => (
+                  <div key={giornataNum}>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">
+                      Giornata {giornataNum}
+                    </p>
+                    <div className="space-y-3">
+                      {giornataMatches.map((m) => (
+                        <MatchCard key={m.id} match={m} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

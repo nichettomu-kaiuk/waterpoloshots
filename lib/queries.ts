@@ -15,7 +15,7 @@ export async function getSettings(): Promise<Settings | null> {
 }
 
 const MATCH_SELECT = `
-  id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type,
+  id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata,
   home_team:teams!matches_home_team_id_fkey ( id, name, logo_url, created_at ),
   away_team:teams!matches_away_team_id_fkey ( id, name, logo_url, created_at ),
   venue:venues ( id, name, location_tag, address )
@@ -68,7 +68,11 @@ export async function getRecentResults(limit = 5): Promise<Match[]> {
 export async function getAllMatches(roundType?: string, search?: string): Promise<Match[]> {
   try {
     const supabase = createClient();
-    let query = supabase.from("matches").select(MATCH_SELECT).order("date_time", { ascending: true });
+    let query = supabase
+      .from("matches")
+      .select(MATCH_SELECT)
+      .order("giornata", { ascending: true })
+      .order("date_time", { ascending: true });
     if (roundType) query = query.eq("round_type", roundType);
     const { data } = await query;
     let matches = (data as unknown as Match[]) ?? [];
@@ -150,6 +154,19 @@ export async function getVenues(): Promise<Venue[]> {
     const supabase = createClient();
     const { data } = await supabase.from("venues").select("*").order("name");
     return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("players")
+      .select("*, team:teams(*)")
+      .order("last_name");
+    return (data as unknown as (Player & { team?: Team })[]) ?? [];
   } catch {
     return [];
   }

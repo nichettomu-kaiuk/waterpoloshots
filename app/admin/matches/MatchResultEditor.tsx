@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { Plus, Minus, Target } from "lucide-react";
+import { Plus, Minus, Target, CalendarClock, Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { Match, MatchStatus, Player } from "@/lib/supabase/types";
+import type { Match, MatchStatus, Player, Venue } from "@/lib/supabase/types";
 
 const statusLabels: Record<MatchStatus, string> = {
   scheduled: "Programmata",
@@ -12,12 +12,23 @@ const statusLabels: Record<MatchStatus, string> = {
   completed: "Terminata",
 };
 
+// Converts an ISO timestamp to the `YYYY-MM-DDTHH:mm` format the
+// datetime-local input expects, in local time.
+function toLocalInputValue(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function MatchResultEditor({
   match,
+  venues,
   onStatusChange,
   onSaved,
 }: {
   match: Match;
+  venues: Venue[];
   onStatusChange: (status: MatchStatus) => void;
   onSaved: () => void;
 }) {
@@ -27,6 +38,11 @@ export default function MatchResultEditor({
   const [awayScore, setAwayScore] = useState(match.away_score);
   const [homeRoster, setHomeRoster] = useState<Player[]>([]);
   const [awayRoster, setAwayRoster] = useState<Player[]>([]);
+  const [dateTime, setDateTime] = useState(toLocalInputValue(match.date_time));
+  const [venueId, setVenueId] = useState(match.venue_id ?? "");
+  const [savingDetails, setSavingDetails] = useState(false);
+
+  const needsDetails = !match.date_time || !match.venue_id;
 
   useEffect(() => {
     if (!expanded) return;
@@ -42,6 +58,19 @@ export default function MatchResultEditor({
 
   async function saveScore() {
     await supabase.from("matches").update({ home_score: homeScore, away_score: awayScore }).eq("id", match.id);
+    onSaved();
+  }
+
+  async function saveDetails() {
+    setSavingDetails(true);
+    await supabase
+      .from("matches")
+      .update({
+        date_time: dateTime ? new Date(dateTime).toISOString() : null,
+        venue_id: venueId || null,
+      })
+      .eq("id", match.id);
+    setSavingDetails(false);
     onSaved();
   }
 
@@ -67,14 +96,17 @@ export default function MatchResultEditor({
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4">
+    <div className={clsx("rounded-2xl border bg-surface p-4", needsDetails ? "border-gold/50" : "border-line")}>
       <button className="flex w-full items-center justify-between text-left" onClick={() => setExpanded((v) => !v)}>
         <div>
           <p className="text-sm font-medium">
             {match.home_team?.name} <span className="text-muted">vs</span> {match.away_team?.name}
           </p>
           <p className="text-[11px] text-muted">
-            {new Date(match.date_time).toLocaleString("it-IT")} · {statusLabels[match.status]}
+            {match.date_time ? new Date(match.date_time).toLocaleString("it-IT") : "Data da definire"}
+            {" · "}
+            {statusLabels[match.status]}
+            {needsDetails && <span className="ml-1 text-gold">· da completare</span>}
           </p>
         </div>
         <span className="font-display tabular text-lg font-bold text-gold">
@@ -84,6 +116,37 @@ export default function MatchResultEditor({
 
       {expanded && (
         <div className="mt-4 space-y-4 border-t border-line pt-4">
+          <div>
+            <p className="mb-2 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
+              <CalendarClock size={12} /> Data e piscina
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="datetime-local"
+                value={dateTime}
+                onChange={(e) => setDateTime(e.target.value)}
+                className="flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <select
+                value={venueId}
+                onChange={(e) => setVenueId(e.target.value)}
+                className="flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+              >
+                <option value="">Campo da definire</option>
+                {venues.map((v) => (
+                  <option key={v.id} value={v.id}>{v.name}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={saveDetails}
+              disabled={savingDetails}
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 py-2 text-xs font-semibold text-gold disabled:opacity-60"
+            >
+              <Save size={13} /> {savingDetails ? "Salvataggio..." : "Salva data e piscina"}
+            </button>
+          </div>
+
           <div className="flex gap-2">
             {(["scheduled", "live", "completed"] as MatchStatus[]).map((s) => (
               <button

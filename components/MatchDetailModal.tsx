@@ -5,7 +5,8 @@ import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 
 export default function MatchDetailModal({ match, onClose }: { match: Match; onClose: () => void }) {
-  const date = new Date(match.date_time);
+  const date = match.date_time ? new Date(match.date_time) : null;
+  const roundLabel = match.round_type === "ritorno" ? "Ritorno" : "Andata";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70" onClick={onClose}>
@@ -21,6 +22,9 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
               {match.status === "completed" ? "Terminata" : "Programmata"}
             </span>
           )}
+          <span className="text-[11px] font-medium text-gold">
+            {roundLabel} · Giornata {match.giornata}
+          </span>
           <button onClick={onClose} className="text-muted hover:text-white" aria-label="Chiudi">
             <X size={20} />
           </button>
@@ -45,8 +49,9 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
         <div className="space-y-3 rounded-2xl border border-line bg-surface-raised p-4 text-sm">
           <div className="flex items-center gap-2 text-muted">
             <Clock size={15} />
-            {date.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })} ·{" "}
-            {date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+            {date
+              ? `${date.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })} · ${date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}`
+              : "Data da definire"}
           </div>
           {match.venue && (
             <div className="flex items-center gap-2 text-muted">

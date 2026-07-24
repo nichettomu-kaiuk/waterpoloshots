@@ -35,11 +35,12 @@ create table matches (
   home_team_id uuid not null references teams(id) on delete cascade,
   away_team_id uuid not null references teams(id) on delete cascade,
   venue_id uuid references venues(id) on delete set null,
-  date_time timestamptz not null,
+  date_time timestamptz,
   status text not null default 'scheduled' check (status in ('scheduled','live','completed')),
   home_score int not null default 0,
   away_score int not null default 0,
-  round_type text check (round_type in ('andata','ritorno')),
+  round_type text not null default 'andata' check (round_type in ('andata','ritorno')),
+  giornata int not null default 1,
   check (home_team_id <> away_team_id)
 );
 
@@ -75,6 +76,7 @@ create table news_posts (
 -- Convenience indexes for the queries used by the app
 create index matches_status_idx on matches(status);
 create index matches_date_time_idx on matches(date_time);
+create index matches_round_giornata_idx on matches(round_type, giornata);
 create index players_team_id_idx on players(team_id);
 create index match_goals_match_id_idx on match_goals(match_id);
 create index news_posts_created_at_idx on news_posts(created_at desc);
@@ -142,3 +144,17 @@ alter publication supabase_realtime add table matches;
 alter publication supabase_realtime add table match_goals;
 alter publication supabase_realtime add table players;
 alter publication supabase_realtime add table news_posts;
+
+-- ── Migration for projects that already ran an earlier version of this
+-- schema (safe to re-run — every statement is guarded) ─────────────────────
+-- Adds: matches.giornata (matchday number), makes matches.date_time
+-- nullable (auto-generated Ritorno fixtures start without a date), and
+-- makes matches.round_type required with an 'andata' default.
+
+alter table matches add column if not exists giornata int not null default 1;
+alter table matches alter column date_time drop not null;
+alter table matches alter column round_type set default 'andata';
+update matches set round_type = 'andata' where round_type is null;
+alter table matches alter column round_type set not null;
+
+create index if not exists matches_round_giornata_idx on matches(round_type, giornata);
