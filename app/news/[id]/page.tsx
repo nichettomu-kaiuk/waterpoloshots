@@ -2,16 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { getNewsPost } from "@/lib/queries";
+import Hero from "@/components/Hero";
 
 export default async function NewsPostPage({ params }: { params: { id: string } }) {
   const post = await getNewsPost(params.id);
 
   if (!post) {
     return (
-      <main className="mx-auto w-full max-w-md px-5 py-10 text-center text-sm text-muted lg:max-w-5xl lg:px-8 xl:max-w-6xl">
-        Post non trovato.
-        <div className="mt-4">
-          <Link href="/news" className="text-primary">Torna all&apos;archivio News</Link>
+      <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
+        <Hero />
+        <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">
+          Post non trovato.
+          <div className="mt-4">
+            <Link href="/news" className="text-primary">Torna all&apos;archivio News</Link>
+          </div>
         </div>
       </main>
     );
@@ -19,6 +23,7 @@ export default async function NewsPostPage({ params }: { params: { id: string } 
 
   return (
     <main className="mx-auto w-full max-w-md pb-6 lg:max-w-3xl">
+      <Hero />
       {post.image_url && (
         <div className="relative h-56 w-full lg:mt-6 lg:h-72 lg:rounded-3xl lg:overflow-hidden">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" priority />

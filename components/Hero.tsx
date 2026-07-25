@@ -1,0 +1,76 @@
+import Image from "next/image";
+import { getSettings, getLiveMatches } from "@/lib/queries";
+import type { Match, Settings } from "@/lib/supabase/types";
+import LiveBadge from "./LiveBadge";
+
+// Shared across every public page (fetches its own data unless the caller
+// already has it — the home page passes settings/live down to avoid
+// double-querying, since it needs the same data for its own sections).
+export default async function Hero({
+  settings: settingsProp,
+  live: liveProp,
+}: {
+  settings?: Settings | null;
+  live?: Match[];
+} = {}) {
+  const settings = settingsProp !== undefined ? settingsProp : await getSettings();
+  const live = liveProp !== undefined ? liveProp : await getLiveMatches();
+
+  return (
+    <section className="relative overflow-hidden water-texture px-5 pb-12 pt-10">
+      {settings?.home_bg_url && (
+        <>
+          {/* Background image with soft faded edges — a radial mask fades
+              the photo to transparent toward every side so it blends into
+              the page instead of ending in a hard rectangle. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${settings.home_bg_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
+              maskImage:
+                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
+            }}
+          />
+          <div className="absolute inset-0 bg-ink/45" />
+          {/* Extra fade concentrated on the bottom edge, so the hero melts
+              into the body of the page rather than the vignette above
+              doing all the work uniformly. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink via-ink/80 to-transparent" />
+        </>
+      )}
+      <div className="relative">
+        {live.length > 0 && (
+          <div className="mb-3">
+            <LiveBadge />
+          </div>
+        )}
+        <p className="text-xs uppercase tracking-[0.2em] text-gold">
+          {settings?.active_round ?? "Girone di andata"}
+        </p>
+        <div className="mt-1 flex items-center gap-3">
+          {settings?.logo_url && (
+            <Image
+              src={settings.logo_url}
+              alt={settings.tournament_title ?? "Logo torneo"}
+              width={60}
+              height={60}
+              className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
+            />
+          )}
+          <div>
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
+              {settings?.tournament_title ?? "Torneo di Pallanuoto"}
+            </h1>
+            {settings?.tournament_subtitle && (
+              <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

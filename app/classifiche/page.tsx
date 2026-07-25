@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { getStandings } from "@/lib/queries";
+import Hero from "@/components/Hero";
 
 export default async function ClassificaPage() {
   const standings = await getStandings();
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 py-6 lg:max-w-5xl lg:px-8 xl:max-w-6xl">
+    <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
+      <Hero />
+      <div className="px-5 py-6 lg:px-8">
       <h1 className="mb-5 font-display text-2xl font-bold">Classifica</h1>
 
       {standings.length === 0 ? (
@@ -59,6 +62,7 @@ export default async function ClassificaPage() {
           Pt Punti · G Giocate · V Vinte · P Perse · N Neutre · GF Gol fatti · GS Gol subiti · DR Differenza reti
         </p>
       )}
+      </div>
     </main>
   );
 }
