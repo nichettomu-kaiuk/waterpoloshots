@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTeamWithRoster } from "@/lib/queries";
 import Hero from "@/components/Hero";
+import ShareButton from "@/components/ShareButton";
 
 export default async function SquadraPage({ params }: { params: { id: string } }) {
   const { team, players } = await getTeamWithRoster(params.id);
@@ -19,21 +20,24 @@ export default async function SquadraPage({ params }: { params: { id: string } }
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
       <Hero />
       <div className="px-5 py-6 lg:px-8">
-        <div className="mb-6 flex items-center gap-4">
-          {team.logo_url ? (
-            <Image
-              src={team.logo_url}
-              alt={team.name}
-              width={64}
-              height={64}
-              className="h-16 w-16 rounded-full border border-line object-cover"
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-xl text-muted">
-              {team.name.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-          <h1 className="font-display text-2xl font-bold">{team.name}</h1>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {team.logo_url ? (
+              <Image
+                src={team.logo_url}
+                alt={team.name}
+                width={64}
+                height={64}
+                className="h-16 w-16 rounded-full border border-line object-cover"
+              />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-xl text-muted">
+                {team.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <h1 className="font-display text-2xl font-bold">{team.name}</h1>
+          </div>
+          <ShareButton title={team.name} path={`/squadra/${team.id}`} iconOnly />
         </div>
 
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">

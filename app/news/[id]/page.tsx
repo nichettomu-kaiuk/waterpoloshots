@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { getNewsPost } from "@/lib/queries";
 import Hero from "@/components/Hero";
+import ShareButton from "@/components/ShareButton";
 
 export default async function NewsPostPage({ params }: { params: { id: string } }) {
   const post = await getNewsPost(params.id);
@@ -31,9 +32,12 @@ export default async function NewsPostPage({ params }: { params: { id: string } 
       )}
 
       <div className="px-5 py-6">
-        <Link href="/news" className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
-          <ArrowLeft size={14} /> Archivio News
-        </Link>
+        <div className="mb-4 flex items-center justify-between">
+          <Link href="/news" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
+            <ArrowLeft size={14} /> Archivio News
+          </Link>
+          <ShareButton title={post.title} text={post.title} path={`/news/${post.id}`} />
+        </div>
 
         <p className="text-xs text-muted">
           {new Date(post.created_at).toLocaleDateString("it-IT", {

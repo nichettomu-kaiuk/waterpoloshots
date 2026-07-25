@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Share2, Check, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 import MatchDetailModal from "./MatchDetailModal";
+import ShareButton from "./ShareButton";
 
 function formatTime(iso: string | null) {
   if (!iso) return null;
@@ -38,39 +39,19 @@ function TeamLogo({ url, name }: { url: string | null | undefined; name: string 
 
 export default function MatchCard({ match, bare = false }: { match: Match; bare?: boolean }) {
   const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const statusLabel =
     match.status === "live" ? null : match.status === "completed" ? "Terminata" : "Programmata";
 
-  async function handleShare(e: React.MouseEvent) {
-    e.stopPropagation();
-    const home = match.home_team?.name ?? "Casa";
-    const away = match.away_team?.name ?? "Ospiti";
-    const scoreText =
-      match.status === "scheduled"
-        ? match.date_time
-          ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}`
-          : "Data da definire"
-        : `${match.home_score} - ${match.away_score}`;
-    const text = `🤽 ${home} vs ${away}\n${scoreText}${match.venue ? `\n📍 ${match.venue.name}` : ""}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-        return;
-      } catch {
-        // user cancelled — fall through to clipboard
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      // clipboard unavailable, ignore silently
-    }
-  }
+  const home = match.home_team?.name ?? "Casa";
+  const away = match.away_team?.name ?? "Ospiti";
+  const scoreText =
+    match.status === "scheduled"
+      ? match.date_time
+        ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}`
+        : "Data da definire"
+      : `${match.home_score} - ${match.away_score}`;
+  const shareText = `🤽 ${home} vs ${away}\n${scoreText}${match.venue ? `\n📍 ${match.venue.name}` : ""}`;
 
   return (
     <>
@@ -94,14 +75,7 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
               {match.date_time ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}` : "Data da definire"}
             </span>
           </div>
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1 rounded-full border border-line px-2 py-1 text-[11px] text-muted transition hover:border-gold hover:text-gold"
-            aria-label="Condividi match"
-          >
-            {copied ? <Check size={13} className="text-gold" /> : <Share2 size={13} />}
-            {copied ? "Copiato!" : "Condividi"}
-          </button>
+          <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
         </div>
 
         <div className="flex items-center justify-between">

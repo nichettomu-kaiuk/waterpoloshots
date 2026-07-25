@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPlayer } from "@/lib/queries";
 import Hero from "@/components/Hero";
+import ShareButton from "@/components/ShareButton";
 
 export default async function GiocatorePage({ params }: { params: { id: string } }) {
   const { player, team } = await getPlayer(params.id);
@@ -38,6 +39,10 @@ export default async function GiocatorePage({ params }: { params: { id: string }
             {team.name}
           </Link>
         )}
+
+        <div className="mt-3 flex justify-center">
+          <ShareButton title={`${player.first_name} ${player.last_name}`} path={`/giocatore/${player.id}`} />
+        </div>
 
         <div className="mx-auto mt-6 grid max-w-xs grid-cols-3 gap-3">
           <div className="rounded-xl border border-line bg-surface py-3">
