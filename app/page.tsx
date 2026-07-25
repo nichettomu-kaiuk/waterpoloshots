@@ -124,9 +124,9 @@ export default async function HomePage() {
                 </h2>
                 <Link href="/calendario" className="text-xs text-primary">Vedi tutti</Link>
               </div>
-              <div className="space-y-3">
+              <div className="animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {upcoming.map((m) => (
-                  <MatchCard key={m.id} match={m} />
+                  <MatchCard key={m.id} match={m} bare />
                 ))}
               </div>
             </section>
@@ -142,9 +142,9 @@ export default async function HomePage() {
             {recent.length === 0 ? (
               <p className="text-sm text-muted">Nessun risultato disponibile.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {recent.map((m) => (
-                  <MatchCard key={m.id} match={m} />
+                  <MatchCard key={m.id} match={m} bare />
                 ))}
               </div>
             )}

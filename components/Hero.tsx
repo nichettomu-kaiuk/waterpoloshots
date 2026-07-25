@@ -63,7 +63,7 @@ export default async function Hero({
           )}
           <div>
             <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
-              {settings?.tournament_title ?? "Torneo di Pallanuoto"}
+              {settings?.tournament_title ?? "Serie B - Girone 3"}
             </h1>
             {settings?.tournament_subtitle && (
               <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>

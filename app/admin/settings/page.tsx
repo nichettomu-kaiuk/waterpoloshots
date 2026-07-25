@@ -10,7 +10,7 @@ import type { Settings } from "@/lib/supabase/types";
 const BUCKET = "branding";
 
 const emptySettings: Omit<Settings, "id"> = {
-  tournament_title: "Torneo di Pallanuoto",
+  tournament_title: "Serie B - Girone 3",
   tournament_subtitle: "",
   logo_url: null,
   home_bg_url: null,

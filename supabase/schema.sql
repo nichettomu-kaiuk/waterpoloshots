@@ -56,7 +56,7 @@ create table match_goals (
 
 create table settings (
   id uuid primary key default gen_random_uuid(),
-  tournament_title text not null default 'Torneo di Pallanuoto',
+  tournament_title text not null default 'Serie B - Girone 3',
   tournament_subtitle text,
   logo_url text,
   home_bg_url text,
@@ -139,7 +139,7 @@ create policy "admin delete branding files" on storage.objects
 
 -- ── Seed row for settings (branding needs exactly one row) ─────────────────
 insert into settings (tournament_title, tournament_subtitle, active_round)
-values ('Torneo di Pallanuoto', 'Stagione 2026', 'Girone di andata');
+values ('Serie B - Girone 3', 'Stagione 2026', 'Girone di andata');
 
 -- ── Realtime (optional but recommended for live scores) ────────────────────
 alter publication supabase_realtime add table matches;

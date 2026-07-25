@@ -13,10 +13,19 @@ const display = Oswald({
 const body = Inter({ subsets: ["latin"], variable: "--font-body" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
-export const metadata: Metadata = {
-  title: "Torneo di Pallanuoto",
-  description: "Calendario, classifiche e risultati live del torneo.",
-};
+// Dynamic so the browser tab title and favicon follow whatever is set in
+// Admin → Impostazioni (tournament title + logo), falling back to
+// "Serie B - Girone 3" and no custom icon when nothing is configured yet.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const title = settings?.tournament_title || "Serie B - Girone 3";
+
+  return {
+    title,
+    description: "Calendario, classifiche e risultati live del torneo.",
+    icons: settings?.logo_url ? { icon: settings.logo_url } : undefined,
+  };
+}
 
 export default async function RootLayout({
   children,

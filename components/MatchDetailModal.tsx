@@ -1,12 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { X, MapPin, Clock, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 
 type ScorerLine = { name: string; count: number };
+
+function TeamLogo({ url, name }: { url: string | null | undefined; name: string | undefined }) {
+  if (url) {
+    return (
+      <Image
+        src={url}
+        alt={name ?? "Squadra"}
+        width={56}
+        height={56}
+        className="mx-auto mb-2 h-14 w-14 rounded-full border border-line object-cover"
+      />
+    );
+  }
+  return (
+    <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-sm text-muted">
+      {(name ?? "??").slice(0, 2).toUpperCase()}
+    </div>
+  );
+}
 
 export default function MatchDetailModal({ match, onClose }: { match: Match; onClose: () => void }) {
   const date = match.date_time ? new Date(match.date_time) : null;
@@ -74,7 +94,7 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
 
         <div className="mb-6 flex items-center justify-between">
           <div className="flex-1 text-center">
-            <div className="mx-auto mb-2 h-14 w-14 rounded-full border border-line bg-surface-raised" />
+            <TeamLogo url={match.home_team?.logo_url} name={match.home_team?.name} />
             <p className="text-sm font-medium">{match.home_team?.name ?? "TBD"}</p>
           </div>
           <div className="px-4 text-center">
@@ -83,7 +103,7 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
             </p>
           </div>
           <div className="flex-1 text-center">
-            <div className="mx-auto mb-2 h-14 w-14 rounded-full border border-line bg-surface-raised" />
+            <TeamLogo url={match.away_team?.logo_url} name={match.away_team?.name} />
             <p className="text-sm font-medium">{match.away_team?.name ?? "TBD"}</p>
           </div>
         </div>
