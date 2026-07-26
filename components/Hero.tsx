@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Facebook, Youtube } from "lucide-react";
 import { getSettings, getLiveMatches } from "@/lib/queries";
 import type { Match, Settings } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
@@ -43,11 +45,29 @@ export default async function Hero({
         </>
       )}
       <div className="relative">
-        {live.length > 0 && (
-          <div className="mb-3">
-            <LiveBadge />
+        <div className="mb-3 flex items-center justify-between">
+          {live.length > 0 ? <LiveBadge /> : <span />}
+          <div className="flex items-center gap-2">
+            <Link
+              href="https://www.facebook.com/wpshots"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Pagina Facebook Waterpolo Shots"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+            >
+              <Facebook size={15} />
+            </Link>
+            <Link
+              href="https://www.youtube.com/@waterpoloshots"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Canale YouTube Waterpolo Shots"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+            >
+              <Youtube size={15} />
+            </Link>
           </div>
-        )}
+        </div>
         <p className="text-xs uppercase tracking-[0.2em] text-gold">
           {settings?.active_round ?? "Girone di andata"}
         </p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getStandings } from "@/lib/queries";
 import Hero from "@/components/Hero";
 
@@ -35,8 +36,21 @@ export default async function ClassificaPage() {
                 <tr key={row.team.id} className="border-t border-line bg-surface">
                   <td className="sticky left-0 bg-surface px-3 py-2.5 text-muted">{i + 1}</td>
                   <td className="sticky left-8 bg-surface px-3 py-2.5">
-                    <Link href={`/squadra/${row.team.id}`} className="font-medium">
-                      {row.team.name}
+                    <Link href={`/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
+                      {row.team.logo_url ? (
+                        <Image
+                          src={row.team.logo_url}
+                          alt={row.team.name}
+                          width={22}
+                          height={22}
+                          className="h-[22px] w-[22px] shrink-0 rounded-full border border-line object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-[9px] font-display text-muted">
+                          {row.team.name.slice(0, 2).toUpperCase()}
+                        </span>
+                      )}
+                      <span className="whitespace-nowrap">{row.team.name}</span>
                     </Link>
                   </td>
                   <td className="px-2 py-2.5 text-center tabular font-display font-bold text-gold">
