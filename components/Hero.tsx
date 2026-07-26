@@ -45,27 +45,29 @@ export default async function Hero({
         </>
       )}
       <div className="relative">
-        <div className="mb-3 flex items-center justify-between">
-          {live.length > 0 ? <LiveBadge /> : <span />}
-          <div className="flex items-center gap-2">
-            <Link
-              href="https://www.facebook.com/wpshots"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Pagina Facebook Waterpolo Shots"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
-            >
-              <Facebook size={15} />
-            </Link>
-            <Link
-              href="https://www.youtube.com/@waterpoloshots"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Canale YouTube Waterpolo Shots"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
-            >
-              <Youtube size={15} />
-            </Link>
+        <div className="mb-3 flex justify-end">
+          <div className="flex flex-col items-end gap-2">
+            {live.length > 0 && <LiveBadge />}
+            <div className="flex items-center gap-2">
+              <Link
+                href="https://www.facebook.com/wpshots"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Pagina Facebook Waterpolo Shots"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+              >
+                <Facebook size={15} />
+              </Link>
+              <Link
+                href="https://www.youtube.com/@waterpoloshots"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Canale YouTube Waterpolo Shots"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+              >
+                <Youtube size={15} />
+              </Link>
+            </div>
           </div>
         </div>
         <p className="text-xs uppercase tracking-[0.2em] text-gold">

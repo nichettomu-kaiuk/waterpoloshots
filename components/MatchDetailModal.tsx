@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { X, MapPin, Clock, Target } from "lucide-react";
+import { X, MapPin, Clock, Target, Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
@@ -107,6 +107,17 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
             <p className="text-sm font-medium">{match.away_team?.name ?? "TBD"}</p>
           </div>
         </div>
+
+        {match.stream_url && (
+          <a
+            href={match.stream_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:brightness-110 active:scale-[0.99]"
+          >
+            <Video size={16} /> Guarda la diretta
+          </a>
+        )}
 
         {showScorers && (
           <div className="mb-4">

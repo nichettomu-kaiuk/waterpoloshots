@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { MapPin } from "lucide-react";
+import { MapPin, Video } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
@@ -74,6 +74,11 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
             <span>
               {match.date_time ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}` : "Data da definire"}
             </span>
+            {match.stream_url && (
+              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-medium text-primary">
+                <Video size={11} /> Diretta
+              </span>
+            )}
           </div>
           <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
         </div>

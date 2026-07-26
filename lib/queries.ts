@@ -15,7 +15,7 @@ export async function getSettings(): Promise<Settings | null> {
 }
 
 const MATCH_SELECT = `
-  id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata,
+  id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata, stream_url,
   home_team:teams!matches_home_team_id_fkey ( id, name, logo_url, created_at ),
   away_team:teams!matches_away_team_id_fkey ( id, name, logo_url, created_at ),
   venue:venues ( id, name, location_tag, address )

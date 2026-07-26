@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { Plus, Minus, Target, CalendarClock, Save } from "lucide-react";
+import { Plus, Minus, Target, CalendarClock, Save, Video, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchStatus, Player, Venue } from "@/lib/supabase/types";
 
@@ -41,6 +41,8 @@ export default function MatchResultEditor({
   const [dateTime, setDateTime] = useState(toLocalInputValue(match.date_time));
   const [venueId, setVenueId] = useState(match.venue_id ?? "");
   const [savingDetails, setSavingDetails] = useState(false);
+  const [streamUrl, setStreamUrl] = useState(match.stream_url ?? "");
+  const [savingStream, setSavingStream] = useState(false);
 
   const needsDetails = !match.date_time || !match.venue_id;
 
@@ -71,6 +73,21 @@ export default function MatchResultEditor({
       })
       .eq("id", match.id);
     setSavingDetails(false);
+    onSaved();
+  }
+
+  async function saveStream() {
+    setSavingStream(true);
+    await supabase.from("matches").update({ stream_url: streamUrl.trim() || null }).eq("id", match.id);
+    setSavingStream(false);
+    onSaved();
+  }
+
+  async function clearStream() {
+    setStreamUrl("");
+    setSavingStream(true);
+    await supabase.from("matches").update({ stream_url: null }).eq("id", match.id);
+    setSavingStream(false);
     onSaved();
   }
 
@@ -107,6 +124,7 @@ export default function MatchResultEditor({
             {" · "}
             {statusLabels[match.status]}
             {needsDetails && <span className="ml-1 text-gold">· da completare</span>}
+            {match.stream_url && <span className="ml-1 text-primary">· diretta disponibile</span>}
           </p>
         </div>
         <span className="font-display tabular text-lg font-bold text-gold">
@@ -145,6 +163,37 @@ export default function MatchResultEditor({
             >
               <Save size={13} /> {savingDetails ? "Salvataggio..." : "Salva data e piscina"}
             </button>
+          </div>
+
+          <div>
+            <p className="mb-2 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
+              <Video size={12} /> Link diretta (opzionale)
+            </p>
+            <input
+              type="url"
+              value={streamUrl}
+              onChange={(e) => setStreamUrl(e.target.value)}
+              placeholder="https://..."
+              className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={saveStream}
+                disabled={savingStream}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-primary/50 bg-primary/10 py-2 text-xs font-semibold text-primary disabled:opacity-60"
+              >
+                <Save size={13} /> {savingStream ? "Salvataggio..." : "Salva link"}
+              </button>
+              {match.stream_url && (
+                <button
+                  onClick={clearStream}
+                  disabled={savingStream}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-line px-3 py-2 text-xs text-muted hover:border-primary hover:text-primary disabled:opacity-60"
+                >
+                  <Trash2 size={13} /> Rimuovi
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">

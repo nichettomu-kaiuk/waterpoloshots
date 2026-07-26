@@ -42,6 +42,7 @@ create table matches (
   away_score int not null default 0,
   round_type text not null default 'andata' check (round_type in ('andata','ritorno')),
   giornata int not null default 1,
+  stream_url text,
   check (home_team_id <> away_team_id)
 );
 
@@ -164,3 +165,6 @@ create index if not exists matches_round_giornata_idx on matches(round_type, gio
 -- Adds: teams.venue_id (the team's home pool, editable in Admin → Squadre).
 alter table teams add column if not exists venue_id uuid references venues(id) on delete set null;
 create index if not exists teams_venue_id_idx on teams(venue_id);
+
+-- Adds: matches.stream_url (optional live-stream link, editable in Admin → Partite).
+alter table matches add column if not exists stream_url text;

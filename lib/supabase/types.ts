@@ -40,6 +40,7 @@ export interface Match {
   away_score: number;
   round_type: RoundType;
   giornata: number;
+  stream_url: string | null;
   home_team?: Team;
   away_team?: Team;
   venue?: Venue;
