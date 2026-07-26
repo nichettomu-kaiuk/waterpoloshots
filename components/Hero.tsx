@@ -45,8 +45,31 @@ export default async function Hero({
         </>
       )}
       <div className="relative">
-        <div className="mb-3 flex justify-end">
-          <div className="flex flex-col items-end gap-2">
+        <p className="text-xs uppercase tracking-[0.2em] text-gold">
+          {settings?.active_round ?? "Girone di andata"}
+        </p>
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {settings?.logo_url && (
+              <Image
+                src={settings.logo_url}
+                alt={settings.tournament_title ?? "Logo torneo"}
+                width={60}
+                height={60}
+                className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
+              />
+            )}
+            <div className="min-w-0">
+              <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
+                {settings?.tournament_title ?? "Serie B - Girone 3"}
+              </h1>
+              {settings?.tournament_subtitle && (
+                <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-end gap-2">
             {live.length > 0 && <LiveBadge />}
             <div className="flex items-center gap-2">
               <Link
@@ -68,28 +91,6 @@ export default async function Hero({
                 <Youtube size={15} />
               </Link>
             </div>
-          </div>
-        </div>
-        <p className="text-xs uppercase tracking-[0.2em] text-gold">
-          {settings?.active_round ?? "Girone di andata"}
-        </p>
-        <div className="mt-1 flex items-center gap-3">
-          {settings?.logo_url && (
-            <Image
-              src={settings.logo_url}
-              alt={settings.tournament_title ?? "Logo torneo"}
-              width={60}
-              height={60}
-              className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
-            />
-          )}
-          <div>
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
-              {settings?.tournament_title ?? "Serie B - Girone 3"}
-            </h1>
-            {settings?.tournament_subtitle && (
-              <p className="mt-1 text-sm text-muted">{settings.tournament_subtitle}</p>
-            )}
           </div>
         </div>
       </div>
