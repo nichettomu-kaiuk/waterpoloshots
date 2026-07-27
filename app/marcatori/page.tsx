@@ -3,7 +3,8 @@ import Hero from "@/components/Hero";
 import Podium from "@/components/Podium";
 
 export default async function MarcatoriPage() {
-  const scorers = await getTopScorers(15);
+  const allScorers = await getTopScorers(15);
+  const scorers = allScorers.filter((p) => p.goals_count > 0);
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
