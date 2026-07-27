@@ -112,11 +112,6 @@ export default function AdminMatchesPage() {
     load();
   }
 
-  async function updateStatus(matchId: string, status: MatchStatus) {
-    await supabase.from("matches").update({ status }).eq("id", matchId);
-    load();
-  }
-
   // Girone di Andata first, then Girone di Ritorno; within each, grouped by
   // giornata number ascending.
   const groupedByGirone = useMemo(() => {
@@ -228,7 +223,6 @@ export default function AdminMatchesPage() {
                             key={m.id}
                             match={m}
                             venues={venues}
-                            onStatusChange={(status) => updateStatus(m.id, status)}
                             onSaved={load}
                           />
                         ))}

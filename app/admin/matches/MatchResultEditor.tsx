@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { Plus, Minus, Target, CalendarClock, Save, Video, Trash2 } from "lucide-react";
+import { Plus, Minus, Target, CalendarClock, Save, Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchStatus, Player, Venue } from "@/lib/supabase/types";
 
@@ -24,12 +24,10 @@ function toLocalInputValue(iso: string | null) {
 export default function MatchResultEditor({
   match,
   venues,
-  onStatusChange,
   onSaved,
 }: {
   match: Match;
   venues: Venue[];
-  onStatusChange: (status: MatchStatus) => void;
   onSaved: () => void;
 }) {
   const supabase = createClient();
@@ -40,9 +38,9 @@ export default function MatchResultEditor({
   const [awayRoster, setAwayRoster] = useState<Player[]>([]);
   const [dateTime, setDateTime] = useState(toLocalInputValue(match.date_time));
   const [venueId, setVenueId] = useState(match.venue_id ?? "");
-  const [savingDetails, setSavingDetails] = useState(false);
   const [streamUrl, setStreamUrl] = useState(match.stream_url ?? "");
-  const [savingStream, setSavingStream] = useState(false);
+  const [status, setStatus] = useState<MatchStatus>(match.status);
+  const [saving, setSaving] = useState(false);
 
   const needsDetails = !match.date_time || !match.venue_id;
 
@@ -58,36 +56,24 @@ export default function MatchResultEditor({
     })();
   }, [expanded]);
 
-  async function saveScore() {
-    await supabase.from("matches").update({ home_score: homeScore, away_score: awayScore }).eq("id", match.id);
-    onSaved();
-  }
-
-  async function saveDetails() {
-    setSavingDetails(true);
+  // Single save action for everything the admin edits by hand: score, date,
+  // venue, live-stream link and status. Goal assignment below saves itself
+  // immediately (it also logs a match_goals row and bumps the player's
+  // tally), so it's intentionally not part of this batch.
+  async function saveMatch() {
+    setSaving(true);
     await supabase
       .from("matches")
       .update({
+        home_score: homeScore,
+        away_score: awayScore,
         date_time: dateTime ? new Date(dateTime).toISOString() : null,
         venue_id: venueId || null,
+        stream_url: streamUrl.trim() || null,
+        status,
       })
       .eq("id", match.id);
-    setSavingDetails(false);
-    onSaved();
-  }
-
-  async function saveStream() {
-    setSavingStream(true);
-    await supabase.from("matches").update({ stream_url: streamUrl.trim() || null }).eq("id", match.id);
-    setSavingStream(false);
-    onSaved();
-  }
-
-  async function clearStream() {
-    setStreamUrl("");
-    setSavingStream(true);
-    await supabase.from("matches").update({ stream_url: null }).eq("id", match.id);
-    setSavingStream(false);
+    setSaving(false);
     onSaved();
   }
 
@@ -156,13 +142,6 @@ export default function MatchResultEditor({
                 ))}
               </select>
             </div>
-            <button
-              onClick={saveDetails}
-              disabled={savingDetails}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 py-2 text-xs font-semibold text-gold disabled:opacity-60"
-            >
-              <Save size={13} /> {savingDetails ? "Salvataggio..." : "Salva data e piscina"}
-            </button>
           </div>
 
           <div>
@@ -176,34 +155,16 @@ export default function MatchResultEditor({
               placeholder="https://..."
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={saveStream}
-                disabled={savingStream}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-primary/50 bg-primary/10 py-2 text-xs font-semibold text-primary disabled:opacity-60"
-              >
-                <Save size={13} /> {savingStream ? "Salvataggio..." : "Salva link"}
-              </button>
-              {match.stream_url && (
-                <button
-                  onClick={clearStream}
-                  disabled={savingStream}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-line px-3 py-2 text-xs text-muted hover:border-primary hover:text-primary disabled:opacity-60"
-                >
-                  <Trash2 size={13} /> Rimuovi
-                </button>
-              )}
-            </div>
           </div>
 
           <div className="flex gap-2">
             {(["scheduled", "live", "completed"] as MatchStatus[]).map((s) => (
               <button
                 key={s}
-                onClick={() => onStatusChange(s)}
+                onClick={() => setStatus(s)}
                 className={clsx(
                   "flex-1 rounded-full border px-2 py-1.5 text-[11px] font-medium",
-                  match.status === s ? "border-primary bg-primary/15 text-primary" : "border-line text-muted"
+                  status === s ? "border-primary bg-primary/15 text-primary" : "border-line text-muted"
                 )}
               >
                 {statusLabels[s]}
@@ -224,8 +185,13 @@ export default function MatchResultEditor({
               <button onClick={() => setAwayScore((v) => v + 1)} className="rounded-full border border-line p-1.5"><Plus size={14} /></button>
             </div>
           </div>
-          <button onClick={saveScore} className="w-full rounded-xl border border-line py-2 text-xs font-medium text-muted hover:border-primary hover:text-white">
-            Salva punteggio manuale
+
+          <button
+            onClick={saveMatch}
+            disabled={saving}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            <Save size={14} /> {saving ? "Salvataggio..." : "Salva partita"}
           </button>
 
           <div>
