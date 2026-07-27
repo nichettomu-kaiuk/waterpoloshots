@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getStandings } from "@/lib/queries";
 import Hero from "@/components/Hero";
+import ShareButton from "@/components/ShareButton";
 
 export default async function ClassificaPage() {
   const standings = await getStandings();
@@ -10,7 +11,10 @@ export default async function ClassificaPage() {
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
       <Hero />
       <div className="px-5 py-6 lg:px-8">
-      <h1 className="mb-5 font-display text-2xl font-bold">Classifica</h1>
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold">Classifica</h1>
+        <ShareButton title="Classifica" path="/classifiche" />
+      </div>
 
       {standings.length === 0 ? (
         <p className="text-sm text-muted">Nessun risultato confermato ancora.</p>
