@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { X, MapPin, Clock, Target, Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -70,7 +71,7 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
     };
   }, [match.id, match.home_team_id, match.away_team_id, showScorers]);
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70" onClick={onClose}>
       <div
         className="w-full max-w-md animate-rise rounded-t-3xl border-t border-line bg-surface p-6 pb-10"
@@ -167,6 +168,7 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
