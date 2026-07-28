@@ -18,7 +18,7 @@ export default async function NewsArchivePage() {
         {news.length === 0 ? (
           <p className="text-sm text-muted">Nessuna news pubblicata ancora.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="flex flex-col gap-3">
             {news.map((post) => (
               <NewsCard key={post.id} post={post} />
             ))}

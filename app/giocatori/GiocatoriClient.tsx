@@ -83,6 +83,7 @@ export default function GiocatoriClient({ players }: { players: PlayerWithTeam[]
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{p.first_name} {p.last_name}</p>
                       <p className="truncate text-[11px] text-muted">N. {p.cap_number}</p>
+                      <p className="truncate text-[11px] text-muted">{p.team?.name ?? "Senza squadra"}</p>
                     </div>
                     <span className="shrink-0 font-display font-bold text-gold">{p.goals_count}</span>
                   </Link>
