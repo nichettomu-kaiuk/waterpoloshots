@@ -65,6 +65,9 @@ export interface Settings {
   primary_color: string | null;
   secondary_color: string | null;
   active_round: string | null;
+  info_text: string | null;
+  info_image_url: string | null;
+  info_email: string | null;
 }
 
 export interface NewsPost {

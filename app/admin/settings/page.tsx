@@ -18,9 +18,12 @@ const emptySettings: Omit<Settings, "id"> = {
   primary_color: "#e10f21",
   secondary_color: "#d4af37",
   active_round: "Girone di andata",
+  info_text: "(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.",
+  info_image_url: null,
+  info_email: null,
 };
 
-type ImageField = "logo_url" | "home_bg_url" | "header_bg_url";
+type ImageField = "logo_url" | "home_bg_url" | "header_bg_url" | "info_image_url";
 
 // Public Supabase Storage URLs look like:
 // https://<project>.supabase.co/storage/v1/object/public/branding/<path>
@@ -113,6 +116,7 @@ export default function AdminSettingsPage() {
     { field: "logo_url", label: "Logo torneo", hint: "Consigliato: quadrato, sfondo trasparente" },
     { field: "home_bg_url", label: "Sfondo Home", hint: "Sfondo dell'header/hero in cima alla home" },
     { field: "header_bg_url", label: "Bg home", hint: "Sfondo del corpo della home page, sotto l'header" },
+    { field: "info_image_url", label: "Immagine Info", hint: "Mostrata nella finestra Informazioni (icona \"i\")" },
   ];
 
   return (
@@ -165,6 +169,27 @@ export default function AdminSettingsPage() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="space-y-2 rounded-2xl border border-line bg-surface p-4">
+            <p className="mb-1 text-xs uppercase tracking-widest text-muted">
+              Informazioni (icona &quot;i&quot;)
+            </p>
+            <label className="block text-xs text-muted">Testo</label>
+            <textarea
+              value={form.info_text ?? ""}
+              onChange={(e) => setForm({ ...form, info_text: e.target.value })}
+              rows={3}
+              className="w-full resize-none rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <label className="block text-xs text-muted">Email di contatto (opzionale)</label>
+            <input
+              type="email"
+              value={form.info_email ?? ""}
+              onChange={(e) => setForm({ ...form, info_email: e.target.value || null })}
+              placeholder="info@esempio.it"
+              className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+            />
           </div>
         </div>
 

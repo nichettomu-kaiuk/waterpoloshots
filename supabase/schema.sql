@@ -64,7 +64,10 @@ create table settings (
   header_bg_url text,
   primary_color text default '#e10f21',
   secondary_color text default '#d4af37',
-  active_round text
+  active_round text,
+  info_text text,
+  info_image_url text,
+  info_email text
 );
 
 create table news_posts (
@@ -139,8 +142,8 @@ create policy "admin delete branding files" on storage.objects
   for delete to authenticated using (bucket_id = 'branding');
 
 -- ── Seed row for settings (branding needs exactly one row) ─────────────────
-insert into settings (tournament_title, tournament_subtitle, active_round)
-values ('Serie B - Girone 3', 'Stagione 2026', 'Girone di andata');
+insert into settings (tournament_title, tournament_subtitle, active_round, info_text)
+values ('Serie B - Girone 3', 'Stagione 2026', 'Girone di andata', '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.');
 
 -- ── Realtime (optional but recommended for live scores) ────────────────────
 alter publication supabase_realtime add table matches;
@@ -168,3 +171,11 @@ create index if not exists teams_venue_id_idx on teams(venue_id);
 
 -- Adds: matches.stream_url (optional live-stream link, editable in Admin → Partite).
 alter table matches add column if not exists stream_url text;
+
+-- Adds: settings.info_text / info_image_url / info_email (the "i" info
+-- popup, editable in Admin → Impostazioni).
+alter table settings add column if not exists info_text text;
+alter table settings add column if not exists info_image_url text;
+alter table settings add column if not exists info_email text;
+update settings set info_text = '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.'
+  where info_text is null;
