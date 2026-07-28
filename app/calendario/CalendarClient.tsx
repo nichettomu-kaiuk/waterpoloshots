@@ -25,12 +25,15 @@ export default function CalendarClient({
   const [search, setSearch] = useState(q);
 
   const filtered = useMemo(() => {
+    const searchLower = search.toLowerCase().trim();
+    const searchDigits = searchLower.replace(/[^0-9]/g, "");
     return matches.filter((m) => {
       const matchesGirone = !activeGirone || m.round_type === activeGirone;
-      const matchesSearch =
-        !search ||
-        m.home_team?.name.toLowerCase().includes(search.toLowerCase()) ||
-        m.away_team?.name.toLowerCase().includes(search.toLowerCase());
+      const matchesTeam =
+        m.home_team?.name.toLowerCase().includes(searchLower) ||
+        m.away_team?.name.toLowerCase().includes(searchLower);
+      const matchesGiornata = searchDigits !== "" && String(m.giornata) === searchDigits;
+      const matchesSearch = !searchLower || matchesTeam || matchesGiornata;
       return matchesGirone && matchesSearch;
     });
   }, [matches, activeGirone, search]);
@@ -61,7 +64,7 @@ export default function CalendarClient({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cerca squadra..."
+          placeholder="Cerca squadra o giornata..."
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
         />
       </div>
