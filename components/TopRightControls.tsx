@@ -31,7 +31,7 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
           aria-label="Informazioni"
           className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
         >
-          <Info size={18} />
+          <Info size={22} />
         </button>
 
         {!isAdminSection && (

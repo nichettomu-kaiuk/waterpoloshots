@@ -51,11 +51,11 @@ export default function NewsCard({
   return (
     <article className="flex animate-rise overflow-hidden rounded-2xl border border-line bg-surface">
       {post.image_url ? (
-        <div className="relative w-20 shrink-0 sm:w-24">
+        <div className="relative h-[90px] w-[90px] shrink-0">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" />
         </div>
       ) : (
-        <div className="flex w-20 shrink-0 items-center justify-center bg-surface-raised sm:w-24">
+        <div className="flex h-[90px] w-[90px] shrink-0 items-center justify-center bg-surface-raised">
           <Newspaper size={22} className="text-gold" />
         </div>
       )}
