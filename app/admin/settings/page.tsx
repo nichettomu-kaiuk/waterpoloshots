@@ -15,6 +15,7 @@ const emptySettings: Omit<Settings, "id"> = {
   logo_url: null,
   home_bg_url: null,
   header_bg_url: null,
+  marcatori_bg_url: null,
   primary_color: "#e10f21",
   secondary_color: "#d4af37",
   active_round: "Girone di andata",
@@ -23,7 +24,7 @@ const emptySettings: Omit<Settings, "id"> = {
   info_email: null,
 };
 
-type ImageField = "logo_url" | "home_bg_url" | "header_bg_url" | "info_image_url";
+type ImageField = "logo_url" | "home_bg_url" | "header_bg_url" | "info_image_url" | "marcatori_bg_url";
 
 // Public Supabase Storage URLs look like:
 // https://<project>.supabase.co/storage/v1/object/public/branding/<path>
@@ -117,6 +118,7 @@ export default function AdminSettingsPage() {
     { field: "home_bg_url", label: "Sfondo Home", hint: "Sfondo dell'header/hero in cima alla home" },
     { field: "header_bg_url", label: "Bg home", hint: "Sfondo del corpo della home page, sotto l'header" },
     { field: "info_image_url", label: "Immagine Info", hint: "Mostrata nella finestra Informazioni (icona \"i\")" },
+    { field: "marcatori_bg_url", label: "Sfondo Marcatori", hint: "Sfondo della pagina Marcatori, al posto del podio" },
   ];
 
   return (
