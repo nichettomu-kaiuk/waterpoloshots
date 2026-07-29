@@ -62,7 +62,6 @@ create table settings (
   logo_url text,
   home_bg_url text,
   header_bg_url text,
-  marcatori_bg_url text,
   primary_color text default '#e10f21',
   secondary_color text default '#d4af37',
   active_round text,
@@ -180,8 +179,3 @@ alter table settings add column if not exists info_image_url text;
 alter table settings add column if not exists info_email text;
 update settings set info_text = '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.'
   where info_text is null;
-
--- Adds: settings.marcatori_bg_url (background image behind the Marcatori
--- page ranking, replacing the old podium graphic, editable in Admin →
--- Impostazioni).
-alter table settings add column if not exists marcatori_bg_url text;
