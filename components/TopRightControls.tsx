@@ -28,7 +28,7 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
       <div className="fixed right-3 top-3 z-40 flex items-center gap-2">
         <button
           onClick={() => setInfoOpen(true)}
-          aria-label="Informazioni"
+          aria-label="Credits"
           className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
         >
           <Info size={22} />
@@ -57,7 +57,7 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">
-                <p className="font-display text-base font-bold">Informazioni</p>
+                <p className="font-display text-base font-bold">Credits</p>
                 <button
                   onClick={() => setInfoOpen(false)}
                   className="text-muted hover:text-white"
@@ -67,13 +67,14 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
                 </button>
               </div>
 
-              {settings?.info_image_url && (
-                <div className="relative mb-4 h-32 w-full overflow-hidden rounded-xl">
-                  <Image src={settings.info_image_url} alt="Informazioni" fill className="object-cover" />
-                </div>
-              )}
-
-              <p className="whitespace-pre-line text-sm leading-relaxed text-muted">{infoText}</p>
+              <div className="flex items-center gap-4">
+                {settings?.info_image_url && (
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl">
+                    <Image src={settings.info_image_url} alt="Credits" fill className="object-cover" />
+                  </div>
+                )}
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted">{infoText}</p>
+              </div>
 
               {settings?.info_email && (
                 <a
