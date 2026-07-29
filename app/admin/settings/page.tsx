@@ -118,7 +118,7 @@ export default function AdminSettingsPage() {
     { field: "home_bg_url", label: "Sfondo Home", hint: "Sfondo dell'header/hero in cima alla home" },
     { field: "header_bg_url", label: "Bg home", hint: "Sfondo del corpo della home page, sotto l'header" },
     { field: "info_image_url", label: "Immagine Info", hint: "Mostrata nella finestra Informazioni (icona \"i\")" },
-    { field: "marcatori_bg_url", label: "Sfondo Marcatori", hint: "Sfondo della pagina Marcatori, al posto del podio" },
+    { field: "marcatori_bg_url", label: "Immagine Podio", hint: "Foto/grafica di un podio a 3 gradini: oro al centro (più alto), argento a sinistra, bronzo a destra" },
   ];
 
   return (

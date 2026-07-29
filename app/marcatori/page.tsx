@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
 import { getTopScorers, getSettings } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
@@ -18,10 +17,45 @@ function withRanks(scorers: Player[]) {
   });
 }
 
+// Approximate overlay spots for a typical 3-step podium graphic (gold
+// centred and tallest, silver left, bronze right, shot straight-on). If the
+// admin's image has a different layout these will need nudging — ask and
+// we can expose the offsets as editable fields instead of hardcoding them.
+const PODIUM_SPOTS = [
+  { rank: 1, left: "50%", top: "24%", size: 64 },
+  { rank: 2, left: "21%", top: "40%", size: 52 },
+  { rank: 3, left: "79%", top: "46%", size: 52 },
+] as const;
+
+function PodiumAvatar({ player, size }: { player: Player; size: number }) {
+  if (player.photo_url) {
+    return (
+      <Image
+        src={player.photo_url}
+        alt={`${player.first_name} ${player.last_name}`}
+        width={size}
+        height={size}
+        style={{ width: size, height: size }}
+        className="rounded-full border-2 border-gold object-cover shadow-lg"
+      />
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className="flex items-center justify-center rounded-full border-2 border-gold bg-ink/80 font-display text-sm text-gold shadow-lg"
+    >
+      {player.first_name[0]}{player.last_name[0]}
+    </div>
+  );
+}
+
 export default async function MarcatoriPage() {
   const [allScorers, settings] = await Promise.all([getTopScorers(15), getSettings()]);
   const scorers = allScorers.filter((p) => p.goals_count > 0);
   const ranked = withRanks(scorers);
+  const hasPodiumImage = Boolean(settings?.marcatori_bg_url);
+  const rest = hasPodiumImage ? ranked.filter((r) => r.rank > 3) : ranked;
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
@@ -32,22 +66,45 @@ export default async function MarcatoriPage() {
           <ShareButton title="Marcatori" path="/marcatori" />
         </div>
 
-        {settings?.marcatori_bg_url && (
-          <div className="relative mb-5 h-40 w-full overflow-hidden rounded-2xl border border-line lg:h-56">
-            <Image src={settings.marcatori_bg_url} alt="Marcatori" fill className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
-            <div className="absolute bottom-3 left-4 flex items-center gap-1.5 text-gold">
-              <Trophy size={16} />
-              <span className="font-display text-sm font-semibold uppercase tracking-widest">Classifica marcatori</span>
-            </div>
+        {hasPodiumImage && (
+          <div className="relative mb-6 w-full overflow-hidden rounded-2xl border border-line">
+            <Image
+              src={settings!.marcatori_bg_url!}
+              alt="Podio marcatori"
+              width={900}
+              height={900}
+              className="h-auto w-full object-contain"
+              priority
+            />
+            {PODIUM_SPOTS.map(({ rank, left, top, size }) => {
+              const entry = ranked.find((r) => r.rank === rank);
+              if (!entry) return null;
+              const { player } = entry;
+              return (
+                <Link
+                  key={rank}
+                  href={`/giocatore/${player.id}`}
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+                  style={{ left, top }}
+                >
+                  <PodiumAvatar player={player} size={size} />
+                  <span className="max-w-[90px] truncate text-center text-xs font-semibold text-white drop-shadow">
+                    {player.last_name}
+                  </span>
+                  <span className="font-display text-sm font-bold text-gold drop-shadow">
+                    {player.goals_count}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         )}
 
         {scorers.length === 0 ? (
           <p className="text-sm text-muted">Nessun gol registrato ancora.</p>
-        ) : (
+        ) : rest.length === 0 && hasPodiumImage ? null : (
           <ol className="space-y-2">
-            {ranked.map(({ player: p, rank }) => (
+            {rest.map(({ player: p, rank }) => (
               <li key={p.id}>
                 <Link
                   href={`/giocatore/${p.id}`}
