@@ -49,7 +49,7 @@ export default function NewsCard({
   }
 
   return (
-    <article className="flex animate-rise items-center overflow-hidden rounded-2xl border border-line bg-surface">
+    <article className="news-card flex animate-rise items-center overflow-hidden rounded-2xl border border-line bg-surface">
       {post.image_url ? (
         <div className="relative m-3 h-[90px] w-[90px] shrink-0 overflow-hidden rounded-xl">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" />

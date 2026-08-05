@@ -51,3 +51,100 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme: "Corsia" (lane)
+   A second visual identity for the whole site, toggled in
+   Admin → Impostazioni → Aspetto grafico. Same color tokens as the default
+   "Classico" theme — this layer only changes shape, typography treatment
+   and a few structural accents. Every rule here is scoped under
+   `.theme-lane` (applied to <html> in app/layout.tsx) and targets stable
+   class hooks added alongside the existing Tailwind utility classes, so
+   switching themes never requires different component markup.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Signature element: a lane-rope divider (pool lane markers) used between
+   sections. Invisible under the classic theme, revealed here. */
+.lane-rope {
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+}
+.theme-lane .lane-rope {
+  height: 6px;
+  margin: 18px 0;
+  border-radius: 3px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-primary) 0px,
+    var(--color-primary) 14px,
+    transparent 14px,
+    transparent 18px,
+    var(--color-gold) 18px,
+    var(--color-gold) 32px,
+    transparent 32px,
+    transparent 36px
+  );
+}
+
+/* Hero: diagonal cut + diagonal accent wash, evoking broadcast graphics. */
+.theme-lane .app-hero {
+  clip-path: polygon(0 0, 100% 0, 100% 94%, 0 100%);
+}
+.theme-lane .app-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(225, 15, 33, 0.22) 52%, transparent 66%);
+  pointer-events: none;
+}
+.theme-lane .app-hero h1 {
+  letter-spacing: 0.01em;
+}
+
+/* Match / news cards: a clipped "ticket stub" corner plus a colored left
+   edge — gold for a normal fixture, red while a match is live. */
+.theme-lane .match-card,
+.theme-lane .news-card,
+.theme-lane .grouped-card {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+  border-left: 3px solid var(--color-gold) !important;
+}
+.theme-lane .match-card.is-live {
+  border-left-color: var(--color-primary) !important;
+}
+
+/* Scores read like a digital scoreboard readout. */
+.theme-lane .match-score {
+  font-family: var(--font-mono);
+  color: var(--color-gold);
+  border-bottom: 2px solid var(--color-gold-dim);
+  padding-bottom: 2px;
+}
+.theme-lane .match-score.text-primary {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* Bottom nav: detached floating pill instead of an edge-to-edge bar. */
+.theme-lane .bottom-nav {
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  overflow: hidden;
+}
+.theme-lane .bottom-nav-item.is-active {
+  background: var(--color-gold);
+  border-radius: 999px;
+  margin: 2px;
+}
+.theme-lane .bottom-nav-item.is-active .bottom-nav-icon {
+  color: var(--color-ink);
+}
+.theme-lane .bottom-nav-item.is-active span {
+  color: var(--color-ink);
+}

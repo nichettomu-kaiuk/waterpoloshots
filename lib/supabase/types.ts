@@ -55,6 +55,8 @@ export interface MatchGoal {
   goal_time: string | null;
 }
 
+export type AppTheme = "classic" | "lane";
+
 export interface Settings {
   id: string;
   tournament_title: string;
@@ -68,6 +70,7 @@ export interface Settings {
   info_text: string | null;
   info_image_url: string | null;
   info_email: string | null;
+  theme: AppTheme;
 }
 
 export interface NewsPost {

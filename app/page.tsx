@@ -4,6 +4,7 @@ import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getN
 import MatchCard from "@/components/MatchCard";
 import Hero from "@/components/Hero";
 import NewsCard from "@/components/NewsCard";
+import LaneRope from "@/components/LaneRope";
 
 // Set to true to bring back the quick-nav bento-grid (Calendario, Classifica,
 // Marcatori, Squadre, Giocatori, News) below the hero. Kept in the code and
@@ -103,6 +104,8 @@ export default async function HomePage() {
             </section>
           )}
 
+          <div className="px-5"><LaneRope /></div>
+
           {live.length > 0 && (
             <section className="px-5 pb-2">
               <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">
@@ -124,13 +127,15 @@ export default async function HomePage() {
                 </h2>
                 <Link href="/calendario" className="text-xs text-primary">Vedi tutti</Link>
               </div>
-              <div className="animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+              <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {upcoming.map((m) => (
                   <MatchCard key={m.id} match={m} bare />
                 ))}
               </div>
             </section>
           )}
+
+          <div className="px-5"><LaneRope /></div>
 
           <section className="px-5 py-4">
             <div className="mb-3 flex items-center justify-between">
@@ -142,7 +147,7 @@ export default async function HomePage() {
             {recent.length === 0 ? (
               <p className="text-sm text-muted">Nessun risultato disponibile.</p>
             ) : (
-              <div className="animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+              <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {recent.map((m) => (
                   <MatchCard key={m.id} match={m} bare />
                 ))}

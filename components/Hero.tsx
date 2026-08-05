@@ -19,7 +19,7 @@ export default async function Hero({
   const live = liveProp !== undefined ? liveProp : await getLiveMatches();
 
   return (
-    <section className="relative overflow-hidden water-texture px-5 pb-12 pt-10">
+    <section className="app-hero relative overflow-hidden water-texture px-5 pb-12 pt-10">
       {settings?.home_bg_url && (
         <>
           {/* Background image with soft faded edges — a radial mask fades

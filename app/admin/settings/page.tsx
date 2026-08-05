@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Upload, Save, LogOut, Pencil, Trash2 } from "lucide-react";
+import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Settings } from "@/lib/supabase/types";
+import type { AppTheme, Settings } from "@/lib/supabase/types";
 
 const BUCKET = "branding";
 
@@ -21,6 +21,7 @@ const emptySettings: Omit<Settings, "id"> = {
   info_text: "(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.",
   info_image_url: null,
   info_email: null,
+  theme: "classic",
 };
 
 type ImageField = "logo_url" | "home_bg_url" | "header_bg_url" | "info_image_url";
@@ -145,6 +146,37 @@ export default function AdminSettingsPage() {
               onChange={(e) => setForm({ ...form, active_round: e.target.value })}
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-line bg-surface p-4">
+            <p className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted">
+              <Palette size={13} /> Aspetto grafico
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, theme: "classic" })}
+                className={`rounded-xl border px-3 py-3 text-left transition ${
+                  form.theme === "classic" ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
+                }`}
+              >
+                <p className="text-sm font-semibold">Classico</p>
+                <p className="mt-0.5 text-[11px] text-muted">Card arrotondate, stile attuale</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, theme: "lane" })}
+                className={`rounded-xl border px-3 py-3 text-left transition ${
+                  form.theme === "lane" ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
+                }`}
+              >
+                <p className="text-sm font-semibold">Corsia</p>
+                <p className="mt-0.5 text-[11px] text-muted">Card a biglietto, hero diagonale, corsie</p>
+              </button>
+            </div>
+            <p className="text-[11px] text-muted">
+              Cambia l&apos;aspetto grafico dell&apos;intero sito. Ricorda di premere &quot;Salva impostazioni&quot; qui sotto per rendere effettiva la scelta.
+            </p>
           </div>
 
           <div className="space-y-3 rounded-2xl border border-line bg-surface p-4">

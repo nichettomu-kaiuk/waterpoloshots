@@ -29,18 +29,18 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
         <button
           onClick={() => setInfoOpen(true)}
           aria-label="Credits"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/50 bg-ink/70 text-gold backdrop-blur transition hover:border-gold hover:bg-gold/10"
         >
-          <Info size={22} />
+          <Info size={15} strokeWidth={2.5} />
         </button>
 
         {!isAdminSection && (
           <Link
             href="/admin"
             aria-label="Pannello Admin"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
           >
-            <Lock size={18} />
+            <Lock size={15} />
           </Link>
         )}
       </div>

@@ -59,7 +59,10 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
         onClick={() => setOpen(true)}
         className={clsx(
           "w-full text-left transition active:scale-[0.99]",
-          bare ? "p-4" : "animate-rise rounded-2xl border border-line bg-surface p-4"
+          bare
+            ? "match-card-bare p-4"
+            : "match-card animate-rise rounded-2xl border border-line bg-surface p-4",
+          match.status === "live" && "is-live"
         )}
       >
         <div className="mb-3 flex items-center justify-between">
@@ -95,7 +98,7 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
             ) : (
               <span
                 className={clsx(
-                  "font-display tabular text-xl font-bold",
+                  "match-score font-display tabular text-xl font-bold",
                   match.status === "live" ? "text-primary" : "text-white"
                 )}
               >

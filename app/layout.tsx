@@ -42,8 +42,13 @@ export default async function RootLayout({
     ["--color-gold" as any]: settings?.secondary_color ?? "#d4af37",
   };
 
+  const themeClass = settings?.theme === "lane" ? "theme-lane" : "";
+
   return (
-    <html lang="it" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html
+      lang="it"
+      className={`${display.variable} ${body.variable} ${mono.variable} ${themeClass}`}
+    >
       <body className="font-body min-h-screen antialiased" style={brandVars}>
         <div className="flex min-h-screen flex-col pb-24">{children}</div>
         <TopRightControls settings={settings} />
