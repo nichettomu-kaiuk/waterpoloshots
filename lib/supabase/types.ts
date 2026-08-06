@@ -55,7 +55,7 @@ export interface MatchGoal {
   goal_time: string | null;
 }
 
-export type AppTheme = "classic" | "lane";
+export type AppTheme = "classic" | "lane" | "regulation";
 
 export interface Settings {
   id: string;

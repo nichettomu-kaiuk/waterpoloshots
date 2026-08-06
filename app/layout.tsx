@@ -42,7 +42,7 @@ export default async function RootLayout({
     ["--color-gold" as any]: settings?.secondary_color ?? "#d4af37",
   };
 
-  const themeClass = settings?.theme === "lane" ? "theme-lane" : "";
+  const themeClass = settings?.theme === "lane" ? "theme-lane" : settings?.theme === "regulation" ? "theme-regulation" : "";
 
   return (
     <html

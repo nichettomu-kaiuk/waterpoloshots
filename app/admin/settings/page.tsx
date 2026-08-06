@@ -152,7 +152,7 @@ export default function AdminSettingsPage() {
             <p className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted">
               <Palette size={13} /> Aspetto grafico
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setForm({ ...form, theme: "classic" })}
@@ -172,6 +172,16 @@ export default function AdminSettingsPage() {
               >
                 <p className="text-sm font-semibold">Corsia</p>
                 <p className="mt-0.5 text-[11px] text-muted">Card a biglietto, hero diagonale, corsie</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, theme: "regulation" })}
+                className={`rounded-xl border px-3 py-3 text-left transition ${
+                  form.theme === "regulation" ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
+                }`}
+              >
+                <p className="text-sm font-semibold">Regolamento</p>
+                <p className="mt-0.5 text-[11px] text-muted">Card piatte, badge a cuffia, stile federale</p>
               </button>
             </div>
             <p className="text-[11px] text-muted">

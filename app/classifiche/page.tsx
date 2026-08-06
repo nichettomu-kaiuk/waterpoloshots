@@ -38,7 +38,7 @@ export default async function ClassificaPage() {
             <tbody>
               {standings.map((row, i) => (
                 <tr key={row.team.id} className="border-t border-line bg-surface">
-                  <td className="sticky left-0 bg-surface px-3 py-2.5 text-muted">{i + 1}</td>
+                  <td className="rank-box sticky left-0 bg-surface px-3 py-2.5 text-muted"><span>{i + 1}</span></td>
                   <td className="sticky left-8 bg-surface px-3 py-2.5">
                     <Link href={`/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
                       {row.team.logo_url ? (

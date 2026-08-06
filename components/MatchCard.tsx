@@ -21,19 +21,21 @@ function formatDate(iso: string | null) {
 function TeamLogo({ url, name }: { url: string | null | undefined; name: string | undefined }) {
   if (url) {
     return (
-      <Image
-        src={url}
-        alt={name ?? "Squadra"}
-        width={36}
-        height={36}
-        className="h-9 w-9 rounded-full border border-line object-cover"
-      />
+      <span className="cap-badge relative inline-block h-9 w-9 shrink-0">
+        <Image
+          src={url}
+          alt={name ?? "Squadra"}
+          width={36}
+          height={36}
+          className="h-9 w-9 rounded-full border border-line object-cover"
+        />
+      </span>
     );
   }
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised text-xs font-display text-muted">
+    <span className="cap-badge relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-xs font-display text-muted">
       {(name ?? "??").slice(0, 2).toUpperCase()}
-    </div>
+    </span>
   );
 }
 

@@ -45,7 +45,7 @@ export default async function Hero({
         </>
       )}
       <div className="relative">
-        <p className="text-xs uppercase tracking-[0.2em] text-gold">
+        <p className="hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold">
           {settings?.active_round ?? "Girone di andata"}
         </p>
 

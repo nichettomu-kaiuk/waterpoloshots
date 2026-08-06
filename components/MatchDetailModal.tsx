@@ -13,19 +13,21 @@ type ScorerLine = { name: string; count: number };
 function TeamLogo({ url, name }: { url: string | null | undefined; name: string | undefined }) {
   if (url) {
     return (
-      <Image
-        src={url}
-        alt={name ?? "Squadra"}
-        width={56}
-        height={56}
-        className="mx-auto mb-2 h-14 w-14 rounded-full border border-line object-cover"
-      />
+      <span className="cap-badge relative mx-auto mb-2 inline-block h-14 w-14">
+        <Image
+          src={url}
+          alt={name ?? "Squadra"}
+          width={56}
+          height={56}
+          className="h-14 w-14 rounded-full border border-line object-cover"
+        />
+      </span>
     );
   }
   return (
-    <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-sm text-muted">
+    <span className="cap-badge relative mx-auto mb-2 inline-flex h-14 w-14 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-sm text-muted">
       {(name ?? "??").slice(0, 2).toUpperCase()}
-    </div>
+    </span>
   );
 }
 

@@ -148,3 +148,117 @@ body {
 .theme-lane .bottom-nav-item.is-active span {
   color: var(--color-ink);
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme: "Regolamento" (regulation)
+   A third visual identity: institutional / federation-style rather than
+   broadcast-graphic. Flat rectangular cards (no cuts), a goal-net mesh
+   texture, and "cap badge" avatars with a small ear-guard tab referencing
+   an actual water-polo cap. Same color tokens and class hooks as the other
+   themes — see the "Corsia" block above for how the hook system works.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.theme-regulation .app-hero {
+  background-image:
+    linear-gradient(30deg, rgba(212, 175, 55, 0.06) 1px, transparent 1px),
+    linear-gradient(-30deg, rgba(212, 175, 55, 0.06) 1px, transparent 1px);
+  background-size: 26px 26px;
+  border-top: 3px solid var(--color-gold);
+}
+.theme-regulation .app-hero h1 {
+  font-weight: 600;
+}
+.theme-regulation .hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.theme-regulation .hero-eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-line);
+}
+
+/* Flat "regulation" cards: square corners, thin top rule instead of a
+   full border or clipped corner. */
+.theme-regulation .match-card,
+.theme-regulation .news-card,
+.theme-regulation .grouped-card {
+  border-radius: 0 !important;
+  border-top: 3px solid var(--color-gold-dim) !important;
+}
+.theme-regulation .match-card.is-live {
+  border-top-color: var(--color-primary) !important;
+}
+.theme-regulation .match-card-bare {
+  position: relative;
+}
+
+/* Scoreboard-style score flanked by short rule marks. */
+.theme-regulation .match-score {
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gold);
+}
+.theme-regulation .match-score.text-primary {
+  color: var(--color-primary);
+}
+.theme-regulation .match-score::before,
+.theme-regulation .match-score::after {
+  content: "";
+  width: 10px;
+  height: 1px;
+  background: var(--color-line);
+  display: inline-block;
+}
+
+/* Cap badge: a small circular tab on team/player avatars, echoing a
+   water-polo cap's ear guard. */
+.theme-regulation .cap-badge::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+  border: 1.5px solid var(--color-line);
+}
+.theme-regulation .match-card.is-live .cap-badge::after {
+  border-color: var(--color-primary);
+}
+
+/* Bottom nav: stays a flat bar; active state is an underline rather than
+   a filled pill. */
+.theme-regulation .bottom-nav-item {
+  position: relative;
+}
+.theme-regulation .bottom-nav-item.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: var(--color-gold);
+}
+
+/* Standings rank shown as a small bordered box instead of plain text. */
+.theme-regulation .rank-box {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.theme-regulation .rank-box span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-line);
+}
