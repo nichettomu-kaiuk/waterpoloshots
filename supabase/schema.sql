@@ -17,6 +17,7 @@ create table teams (
   name text not null,
   logo_url text,
   venue_id uuid references venues(id) on delete set null,
+  coach_name text,
   logo_large_scale int not null default 100,
   logo_large_x int not null default 50,
   logo_large_y int not null default 50,
@@ -178,6 +179,9 @@ create index if not exists teams_venue_id_idx on teams(venue_id);
 alter table teams add column if not exists logo_large_scale int not null default 100;
 alter table teams add column if not exists logo_large_x int not null default 50;
 alter table teams add column if not exists logo_large_y int not null default 50;
+
+-- Adds: teams.coach_name (allenatore), editable in Admin → Squadre.
+alter table teams add column if not exists coach_name text;
 
 -- Adds: matches.stream_url (optional live-stream link, editable in Admin → Partite).
 alter table matches add column if not exists stream_url text;

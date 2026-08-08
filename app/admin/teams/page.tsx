@@ -11,6 +11,7 @@ export default function AdminTeamsPage() {
   const [teams, setTeams] = useState<(Team & { venue?: Venue })[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [name, setName] = useState("");
+  const [coachName, setCoachName] = useState("");
   const [venueId, setVenueId] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoScale, setLogoScale] = useState(100);
@@ -36,6 +37,7 @@ export default function AdminTeamsPage() {
   function startEdit(team: Team) {
     setEditingId(team.id);
     setName(team.name);
+    setCoachName(team.coach_name ?? "");
     setVenueId(team.venue_id ?? "");
     setLogoFile(null);
     setLogoScale(team.logo_large_scale ?? 100);
@@ -48,6 +50,7 @@ export default function AdminTeamsPage() {
   function cancelEdit() {
     setEditingId(null);
     setName("");
+    setCoachName("");
     setVenueId("");
     setLogoFile(null);
     setLogoScale(100);
@@ -75,6 +78,7 @@ export default function AdminTeamsPage() {
         .from("teams")
         .update({
           name: name.trim(),
+          coach_name: coachName.trim() || null,
           venue_id: venueId || null,
           logo_large_scale: logoScale,
           logo_large_x: logoX,
@@ -85,6 +89,7 @@ export default function AdminTeamsPage() {
     } else {
       await supabase.from("teams").insert({
         name: name.trim(),
+        coach_name: coachName.trim() || null,
         venue_id: venueId || null,
         logo_url: logo_url ?? null,
       });
@@ -119,6 +124,12 @@ export default function AdminTeamsPage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nome squadra"
+          className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+        />
+        <input
+          value={coachName}
+          onChange={(e) => setCoachName(e.target.value)}
+          placeholder="Allenatore (opzionale)"
           className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
         />
         <select
@@ -209,6 +220,7 @@ export default function AdminTeamsPage() {
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{t.name}</p>
+              {t.coach_name && <p className="truncate text-[11px] text-muted">All. {t.coach_name}</p>}
               {t.venue && <p className="truncate text-[11px] text-muted">{t.venue.name}</p>}
             </div>
             <button onClick={() => startEdit(t)} className="text-muted hover:text-gold">

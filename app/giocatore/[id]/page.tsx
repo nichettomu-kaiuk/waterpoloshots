@@ -85,16 +85,12 @@ export default async function GiocatorePage({ params }: { params: { id: string }
 
             <div className="flex flex-col justify-center gap-4 border-t border-line bg-ink px-6 py-6 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0">
               <div className="border-b border-line pb-3">
-                <p className="text-xs uppercase tracking-widest text-muted">Nome</p>
-                <p className="font-display text-xl font-semibold">{player.first_name}</p>
-              </div>
-              <div className="border-b border-line pb-3">
-                <p className="text-xs uppercase tracking-widest text-muted">Cognome</p>
-                <p className="font-display text-2xl font-bold uppercase">{player.last_name}</p>
+                <p className="text-xs uppercase tracking-widest text-muted">Numero</p>
+                <p className="font-display text-4xl font-bold text-gold">{player.cap_number}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-widest text-muted">Numero</p>
-                <p className="font-display text-2xl font-bold text-gold">{player.cap_number}</p>
+                <p className="font-display text-xl font-semibold">{player.first_name}</p>
+                <p className="font-display text-2xl font-bold uppercase">{player.last_name}</p>
                 <p className="mt-1 text-xs text-muted">{player.goals_count} gol segnati</p>
               </div>
             </div>

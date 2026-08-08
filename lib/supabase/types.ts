@@ -7,6 +7,7 @@ export interface Team {
   name: string;
   logo_url: string | null;
   venue_id: string | null;
+  coach_name: string | null;
   logo_large_scale: number;
   logo_large_x: number;
   logo_large_y: number;

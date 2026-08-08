@@ -35,7 +35,12 @@ export default async function SquadraPage({ params }: { params: { id: string } }
                 {team.name.slice(0, 2).toUpperCase()}
               </div>
             )}
-            <h1 className="font-display text-2xl font-bold">{team.name}</h1>
+            <div>
+              <h1 className="font-display text-2xl font-bold">{team.name}</h1>
+              {team.coach_name && (
+                <p className="mt-0.5 text-sm text-muted">Allenatore: {team.coach_name}</p>
+              )}
+            </div>
           </div>
           <ShareButton title={team.name} path={`/squadra/${team.id}`} iconOnly />
         </div>
