@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Player, PlayerRole, Team } from "@/lib/supabase/types";
 
@@ -21,6 +21,7 @@ export default function AdminPlayersPage() {
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
     const [{ data: teamsData }, { data: playersData }] = await Promise.all([
@@ -35,12 +36,31 @@ export default function AdminPlayersPage() {
     load();
   }, []);
 
-  async function handleAdd(e: React.FormEvent) {
+  function startEdit(player: Player) {
+    setEditingId(player.id);
+    setForm({
+      team_id: player.team_id,
+      first_name: player.first_name,
+      last_name: player.last_name,
+      cap_number: String(player.cap_number),
+      position: (player.position ?? "attaccante") as PlayerRole,
+    });
+    setPhotoFile(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ team_id: "", first_name: "", last_name: "", cap_number: "", position: "attaccante" });
+    setPhotoFile(null);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.team_id || !form.first_name || !form.last_name || !form.cap_number) return;
     setSaving(true);
 
-    let photo_url: string | null = null;
+    let photo_url: string | null | undefined = undefined;
     if (photoFile) {
       const path = `players/${Date.now()}-${photoFile.name}`;
       const { error: uploadError } = await supabase.storage.from("branding").upload(path, photoFile);
@@ -49,18 +69,31 @@ export default function AdminPlayersPage() {
       }
     }
 
-    await supabase.from("players").insert({
-      team_id: form.team_id,
-      first_name: form.first_name.trim(),
-      last_name: form.last_name.trim(),
-      cap_number: Number(form.cap_number),
-      position: form.position,
-      photo_url,
-      goals_count: 0,
-    });
+    if (editingId) {
+      await supabase
+        .from("players")
+        .update({
+          team_id: form.team_id,
+          first_name: form.first_name.trim(),
+          last_name: form.last_name.trim(),
+          cap_number: Number(form.cap_number),
+          position: form.position,
+          ...(photo_url !== undefined ? { photo_url } : {}),
+        })
+        .eq("id", editingId);
+    } else {
+      await supabase.from("players").insert({
+        team_id: form.team_id,
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        cap_number: Number(form.cap_number),
+        position: form.position,
+        photo_url: photo_url ?? null,
+        goals_count: 0,
+      });
+    }
 
-    setForm({ team_id: form.team_id, first_name: "", last_name: "", cap_number: "", position: "attaccante" });
-    setPhotoFile(null);
+    cancelEdit();
     setSaving(false);
     load();
   }
@@ -68,6 +101,7 @@ export default function AdminPlayersPage() {
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questo giocatore?")) return;
     await supabase.from("players").delete().eq("id", id);
+    if (editingId === id) cancelEdit();
     load();
   }
 
@@ -75,7 +109,15 @@ export default function AdminPlayersPage() {
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Giocatori</h2>
 
-      <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <form onSubmit={handleSubmit} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
+        {editingId && (
+          <div className="mb-1 flex items-center justify-between text-xs text-gold">
+            <span>Modifica giocatore</span>
+            <button type="button" onClick={cancelEdit} className="flex items-center gap-1 text-muted hover:text-white">
+              <X size={13} /> Annulla
+            </button>
+          </div>
+        )}
         <select
           value={form.team_id}
           onChange={(e) => setForm({ ...form, team_id: e.target.value })}
@@ -120,7 +162,7 @@ export default function AdminPlayersPage() {
         </div>
         <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-line px-3 py-2 text-xs text-muted">
           <Upload size={14} />
-          {photoFile ? photoFile.name : "Carica foto (opzionale)"}
+          {photoFile ? photoFile.name : editingId ? "Sostituisci foto (opzionale)" : "Carica foto (opzionale)"}
           <input type="file" accept="image/*" className="hidden" onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)} />
         </label>
         <button
@@ -128,7 +170,7 @@ export default function AdminPlayersPage() {
           disabled={saving}
           className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
-          <Plus size={15} /> {saving ? "Salvataggio..." : "Aggiungi giocatore"}
+          <Plus size={15} /> {saving ? "Salvataggio..." : editingId ? "Salva modifiche" : "Aggiungi giocatore"}
         </button>
       </form>
 
@@ -142,10 +184,13 @@ export default function AdminPlayersPage() {
                 {p.cap_number}
               </div>
             )}
-            <div className="flex-1">
-              <p className="text-sm font-medium">{p.first_name} {p.last_name}</p>
-              <p className="text-[11px] text-muted">{p.team?.name} · {p.goals_count} gol</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{p.first_name} {p.last_name}</p>
+              <p className="truncate text-[11px] text-muted">{p.team?.name} · {p.goals_count} gol</p>
             </div>
+            <button onClick={() => startEdit(p)} className="text-muted hover:text-gold">
+              <Pencil size={16} />
+            </button>
             <button onClick={() => handleDelete(p.id)} className="text-muted hover:text-primary">
               <Trash2 size={16} />
             </button>
