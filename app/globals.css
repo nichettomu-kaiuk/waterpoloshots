@@ -262,3 +262,41 @@ body {
   height: 22px;
   border: 1px solid var(--color-line);
 }
+
+/* ── Player card (Giocatore page) ─────────────────────────────────────── */
+
+/* Corsia: same ticket-stub treatment as match/news cards, gold left edge. */
+.theme-lane .player-card {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+  border-left: 3px solid var(--color-gold) !important;
+}
+.theme-lane .player-badge-box {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+.theme-lane .player-cap-number {
+  font-family: var(--font-mono);
+  border-bottom: 2px solid var(--color-gold-dim);
+  padding-bottom: 2px;
+  display: inline-block;
+}
+
+/* Regolamento: flat corners, thin gold top rule, mono number flanked by
+   short rule lines, matching the fixture-card scoreboard treatment. */
+.theme-regulation .player-card {
+  border-radius: 0;
+  border-top: 3px solid var(--color-gold-dim);
+}
+.theme-regulation .player-cap-number {
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.theme-regulation .player-cap-number::before,
+.theme-regulation .player-cap-number::after {
+  content: "";
+  width: 14px;
+  height: 1px;
+  background: var(--color-line);
+}
