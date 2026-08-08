@@ -17,6 +17,9 @@ create table teams (
   name text not null,
   logo_url text,
   venue_id uuid references venues(id) on delete set null,
+  logo_large_scale int not null default 100,
+  logo_large_x int not null default 50,
+  logo_large_y int not null default 50,
   created_at timestamptz not null default now()
 );
 
@@ -169,6 +172,12 @@ create index if not exists matches_round_giornata_idx on matches(round_type, gio
 -- Adds: teams.venue_id (the team's home pool, editable in Admin → Squadre).
 alter table teams add column if not exists venue_id uuid references venues(id) on delete set null;
 create index if not exists teams_venue_id_idx on teams(venue_id);
+
+-- Adds: teams.logo_large_scale/x/y — lets the admin resize and reposition
+-- the large background team logo on the player card page.
+alter table teams add column if not exists logo_large_scale int not null default 100;
+alter table teams add column if not exists logo_large_x int not null default 50;
+alter table teams add column if not exists logo_large_y int not null default 50;
 
 -- Adds: matches.stream_url (optional live-stream link, editable in Admin → Partite).
 alter table matches add column if not exists stream_url text;

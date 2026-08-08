@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
+import { Plus, Trash2, Pencil, Upload, X, Move } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Team, Venue } from "@/lib/supabase/types";
 
@@ -13,8 +13,12 @@ export default function AdminTeamsPage() {
   const [name, setName] = useState("");
   const [venueId, setVenueId] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoScale, setLogoScale] = useState(100);
+  const [logoX, setLogoX] = useState(50);
+  const [logoY, setLogoY] = useState(50);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingLogoUrl, setEditingLogoUrl] = useState<string | null>(null);
 
   async function load() {
     const [{ data: t }, { data: v }] = await Promise.all([
@@ -34,6 +38,10 @@ export default function AdminTeamsPage() {
     setName(team.name);
     setVenueId(team.venue_id ?? "");
     setLogoFile(null);
+    setLogoScale(team.logo_large_scale ?? 100);
+    setLogoX(team.logo_large_x ?? 50);
+    setLogoY(team.logo_large_y ?? 50);
+    setEditingLogoUrl(team.logo_url);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -42,6 +50,10 @@ export default function AdminTeamsPage() {
     setName("");
     setVenueId("");
     setLogoFile(null);
+    setLogoScale(100);
+    setLogoX(50);
+    setLogoY(50);
+    setEditingLogoUrl(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -64,6 +76,9 @@ export default function AdminTeamsPage() {
         .update({
           name: name.trim(),
           venue_id: venueId || null,
+          logo_large_scale: logoScale,
+          logo_large_x: logoX,
+          logo_large_y: logoY,
           ...(logo_url !== undefined ? { logo_url } : {}),
         })
         .eq("id", editingId);
@@ -126,6 +141,53 @@ export default function AdminTeamsPage() {
             onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
           />
         </label>
+
+        {editingId && editingLogoUrl && (
+          <div className="rounded-xl border border-line bg-surface-raised p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted">
+              <Move size={12} /> Logo grande — scheda giocatore
+            </p>
+
+            <div className="relative mb-3 h-28 w-full overflow-hidden rounded-lg bg-ink">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${editingLogoUrl})`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: `${logoScale}%`,
+                  backgroundPosition: `${logoX}% ${logoY}%`,
+                  opacity: 0.18,
+                }}
+              />
+            </div>
+
+            <label className="mb-1 flex justify-between text-[11px] text-muted">
+              <span>Dimensione</span><span>{logoScale}%</span>
+            </label>
+            <input
+              type="range" min={40} max={300} value={logoScale}
+              onChange={(e) => setLogoScale(Number(e.target.value))}
+              className="mb-2 w-full"
+            />
+            <label className="mb-1 flex justify-between text-[11px] text-muted">
+              <span>Posizione orizzontale</span><span>{logoX}%</span>
+            </label>
+            <input
+              type="range" min={0} max={100} value={logoX}
+              onChange={(e) => setLogoX(Number(e.target.value))}
+              className="mb-2 w-full"
+            />
+            <label className="mb-1 flex justify-between text-[11px] text-muted">
+              <span>Posizione verticale</span><span>{logoY}%</span>
+            </label>
+            <input
+              type="range" min={0} max={100} value={logoY}
+              onChange={(e) => setLogoY(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={saving}
