@@ -53,9 +53,10 @@ export default async function GiocatorePage({ params }: { params: { id: string }
             </div>
           </div>
 
-          {/* Body: large team-logo watermark + player photo, info panel */}
-          <div className="flex flex-col lg:flex-row">
-            <div className="relative flex min-h-[280px] flex-1 items-end justify-center overflow-hidden bg-ink lg:min-h-[380px]">
+          {/* Body: large team-logo watermark + player photo, info panel —
+              always side-by-side, even on mobile. */}
+          <div className="flex flex-row">
+            <div className="relative flex min-h-[220px] flex-1 items-end justify-center overflow-hidden bg-ink sm:min-h-[300px] lg:min-h-[380px]">
               {team?.logo_url && (
                 <div
                   className="absolute inset-0"
@@ -77,26 +78,28 @@ export default async function GiocatorePage({ params }: { params: { id: string }
                   priority
                 />
               ) : (
-                <div className="relative z-10 mb-8 flex h-36 w-36 items-center justify-center rounded-full border-2 border-gold bg-surface-raised font-display text-4xl text-gold">
+                <div className="relative z-10 mb-6 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-gold bg-surface-raised font-display text-2xl text-gold sm:h-28 sm:w-28 sm:text-3xl lg:mb-8 lg:h-36 lg:w-36 lg:text-4xl">
                   {initials}
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col justify-start gap-4 border-t border-line bg-ink px-6 py-6 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0">
-              <div className="border-b border-line pb-3">
-                <p className="text-xs uppercase tracking-widest text-muted">Numero</p>
-                <p className="player-cap-number font-display text-6xl font-bold text-gold">{player.cap_number}</p>
+            <div className="flex w-28 shrink-0 flex-col justify-start gap-2 border-l border-line bg-ink px-3 py-4 sm:w-40 sm:gap-3 sm:px-4 sm:py-5 lg:w-72 lg:gap-4 lg:px-6 lg:py-6">
+              <div className="border-b border-line pb-2 sm:pb-3">
+                <p className="text-[10px] uppercase tracking-widest text-muted sm:text-xs">Numero</p>
+                <p className="player-cap-number font-display text-3xl font-bold text-gold sm:text-5xl lg:text-6xl">
+                  {player.cap_number}
+                </p>
                 {player.position && (
-                  <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted">
+                  <p className="mt-1 text-[10px] font-medium uppercase tracking-widest text-muted sm:text-xs">
                     {player.position}
                   </p>
                 )}
               </div>
               <div>
-                <p className="font-display text-xl font-semibold">{player.first_name}</p>
-                <p className="font-display text-2xl font-bold uppercase">{player.last_name}</p>
-                <p className="mt-1 text-xs text-muted">{player.goals_count} gol segnati</p>
+                <p className="font-display text-sm font-semibold sm:text-lg lg:text-xl">{player.first_name}</p>
+                <p className="font-display text-lg font-bold uppercase sm:text-xl lg:text-2xl">{player.last_name}</p>
+                <p className="mt-1 text-[10px] text-muted sm:text-xs">{player.goals_count} gol segnati</p>
               </div>
             </div>
           </div>
