@@ -133,13 +133,12 @@ body {
   border-bottom-color: var(--color-primary);
 }
 
-/* Bottom nav: detached floating pill instead of an edge-to-edge bar. */
+/* Bottom nav: floats up slightly with rounded ends and a border, but keeps
+   the exact same width/breakpoints as the other themes (max-w-md /
+   lg:max-w-5xl / xl:max-w-6xl, already set by the component's own classes)
+   rather than shrinking to a fixed pill width. */
 .theme-lane .bottom-nav {
-  left: 12px;
-  right: 12px;
   bottom: 12px;
-  max-width: 420px;
-  margin: 0 auto;
   border-radius: 999px;
   border: 1px solid var(--color-line);
   overflow: hidden;

@@ -19,7 +19,7 @@ export default async function ClassificaPage() {
       {standings.length === 0 ? (
         <p className="text-sm text-muted">Nessun risultato confermato ancora.</p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-line">
+        <div className="site-card overflow-x-auto rounded-2xl border border-line">
           <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-surface-raised text-[11px] uppercase text-muted">
               <tr>
@@ -42,15 +42,17 @@ export default async function ClassificaPage() {
                   <td className="sticky left-8 bg-surface px-3 py-2.5">
                     <Link href={`/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
                       {row.team.logo_url ? (
-                        <Image
-                          src={row.team.logo_url}
-                          alt={row.team.name}
-                          width={22}
-                          height={22}
-                          className="h-[22px] w-[22px] shrink-0 rounded-full border border-line object-cover"
-                        />
+                        <span className="cap-badge relative inline-block h-[22px] w-[22px] shrink-0">
+                          <Image
+                            src={row.team.logo_url}
+                            alt={row.team.name}
+                            width={22}
+                            height={22}
+                            className="h-[22px] w-[22px] rounded-full border border-line object-cover"
+                          />
+                        </span>
                       ) : (
-                        <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-[9px] font-display text-muted">
+                        <span className="cap-badge relative flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-[9px] font-display text-muted">
                           {row.team.name.slice(0, 2).toUpperCase()}
                         </span>
                       )}
