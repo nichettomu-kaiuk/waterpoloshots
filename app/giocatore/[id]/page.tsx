@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getPlayer, getSettings } from "@/lib/queries";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getPlayer, getSettings, getTeamWithRoster } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
@@ -20,6 +21,14 @@ export default async function GiocatorePage({ params }: { params: { id: string }
   }
 
   const initials = `${player.first_name[0]}${player.last_name[0]}`;
+
+  // Prev/next within the same team's roster (ordered by cap number), so the
+  // arrows let you flip through all teammates. Wraps around at the ends.
+  const roster = team ? (await getTeamWithRoster(team.id)).players : [];
+  const rosterIndex = roster.findIndex((p) => p.id === player.id);
+  const hasSiblings = roster.length > 1 && rosterIndex !== -1;
+  const prevPlayer = hasSiblings ? roster[(rosterIndex - 1 + roster.length) % roster.length] : null;
+  const nextPlayer = hasSiblings ? roster[(rosterIndex + 1) % roster.length] : null;
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
@@ -55,7 +64,26 @@ export default async function GiocatorePage({ params }: { params: { id: string }
 
           {/* Body: large team-logo watermark + player photo, info panel —
               always side-by-side, even on mobile. */}
-          <div className="flex flex-row">
+          <div className="relative flex flex-row">
+            {prevPlayer && (
+              <Link
+                href={`/giocatore/${prevPlayer.id}`}
+                aria-label="Giocatore precedente"
+                className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold"
+              >
+                <ChevronLeft size={18} />
+              </Link>
+            )}
+            {nextPlayer && (
+              <Link
+                href={`/giocatore/${nextPlayer.id}`}
+                aria-label="Giocatore successivo"
+                className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold"
+              >
+                <ChevronRight size={18} />
+              </Link>
+            )}
+
             <div className="relative flex min-h-[280px] flex-1 items-end justify-center overflow-hidden bg-ink sm:min-h-[380px] lg:min-h-[460px]">
               {team?.logo_url && (
                 <div
