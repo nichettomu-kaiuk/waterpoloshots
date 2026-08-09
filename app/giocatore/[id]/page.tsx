@@ -56,7 +56,7 @@ export default async function GiocatorePage({ params }: { params: { id: string }
           {/* Body: large team-logo watermark + player photo, info panel —
               always side-by-side, even on mobile. */}
           <div className="flex flex-row">
-            <div className="relative flex min-h-[220px] flex-1 items-end justify-center overflow-hidden bg-ink sm:min-h-[300px] lg:min-h-[380px]">
+            <div className="relative flex min-h-[280px] flex-1 items-end justify-center overflow-hidden bg-ink sm:min-h-[380px] lg:min-h-[460px]">
               {team?.logo_url && (
                 <div
                   className="absolute inset-0"
