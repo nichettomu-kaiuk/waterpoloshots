@@ -83,10 +83,15 @@ export default async function GiocatorePage({ params }: { params: { id: string }
               )}
             </div>
 
-            <div className="flex flex-col justify-center gap-4 border-t border-line bg-ink px-6 py-6 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0">
+            <div className="flex flex-col justify-start gap-4 border-t border-line bg-ink px-6 py-6 lg:w-72 lg:shrink-0 lg:border-l lg:border-t-0">
               <div className="border-b border-line pb-3">
                 <p className="text-xs uppercase tracking-widest text-muted">Numero</p>
-                <p className="player-cap-number font-display text-4xl font-bold text-gold">{player.cap_number}</p>
+                <p className="player-cap-number font-display text-6xl font-bold text-gold">{player.cap_number}</p>
+                {player.position && (
+                  <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted">
+                    {player.position}
+                  </p>
+                )}
               </div>
               <div>
                 <p className="font-display text-xl font-semibold">{player.first_name}</p>
