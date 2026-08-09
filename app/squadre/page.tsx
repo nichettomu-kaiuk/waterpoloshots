@@ -24,20 +24,22 @@ export default async function SquadrePage() {
               <Link
                 key={t.id}
                 href={`/squadra/${t.id}`}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface p-4 text-center transition active:scale-95"
+                className="site-card flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface p-4 text-center transition active:scale-95"
               >
                 {t.logo_url ? (
-                  <Image
-                    src={t.logo_url}
-                    alt={t.name}
-                    width={56}
-                    height={56}
-                    className="h-14 w-14 rounded-full border border-line object-cover"
-                  />
+                  <span className="cap-badge relative inline-block h-14 w-14 shrink-0">
+                    <Image
+                      src={t.logo_url}
+                      alt={t.name}
+                      width={56}
+                      height={56}
+                      className="h-14 w-14 rounded-full border border-line object-cover"
+                    />
+                  </span>
                 ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-lg text-muted">
+                  <span className="cap-badge relative inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-lg text-muted">
                     {t.name.slice(0, 2).toUpperCase()}
-                  </div>
+                  </span>
                 )}
                 <span className="text-sm font-medium">{t.name}</span>
               </Link>

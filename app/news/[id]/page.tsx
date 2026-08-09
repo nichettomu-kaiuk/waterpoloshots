@@ -26,7 +26,7 @@ export default async function NewsPostPage({ params }: { params: { id: string } 
     <main className="mx-auto w-full max-w-md pb-6 lg:max-w-3xl">
       <Hero />
       {post.image_url && (
-        <div className="relative h-56 w-full lg:mt-6 lg:h-72 lg:rounded-3xl lg:overflow-hidden">
+        <div className="detail-hero-image relative h-56 w-full lg:mt-6 lg:h-72 lg:rounded-3xl lg:overflow-hidden">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" priority />
         </div>
       )}

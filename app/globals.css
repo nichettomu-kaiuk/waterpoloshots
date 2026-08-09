@@ -87,6 +87,12 @@ body {
   );
 }
 
+.theme-regulation .lane-rope {
+  height: 1px;
+  margin: 20px 0;
+  background: linear-gradient(90deg, var(--color-gold), var(--color-line) 60%);
+}
+
 /* Hero: diagonal cut + diagonal accent wash, evoking broadcast graphics. */
 .theme-lane .app-hero {
   clip-path: polygon(0 0, 100% 0, 100% 94%, 0 100%);
@@ -106,7 +112,8 @@ body {
    edge — gold for a normal fixture, red while a match is live. */
 .theme-lane .match-card,
 .theme-lane .news-card,
-.theme-lane .grouped-card {
+.theme-lane .grouped-card,
+.theme-lane .site-card {
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
   border-left: 3px solid var(--color-gold) !important;
 }
@@ -184,7 +191,8 @@ body {
    full border or clipped corner. */
 .theme-regulation .match-card,
 .theme-regulation .news-card,
-.theme-regulation .grouped-card {
+.theme-regulation .grouped-card,
+.theme-regulation .site-card {
   border-radius: 0 !important;
   border-top: 3px solid var(--color-gold-dim) !important;
 }
@@ -299,4 +307,33 @@ body {
   width: 14px;
   height: 1px;
   background: var(--color-line);
+}
+
+/* ── Remaining surfaces: podium steps, News detail image, corner icons ── */
+
+.theme-lane .podium-pedestal,
+.theme-regulation .podium-pedestal {
+  border-radius: 0 !important;
+}
+.theme-regulation .podium-pedestal {
+  border-top: 2px solid var(--color-gold-dim);
+  background: linear-gradient(to top, rgba(212, 175, 55, 0.12), transparent);
+}
+
+.theme-lane .detail-hero-image,
+.theme-regulation .detail-hero-image {
+  border-radius: 0 !important;
+}
+.theme-lane .detail-hero-image {
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+}
+.theme-regulation .detail-hero-image {
+  border-top: 3px solid var(--color-gold-dim);
+}
+
+.theme-lane .corner-icon {
+  border-radius: 4px;
+}
+.theme-regulation .corner-icon {
+  border-radius: 0;
 }

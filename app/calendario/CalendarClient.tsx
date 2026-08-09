@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import clsx from "clsx";
 import type { Match, RoundType } from "@/lib/supabase/types";
 import MatchCard from "@/components/MatchCard";
+import LaneRope from "@/components/LaneRope";
 
 const filters = [
   { value: "", label: "Tutti" },
@@ -90,8 +91,9 @@ export default function CalendarClient({
         <p className="py-10 text-center text-sm text-muted">Nessun match trovato.</p>
       ) : (
         <div className="space-y-8">
-          {grouped.map(({ round, giornate }) => (
+          {grouped.map(({ round, giornate }, idx) => (
             <div key={round}>
+              {idx > 0 && <LaneRope />}
               <h2 className="mb-3 font-display text-base font-bold uppercase tracking-wide text-gold">
                 Girone di {round === "andata" ? "Andata" : "Ritorno"}
               </h2>

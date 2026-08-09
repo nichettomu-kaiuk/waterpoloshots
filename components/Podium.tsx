@@ -24,24 +24,26 @@ function PlayerAvatar({ player, size }: { player: Player; size: number }) {
   const className = "shrink-0 rounded-full border-2 border-gold object-cover";
   if (player.photo_url) {
     return (
-      <Image
-        src={player.photo_url}
-        alt={`${player.first_name} ${player.last_name}`}
-        width={size}
-        height={size}
-        className={className}
-        style={{ width: size, height: size }}
-      />
+      <span className="cap-badge relative inline-block" style={{ width: size, height: size }}>
+        <Image
+          src={player.photo_url}
+          alt={`${player.first_name} ${player.last_name}`}
+          width={size}
+          height={size}
+          className={className}
+          style={{ width: size, height: size }}
+        />
+      </span>
     );
   }
   return (
-    <div
+    <span
       style={{ width: size, height: size }}
-      className={`flex shrink-0 items-center justify-center rounded-full border-2 border-gold bg-surface-raised font-display text-xs text-gold`}
+      className="cap-badge relative inline-flex shrink-0 items-center justify-center rounded-full border-2 border-gold bg-surface-raised font-display text-xs text-gold"
     >
       {player.first_name[0]}
       {player.last_name[0]}
-    </div>
+    </span>
   );
 }
 
@@ -72,7 +74,7 @@ function PodiumColumn({ group, heightClass }: { group: ScorerGroup; heightClass:
       </div>
 
       <p className="font-display text-lg font-bold text-gold">{group.goals}</p>
-      <div className={`mt-2 w-full ${heightClass} rounded-t-lg border border-line bg-gradient-to-t from-gold/25 to-transparent`} />
+      <div className={`podium-pedestal mt-2 w-full ${heightClass} rounded-t-lg border border-line bg-gradient-to-t from-gold/25 to-transparent`} />
     </div>
   );
 }
@@ -111,7 +113,7 @@ export default function Podium({ scorers }: { scorers: Player[] }) {
             return group.players.map((p) => (
               <li
                 key={p.id}
-                className="flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2.5"
+                className="site-card flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
                   <span className="w-6 text-xs text-muted">{rank}</span>
