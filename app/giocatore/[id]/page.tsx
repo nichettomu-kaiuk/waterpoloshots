@@ -64,26 +64,7 @@ export default async function GiocatorePage({ params }: { params: { id: string }
 
           {/* Body: large team-logo watermark + player photo, info panel —
               always side-by-side, even on mobile. */}
-          <div className="relative flex flex-row">
-            {prevPlayer && (
-              <Link
-                href={`/giocatore/${prevPlayer.id}`}
-                aria-label="Giocatore precedente"
-                className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold"
-              >
-                <ChevronLeft size={18} />
-              </Link>
-            )}
-            {nextPlayer && (
-              <Link
-                href={`/giocatore/${nextPlayer.id}`}
-                aria-label="Giocatore successivo"
-                className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-ink/70 text-white backdrop-blur transition hover:border-gold hover:text-gold"
-              >
-                <ChevronRight size={18} />
-              </Link>
-            )}
-
+          <div className="flex flex-row">
             <div className="relative flex min-h-[280px] flex-1 items-end justify-center overflow-hidden bg-ink sm:min-h-[380px] lg:min-h-[460px]">
               {team?.logo_url && (
                 <div
@@ -132,6 +113,33 @@ export default async function GiocatorePage({ params }: { params: { id: string }
             </div>
           </div>
         </div>
+
+        {(prevPlayer || nextPlayer) && (
+          <div className="mt-4 flex items-center justify-center gap-4">
+            {prevPlayer ? (
+              <Link
+                href={`/giocatore/${prevPlayer.id}`}
+                aria-label="Giocatore precedente"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-gold hover:text-gold"
+              >
+                <ChevronLeft size={18} />
+              </Link>
+            ) : (
+              <span className="h-9 w-9" />
+            )}
+            {nextPlayer ? (
+              <Link
+                href={`/giocatore/${nextPlayer.id}`}
+                aria-label="Giocatore successivo"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-gold hover:text-gold"
+              >
+                <ChevronRight size={18} />
+              </Link>
+            ) : (
+              <span className="h-9 w-9" />
+            )}
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between">
           {team ? (
