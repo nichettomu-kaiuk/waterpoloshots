@@ -114,7 +114,9 @@ export default async function GiocatorePage({ params }: { params: { id: string }
               <div>
                 <p className="font-display text-sm font-semibold sm:text-lg lg:text-xl">{player.first_name}</p>
                 <p className="font-display text-lg font-bold uppercase sm:text-xl lg:text-2xl">{player.last_name}</p>
-                <p className="mt-1 text-[10px] text-muted sm:text-xs">{player.goals_count} gol segnati</p>
+                {player.goals_count > 0 && (
+                  <p className="mt-1 text-[10px] text-muted sm:text-xs">{player.goals_count} gol segnati</p>
+                )}
               </div>
             </div>
           </div>
