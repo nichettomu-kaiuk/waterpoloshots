@@ -84,6 +84,12 @@ export default async function GiocatorePage({ params }: { params: { id: string }
                   alt={`${player.first_name} ${player.last_name}`}
                   fill
                   className="relative object-contain object-bottom"
+                  style={{
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse 85% 90% at 50% 100%, black 60%, transparent 100%)",
+                    maskImage:
+                      "radial-gradient(ellipse 85% 90% at 50% 100%, black 60%, transparent 100%)",
+                  }}
                   priority
                 />
               ) : (

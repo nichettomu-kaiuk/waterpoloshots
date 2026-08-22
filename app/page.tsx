@@ -25,7 +25,10 @@ export default async function HomePage() {
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
       <Hero settings={settings} live={live} />
 
-      {/* Body of the home page — background configurable in Admin → Branding → "Bg home" */}
+      {/* Body of the home page — background configurable in Admin → Branding → "Bg home".
+          No background-attachment: fixed here — it's unreliable on mobile
+          browsers (iOS Safari in particular), where it can stop the image
+          from resizing to the element's actual width. */}
       <div
         className="relative"
         style={
@@ -34,7 +37,6 @@ export default async function HomePage() {
                 backgroundImage: `url(${settings.header_bg_url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                backgroundAttachment: "fixed",
               }
             : undefined
         }
