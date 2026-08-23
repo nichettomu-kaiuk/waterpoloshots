@@ -74,9 +74,11 @@ export default async function SquadraPage({ params }: { params: { id: string } }
               )}
               <div className="flex-1">
                 <p className="text-sm font-medium">{p.first_name} {p.last_name}</p>
-                <p className="text-[11px] text-muted">N. {p.cap_number} {p.position ? `· ${p.position}` : ""}</p>
+                <p className="text-[13px] text-muted">N. {p.cap_number} {p.position ? `· ${p.position}` : ""}</p>
               </div>
-              <span className="font-display font-bold text-gold">{p.goals_count}</span>
+              {p.goals_count > 0 && (
+                <span className="font-display font-bold text-gold">{p.goals_count}</span>
+              )}
             </Link>
           ))}
         </div>
