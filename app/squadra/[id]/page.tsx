@@ -87,7 +87,7 @@ export default async function SquadraPage({ params }: { params: { id: string } }
                 {p.position && <p className="text-[11px] capitalize text-muted">{p.position}</p>}
               </div>
               {p.goals_count > 0 && (
-                <span className="font-display font-bold text-gold">{p.goals_count}</span>
+                <span className="text-right font-display font-bold text-gold">{p.goals_count}</span>
               )}
             </Link>
           ))}
