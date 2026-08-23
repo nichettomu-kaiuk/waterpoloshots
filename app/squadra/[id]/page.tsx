@@ -5,7 +5,8 @@ import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function SquadraPage({ params }: { params: { id: string } }) {
-  const { team, players } = await getTeamWithRoster(params.id);
+  const { team, players: roster } = await getTeamWithRoster(params.id);
+  const players = [...roster].sort((a, b) => a.cap_number - b.cap_number);
 
   if (!team) {
     return (
@@ -50,6 +51,12 @@ export default async function SquadraPage({ params }: { params: { id: string } }
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">
           Rosa
         </h2>
+        <div className="mb-1 grid grid-cols-[2rem_2.75rem_1fr_2rem] gap-3 px-3 text-[10px] uppercase tracking-widest text-muted">
+          <span className="text-center">N.</span>
+          <span />
+          <span />
+          <span className="text-right">Reti</span>
+        </div>
         <div className="space-y-2">
           {players.map((p) => (
             <Link
