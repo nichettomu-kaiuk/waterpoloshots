@@ -55,26 +55,29 @@ export default async function SquadraPage({ params }: { params: { id: string } }
             <Link
               key={p.id}
               href={`/giocatore/${p.id}`}
-              className="site-card flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5"
+              className="site-card grid grid-cols-[2rem_2.75rem_1fr_2rem] items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5"
             >
+              <span className="w-8 text-center font-display text-xl font-bold text-gold">
+                {p.cap_number}
+              </span>
               {p.photo_url ? (
-                <span className="cap-badge relative inline-block h-10 w-10 shrink-0">
+                <span className="cap-badge relative inline-block h-11 w-11 shrink-0">
                   <Image
                     src={p.photo_url}
                     alt={`${p.first_name} ${p.last_name}`}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 rounded-full object-cover"
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 rounded-full object-cover"
                   />
                 </span>
               ) : (
-                <span className="cap-badge relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-raised font-display text-xs text-muted">
-                  {p.cap_number}
+                <span className="cap-badge relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-raised font-display text-xs text-muted">
+                  {p.first_name[0]}{p.last_name[0]}
                 </span>
               )}
-              <div className="flex-1">
-                <p className="text-sm font-medium">{p.first_name} {p.last_name}</p>
-                <p className="text-[13px] text-muted">N. {p.cap_number} {p.position ? `· ${p.position}` : ""}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{p.first_name} {p.last_name}</p>
+                {p.position && <p className="text-[11px] capitalize text-muted">{p.position}</p>}
               </div>
               {p.goals_count > 0 && (
                 <span className="font-display font-bold text-gold">{p.goals_count}</span>
