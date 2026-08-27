@@ -13,6 +13,28 @@
   --color-gold-dim: #8a6f22;
   --color-line: #232327;
   --color-muted: #8f8f97;
+  --color-fg: #f5f5f6;
+}
+
+/* Light variants of Classico / Corsia / Regolamento: same shapes, borders
+   and accent colors (red/gold untouched) — only the background and text
+   tokens flip from dark to light. Applied as an extra class alongside the
+   structural theme class (see app/layout.tsx), so it composes with the
+   existing .theme-lane / .theme-regulation rules automatically instead of
+   duplicating them. */
+.theme-light {
+  --color-ink: #ffffff;
+  --color-surface: #f5f5f6;
+  --color-surface-raised: #e9e9eb;
+  --color-line: #dcdcdf;
+  --color-muted: #6b6b73;
+  --color-fg: #0a0a0b;
+}
+.theme-light body {
+  color: var(--color-fg);
+}
+.theme-light .text-white {
+  color: var(--color-fg) !important;
 }
 
 html {

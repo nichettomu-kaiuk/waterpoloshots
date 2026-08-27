@@ -152,40 +152,40 @@ export default function AdminSettingsPage() {
             <p className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted">
               <Palette size={13} /> Aspetto grafico
             </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, theme: "classic" })}
-                className={`rounded-xl border px-3 py-3 text-left transition ${
-                  form.theme === "classic" ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
-                }`}
-              >
-                <p className="text-sm font-semibold">Classico</p>
-                <p className="mt-0.5 text-[11px] text-muted">Card arrotondate, stile attuale</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, theme: "lane" })}
-                className={`rounded-xl border px-3 py-3 text-left transition ${
-                  form.theme === "lane" ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
-                }`}
-              >
-                <p className="text-sm font-semibold">Corsia</p>
-                <p className="mt-0.5 text-[11px] text-muted">Card a biglietto, hero diagonale, corsie</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, theme: "regulation" })}
-                className={`rounded-xl border px-3 py-3 text-left transition ${
-                  form.theme === "regulation" ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
-                }`}
-              >
-                <p className="text-sm font-semibold">Regolamento</p>
-                <p className="mt-0.5 text-[11px] text-muted">Card piatte, badge a cuffia, stile federale</p>
-              </button>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  { value: "classic", label: "Classico", hint: "Card arrotondate, stile attuale", dark: true },
+                  { value: "classic-light", label: "Classico Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "lane", label: "Corsia", hint: "Card a biglietto, hero diagonale", dark: true },
+                  { value: "lane-light", label: "Corsia Chiara", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "regulation", label: "Regolamento", hint: "Card piatte, badge a cuffia", dark: true },
+                  { value: "regulation-light", label: "Regolamento Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, theme: opt.value })}
+                  className={`rounded-xl border px-3 py-3 text-left transition ${
+                    form.theme === opt.value ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
+                  }`}
+                >
+                  <span
+                    className={`mb-1.5 inline-block h-3 w-3 rounded-full border ${
+                      opt.dark ? "border-line bg-ink" : "border-line bg-white"
+                    }`}
+                  />
+                  <p className="text-sm font-semibold">{opt.label}</p>
+                  <p className="mt-0.5 text-[11px] text-muted">{opt.hint}</p>
+                </button>
+              ))}
             </div>
             <p className="text-[11px] text-muted">
-              Cambia l&apos;aspetto grafico dell&apos;intero sito. Ricorda di premere &quot;Salva impostazioni&quot; qui sotto per rendere effettiva la scelta.
+              Cambia l&apos;aspetto grafico dell&apos;intero sito. Le versioni &quot;Chiaro&quot; hanno le stesse forme
+              e gli stessi colori d&apos;accento, solo con sfondo bianco e testo scuro al posto di sfondo nero e
+              testo chiaro. Ricorda di premere &quot;Salva impostazioni&quot; qui sotto per rendere effettiva la
+              scelta.
             </p>
           </div>
 

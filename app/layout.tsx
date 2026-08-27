@@ -42,7 +42,16 @@ export default async function RootLayout({
     ["--color-gold" as any]: settings?.secondary_color ?? "#d4af37",
   };
 
-  const themeClass = settings?.theme === "lane" ? "theme-lane" : settings?.theme === "regulation" ? "theme-regulation" : "";
+  // Theme is stored as a single value (e.g. "lane-light") but applied as two
+  // composable classes: the structural shape (theme-lane / theme-regulation
+  // / none for classic) and, if it's a light variant, `theme-light` — which
+  // just swaps the background/text color tokens and leaves every shape rule
+  // (clip-paths, borders, etc.) untouched.
+  const theme = settings?.theme ?? "classic";
+  const isLight = theme.endsWith("-light");
+  const baseTheme = isLight ? theme.replace("-light", "") : theme;
+  const structuralClass = baseTheme === "lane" ? "theme-lane" : baseTheme === "regulation" ? "theme-regulation" : "";
+  const themeClass = [structuralClass, isLight ? "theme-light" : ""].filter(Boolean).join(" ");
 
   return (
     <html
