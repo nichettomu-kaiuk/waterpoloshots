@@ -196,17 +196,6 @@ body {
 .theme-regulation .app-hero h1 {
   font-weight: 600;
 }
-.theme-regulation .hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.theme-regulation .hero-eyebrow::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--color-line);
-}
 
 /* Flat "regulation" cards: square corners, thin top rule instead of a
    full border or clipped corner. */
