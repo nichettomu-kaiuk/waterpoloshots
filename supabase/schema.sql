@@ -53,10 +53,11 @@ create table matches (
 create table match_goals (
   id uuid primary key default gen_random_uuid(),
   match_id uuid not null references matches(id) on delete cascade,
-  player_id uuid not null references players(id) on delete cascade,
+  player_id uuid references players(id) on delete cascade,
   team_id uuid not null references teams(id) on delete cascade,
   quarter int,
-  goal_time text
+  goal_time text,
+  created_at timestamptz not null default now()
 );
 
 create table settings (
@@ -186,6 +187,10 @@ alter table teams add column if not exists coach_name text;
 -- Adds: matches.stream_url (optional live-stream link, editable in Admin → Partite).
 alter table matches add column if not exists stream_url text;
 
+-- Allows: match_goals.player_id to be null — a goal can be logged for a team
+-- without a known/registered scorer, editable in Admin → Partite.
+alter table match_goals alter column player_id drop not null;
+
 -- Adds: settings.info_text / info_image_url / info_email (the "i" info
 -- popup, editable in Admin → Impostazioni).
 alter table settings add column if not exists info_text text;
@@ -203,3 +208,7 @@ alter table settings add column if not exists theme text not null default 'class
 alter table settings drop constraint if exists settings_theme_check;
 alter table settings add constraint settings_theme_check
   check (theme in ('classic','lane','regulation','classic-light','lane-light','regulation-light'));
+
+-- Adds: match_goals.created_at, so the per-match goal log (Admin → Partite →
+-- modifica partita) can be listed in the order goals were actually added.
+alter table match_goals add column if not exists created_at timestamptz not null default now();

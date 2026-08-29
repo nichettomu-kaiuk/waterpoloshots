@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Wand2 } from "lucide-react";
+import Link from "next/link";
+import { Plus, Wand2, ChevronRight, Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchStatus, RoundType, Team, Venue } from "@/lib/supabase/types";
-import MatchResultEditor from "./MatchResultEditor";
+
+const statusLabels: Record<MatchStatus, string> = {
+  scheduled: "Programmata",
+  live: "In corso",
+  completed: "Terminata",
+};
 
 export default function AdminMatchesPage() {
   const supabase = createClient();
@@ -218,14 +224,41 @@ export default function AdminMatchesPage() {
                         Giornata {giornataNum}
                       </p>
                       <div className="space-y-3">
-                        {giornataMatches.map((m) => (
-                          <MatchResultEditor
-                            key={m.id}
-                            match={m}
-                            venues={venues}
-                            onSaved={load}
-                          />
-                        ))}
+                        {giornataMatches.map((m) => {
+                          const needsDetails = !m.date_time || !m.venue_id;
+                          return (
+                            <Link
+                              key={m.id}
+                              href={`/admin/matches/${m.id}`}
+                              className={`flex items-center justify-between rounded-2xl border bg-surface p-4 transition hover:border-primary ${
+                                needsDetails ? "border-gold/50" : "border-line"
+                              }`}
+                            >
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {m.home_team?.name} <span className="text-muted">vs</span> {m.away_team?.name}
+                                </p>
+                                <p className="text-[11px] text-muted">
+                                  {m.date_time ? new Date(m.date_time).toLocaleString("it-IT") : "Data da definire"}
+                                  {" · "}
+                                  {statusLabels[m.status]}
+                                  {needsDetails && <span className="ml-1 text-gold">· da completare</span>}
+                                  {m.stream_url && (
+                                    <span className="ml-1 inline-flex items-center gap-0.5 text-primary">
+                                      <Video size={11} /> diretta
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="font-display tabular text-lg font-bold text-gold">
+                                  {m.home_score}-{m.away_score}
+                                </span>
+                                <ChevronRight size={16} className="text-muted" />
+                              </div>
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

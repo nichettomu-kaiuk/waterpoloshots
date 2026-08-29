@@ -1,0 +1,319 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import clsx from "clsx";
+import { ArrowLeft, CalendarClock, Video, Target, Trash2, UserX, Save } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import type { Match, MatchGoal, MatchStatus, Player, Venue } from "@/lib/supabase/types";
+
+const statusLabels: Record<MatchStatus, string> = {
+  scheduled: "Programmata",
+  live: "In corso",
+  completed: "Terminata",
+};
+
+type GoalRow = MatchGoal & { player?: { first_name: string; last_name: string } | null };
+
+// Converts an ISO timestamp to the `YYYY-MM-DDTHH:mm` format the
+// datetime-local input expects, in local time.
+function toLocalInputValue(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export default function AdminMatchEditPage({ params }: { params: { id: string } }) {
+  const supabase = createClient();
+  const router = useRouter();
+
+  const [match, setMatch] = useState<Match | null>(null);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [homeRoster, setHomeRoster] = useState<Player[]>([]);
+  const [awayRoster, setAwayRoster] = useState<Player[]>([]);
+  const [goals, setGoals] = useState<GoalRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [dateTime, setDateTime] = useState("");
+  const [venueId, setVenueId] = useState("");
+  const [streamUrl, setStreamUrl] = useState("");
+  const [status, setStatus] = useState<MatchStatus>("scheduled");
+  const [saving, setSaving] = useState(false);
+
+  async function load() {
+    const [{ data: m }, { data: v }, { data: g }] = await Promise.all([
+      supabase
+        .from("matches")
+        .select(
+          "*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*), venue:venues(*)"
+        )
+        .eq("id", params.id)
+        .maybeSingle(),
+      supabase.from("venues").select("*").order("name"),
+      supabase
+        .from("match_goals")
+        .select("*, player:players(first_name, last_name)")
+        .eq("match_id", params.id)
+        .order("created_at", { ascending: true }),
+    ]);
+
+    if (m) {
+      setMatch(m as any);
+      setDateTime(toLocalInputValue((m as any).date_time));
+      setVenueId((m as any).venue_id ?? "");
+      setStreamUrl((m as any).stream_url ?? "");
+      setStatus((m as any).status);
+
+      const [{ data: hp }, { data: ap }] = await Promise.all([
+        supabase.from("players").select("*").eq("team_id", (m as any).home_team_id).order("cap_number"),
+        supabase.from("players").select("*").eq("team_id", (m as any).away_team_id).order("cap_number"),
+      ]);
+      setHomeRoster(hp ?? []);
+      setAwayRoster(ap ?? []);
+    }
+    setVenues(v ?? []);
+    setGoals((g as any) ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
+
+  // Adds a goal for a team, with or without a known scorer. Either way it's
+  // logged as its own match_goals row (so it can be individually removed
+  // later) and the match/player tallies update immediately.
+  async function addGoal(teamId: string, player: Player | null) {
+    if (!match) return;
+    await supabase.from("match_goals").insert({ match_id: match.id, team_id: teamId, player_id: player?.id ?? null });
+
+    if (player) {
+      await supabase.from("players").update({ goals_count: player.goals_count + 1 }).eq("id", player.id);
+    }
+
+    const isHome = teamId === match.home_team_id;
+    const nextHome = isHome ? match.home_score + 1 : match.home_score;
+    const nextAway = !isHome ? match.away_score + 1 : match.away_score;
+    await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
+
+    await load();
+  }
+
+  // Removes a previously logged goal: deletes the match_goals row, restores
+  // the player's tally (if one was credited), and decrements the match
+  // score — the fix for "ho sbagliato, tolgo quel gol".
+  async function removeGoal(goal: GoalRow) {
+    if (!match) return;
+    if (!confirm("Rimuovere questo gol?")) return;
+
+    await supabase.from("match_goals").delete().eq("id", goal.id);
+
+    if (goal.player_id) {
+      const player = [...homeRoster, ...awayRoster].find((p) => p.id === goal.player_id);
+      if (player) {
+        await supabase.from("players").update({ goals_count: Math.max(0, player.goals_count - 1) }).eq("id", player.id);
+      }
+    }
+
+    const isHome = goal.team_id === match.home_team_id;
+    const nextHome = isHome ? Math.max(0, match.home_score - 1) : match.home_score;
+    const nextAway = !isHome ? Math.max(0, match.away_score - 1) : match.away_score;
+    await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
+
+    await load();
+  }
+
+  // Saves date/venue/stream/status, then returns to the match list.
+  async function saveMatch() {
+    if (!match) return;
+    setSaving(true);
+    await supabase
+      .from("matches")
+      .update({
+        date_time: dateTime ? new Date(dateTime).toISOString() : null,
+        venue_id: venueId || null,
+        stream_url: streamUrl.trim() || null,
+        status,
+      })
+      .eq("id", match.id);
+    setSaving(false);
+    router.push("/admin/matches");
+  }
+
+  if (loading) {
+    return <p className="text-sm text-muted">Caricamento...</p>;
+  }
+
+  if (!match) {
+    return (
+      <div>
+        <p className="text-sm text-muted">Partita non trovata.</p>
+        <Link href="/admin/matches" className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
+          <ArrowLeft size={13} /> Torna all'elenco
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl">
+      <Link href="/admin/matches" className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
+        <ArrowLeft size={14} /> Torna all'elenco partite
+      </Link>
+
+      <div className="mb-5 rounded-2xl border border-line bg-surface p-4">
+        <p className="text-[11px] uppercase tracking-widest text-muted">
+          {match.round_type === "ritorno" ? "Ritorno" : "Andata"} · Giornata {match.giornata}
+        </p>
+        <p className="mt-1 text-lg font-medium">
+          {match.home_team?.name} <span className="text-muted">vs</span> {match.away_team?.name}
+        </p>
+        <p className="mt-1 font-display tabular text-3xl font-bold text-gold">
+          {match.home_score} - {match.away_score}
+        </p>
+      </div>
+
+      <div className="mb-4 rounded-2xl border border-line bg-surface p-4">
+        <p className="mb-2 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
+          <CalendarClock size={12} /> Data e piscina
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            type="datetime-local"
+            value={dateTime}
+            onChange={(e) => setDateTime(e.target.value)}
+            className="flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+          />
+          <select
+            value={venueId}
+            onChange={(e) => setVenueId(e.target.value)}
+            className="flex-1 rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+          >
+            <option value="">Campo da definire</option>
+            {venues.map((v) => (
+              <option key={v.id} value={v.id}>{v.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <p className="mb-2 mt-4 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
+          <Video size={12} /> Link diretta (opzionale)
+        </p>
+        <input
+          type="url"
+          value={streamUrl}
+          onChange={(e) => setStreamUrl(e.target.value)}
+          placeholder="https://..."
+          className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
+        />
+
+        <div className="mt-4 flex gap-2">
+          {(["scheduled", "live", "completed"] as MatchStatus[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={clsx(
+                "flex-1 rounded-full border px-2 py-1.5 text-[11px] font-medium",
+                status === s ? "border-primary bg-primary/15 text-primary" : "border-line text-muted"
+              )}
+            >
+              {statusLabels[s]}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={saveMatch}
+          disabled={saving}
+          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          <Save size={14} /> {saving ? "Salvataggio..." : "Salva partita e torna all'elenco"}
+        </button>
+      </div>
+
+      <div className="mb-4 rounded-2xl border border-line bg-surface p-4">
+        <p className="mb-2 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
+          <Target size={12} /> Aggiungi gol
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <p className="text-[11px] font-medium text-muted">{match.home_team?.name}</p>
+            <button
+              onClick={() => addGoal(match.home_team_id, null)}
+              className="flex w-full items-center gap-1.5 rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-muted hover:border-gold hover:text-gold"
+            >
+              <UserX size={13} /> Gol senza marcatore
+            </button>
+            {homeRoster.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => addGoal(match.home_team_id, p)}
+                className="flex w-full items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs"
+              >
+                <span>{p.last_name} #{p.cap_number}</span>
+                <span className="text-gold">{p.goals_count}</span>
+              </button>
+            ))}
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-medium text-muted">{match.away_team?.name}</p>
+            <button
+              onClick={() => addGoal(match.away_team_id, null)}
+              className="flex w-full items-center gap-1.5 rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-muted hover:border-gold hover:text-gold"
+            >
+              <UserX size={13} /> Gol senza marcatore
+            </button>
+            {awayRoster.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => addGoal(match.away_team_id, p)}
+                className="flex w-full items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs"
+              >
+                <span>{p.last_name} #{p.cap_number}</span>
+                <span className="text-gold">{p.goals_count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-line bg-surface p-4">
+        <p className="mb-2 text-[11px] uppercase tracking-widest text-muted">
+          Gol segnati in questa partita ({goals.length})
+        </p>
+        {goals.length === 0 ? (
+          <p className="text-xs text-muted">Nessun gol registrato ancora.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {goals.map((g) => {
+              const isHome = g.team_id === match.home_team_id;
+              const teamName = isHome ? match.home_team?.name : match.away_team?.name;
+              const label = g.player ? `${g.player.first_name} ${g.player.last_name}` : "Gol senza marcatore";
+              return (
+                <div
+                  key={g.id}
+                  className="flex items-center justify-between rounded-lg border border-line px-2.5 py-1.5 text-xs"
+                >
+                  <span>
+                    <span className="text-muted">{teamName} · </span>
+                    {label}
+                  </span>
+                  <button
+                    onClick={() => removeGoal(g)}
+                    className="flex items-center gap-1 text-muted hover:text-primary"
+                    aria-label="Rimuovi gol"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

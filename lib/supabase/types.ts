@@ -53,10 +53,11 @@ export interface Match {
 export interface MatchGoal {
   id: string;
   match_id: string;
-  player_id: string;
+  player_id: string | null;
   team_id: string;
   quarter: number | null;
   goal_time: string | null;
+  created_at: string;
 }
 
 export type AppTheme =
