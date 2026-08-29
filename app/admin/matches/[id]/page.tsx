@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
-import { ArrowLeft, CalendarClock, Video, Target, Trash2, UserX, Save } from "lucide-react";
+import { ArrowLeft, CalendarClock, Video, Target, Trash2, UserX, Save, Plus, Minus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchGoal, MatchStatus, Player, Venue } from "@/lib/supabase/types";
 
@@ -107,7 +107,6 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   // score — the fix for "ho sbagliato, tolgo quel gol".
   async function removeGoal(goal: GoalRow) {
     if (!match) return;
-    if (!confirm("Rimuovere questo gol?")) return;
 
     await supabase.from("match_goals").delete().eq("id", goal.id);
 
@@ -124,6 +123,16 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
     await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
 
     await load();
+  }
+
+  // Used by the "-" button next to a player (or "senza marcatore"): finds
+  // that player's most recently logged goal for this match and removes it,
+  // without having to go find it in the list below.
+  async function removeLastGoalFor(teamId: string, playerId: string | null) {
+    const candidates = goals.filter((g) => g.team_id === teamId && g.player_id === playerId);
+    const target = candidates[candidates.length - 1];
+    if (!target) return;
+    await removeGoal(target);
   }
 
   // Saves date/venue/stream/status, then returns to the match list.
@@ -236,45 +245,105 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
 
       <div className="mb-4 rounded-2xl border border-line bg-surface p-4">
         <p className="mb-2 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
-          <Target size={12} /> Aggiungi gol
+          <Target size={12} /> Gol
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <p className="text-[11px] font-medium text-muted">{match.home_team?.name}</p>
-            <button
-              onClick={() => addGoal(match.home_team_id, null)}
-              className="flex w-full items-center gap-1.5 rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-muted hover:border-gold hover:text-gold"
-            >
-              <UserX size={13} /> Gol senza marcatore
-            </button>
+            <div className="flex items-center justify-between rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-muted">
+              <span className="flex items-center gap-1.5">
+                <UserX size={13} /> Senza marcatore
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-gold">
+                  {goals.filter((g) => g.team_id === match.home_team_id && !g.player_id).length}
+                </span>
+                <button
+                  onClick={() => removeLastGoalFor(match.home_team_id, null)}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                  aria-label="Togli gol senza marcatore"
+                >
+                  <Minus size={11} />
+                </button>
+                <button
+                  onClick={() => addGoal(match.home_team_id, null)}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                  aria-label="Aggiungi gol senza marcatore"
+                >
+                  <Plus size={11} />
+                </button>
+              </div>
+            </div>
             {homeRoster.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => addGoal(match.home_team_id, p)}
-                className="flex w-full items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs"
-              >
+              <div key={p.id} className="flex items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs">
                 <span>{p.last_name} #{p.cap_number}</span>
-                <span className="text-gold">{p.goals_count}</span>
-              </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-gold">{p.goals_count}</span>
+                  <button
+                    onClick={() => removeLastGoalFor(match.home_team_id, p.id)}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                    aria-label={`Togli gol a ${p.first_name} ${p.last_name}`}
+                  >
+                    <Minus size={11} />
+                  </button>
+                  <button
+                    onClick={() => addGoal(match.home_team_id, p)}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                    aria-label={`Aggiungi gol a ${p.first_name} ${p.last_name}`}
+                  >
+                    <Plus size={11} />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
           <div className="space-y-1">
             <p className="text-[11px] font-medium text-muted">{match.away_team?.name}</p>
-            <button
-              onClick={() => addGoal(match.away_team_id, null)}
-              className="flex w-full items-center gap-1.5 rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-muted hover:border-gold hover:text-gold"
-            >
-              <UserX size={13} /> Gol senza marcatore
-            </button>
+            <div className="flex items-center justify-between rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-muted">
+              <span className="flex items-center gap-1.5">
+                <UserX size={13} /> Senza marcatore
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-gold">
+                  {goals.filter((g) => g.team_id === match.away_team_id && !g.player_id).length}
+                </span>
+                <button
+                  onClick={() => removeLastGoalFor(match.away_team_id, null)}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                  aria-label="Togli gol senza marcatore"
+                >
+                  <Minus size={11} />
+                </button>
+                <button
+                  onClick={() => addGoal(match.away_team_id, null)}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                  aria-label="Aggiungi gol senza marcatore"
+                >
+                  <Plus size={11} />
+                </button>
+              </div>
+            </div>
             {awayRoster.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => addGoal(match.away_team_id, p)}
-                className="flex w-full items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs"
-              >
+              <div key={p.id} className="flex items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs">
                 <span>{p.last_name} #{p.cap_number}</span>
-                <span className="text-gold">{p.goals_count}</span>
-              </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-gold">{p.goals_count}</span>
+                  <button
+                    onClick={() => removeLastGoalFor(match.away_team_id, p.id)}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                    aria-label={`Togli gol a ${p.first_name} ${p.last_name}`}
+                  >
+                    <Minus size={11} />
+                  </button>
+                  <button
+                    onClick={() => addGoal(match.away_team_id, p)}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                    aria-label={`Aggiungi gol a ${p.first_name} ${p.last_name}`}
+                  >
+                    <Plus size={11} />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -302,7 +371,9 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
                     {label}
                   </span>
                   <button
-                    onClick={() => removeGoal(g)}
+                    onClick={() => {
+                      if (confirm("Rimuovere questo gol?")) removeGoal(g);
+                    }}
                     className="flex items-center gap-1 text-muted hover:text-primary"
                     aria-label="Rimuovi gol"
                   >
