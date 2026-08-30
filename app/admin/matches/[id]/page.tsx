@@ -83,52 +83,71 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
-  // Adds a goal for a team, with or without a known scorer. Either way it's
-  // logged as its own match_goals row (so it can be individually removed
-  // later) and the match/player tallies update immediately.
+  const [busy, setBusy] = useState(false);
+
+  // Adds a goal for a team, with or without a known scorer. Updates the
+  // player's personal tally AND the match's total score together. Reads
+  // the current values fresh from the database right before writing (not
+  // from local state) so two quick clicks in a row can't both read the same
+  // stale number and silently "lose" one of the increments.
   async function addGoal(teamId: string, player: Player | null) {
-    if (!match) return;
+    if (!match || busy) return;
+    setBusy(true);
+
     await supabase.from("match_goals").insert({ match_id: match.id, team_id: teamId, player_id: player?.id ?? null });
 
     if (player) {
-      await supabase.from("players").update({ goals_count: player.goals_count + 1 }).eq("id", player.id);
+      const { data: freshPlayer } = await supabase.from("players").select("goals_count").eq("id", player.id).single();
+      const current = freshPlayer?.goals_count ?? player.goals_count;
+      await supabase.from("players").update({ goals_count: current + 1 }).eq("id", player.id);
     }
 
+    const { data: freshMatch } = await supabase.from("matches").select("home_score, away_score").eq("id", match.id).single();
+    const homeScore = freshMatch?.home_score ?? match.home_score;
+    const awayScore = freshMatch?.away_score ?? match.away_score;
     const isHome = teamId === match.home_team_id;
-    const nextHome = isHome ? match.home_score + 1 : match.home_score;
-    const nextAway = !isHome ? match.away_score + 1 : match.away_score;
+    const nextHome = isHome ? homeScore + 1 : homeScore;
+    const nextAway = !isHome ? awayScore + 1 : awayScore;
     await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
 
     await load();
+    setBusy(false);
   }
 
   // Removes a previously logged goal: deletes the match_goals row, restores
-  // the player's tally (if one was credited), and decrements the match
-  // score — the fix for "ho sbagliato, tolgo quel gol".
+  // the player's personal tally (if one was credited), and decrements the
+  // match's total score — the fix for "ho sbagliato, tolgo quel gol". Same
+  // fresh-read approach as addGoal to stay correct under quick clicks.
   async function removeGoal(goal: GoalRow) {
-    if (!match) return;
+    if (!match || busy) return;
+    setBusy(true);
 
     await supabase.from("match_goals").delete().eq("id", goal.id);
 
     if (goal.player_id) {
-      const player = [...homeRoster, ...awayRoster].find((p) => p.id === goal.player_id);
-      if (player) {
-        await supabase.from("players").update({ goals_count: Math.max(0, player.goals_count - 1) }).eq("id", player.id);
+      const { data: freshPlayer } = await supabase.from("players").select("goals_count").eq("id", goal.player_id).single();
+      if (freshPlayer) {
+        await supabase.from("players").update({ goals_count: Math.max(0, freshPlayer.goals_count - 1) }).eq("id", goal.player_id);
       }
     }
 
+    const { data: freshMatch } = await supabase.from("matches").select("home_score, away_score").eq("id", match.id).single();
+    const homeScore = freshMatch?.home_score ?? match.home_score;
+    const awayScore = freshMatch?.away_score ?? match.away_score;
     const isHome = goal.team_id === match.home_team_id;
-    const nextHome = isHome ? Math.max(0, match.home_score - 1) : match.home_score;
-    const nextAway = !isHome ? Math.max(0, match.away_score - 1) : match.away_score;
+    const nextHome = isHome ? Math.max(0, homeScore - 1) : homeScore;
+    const nextAway = !isHome ? Math.max(0, awayScore - 1) : awayScore;
     await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
 
     await load();
+    setBusy(false);
   }
 
   // Used by the "-" button next to a player (or "senza marcatore"): finds
   // that player's most recently logged goal for this match and removes it,
   // without having to go find it in the list below.
   async function removeLastGoalFor(teamId: string, playerId: string | null) {
+    if (busy) return;
     const candidates = goals.filter((g) => g.team_id === teamId && g.player_id === playerId);
     const target = candidates[candidates.length - 1];
     if (!target) return;
@@ -260,14 +279,16 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
                 </span>
                 <button
                   onClick={() => removeLastGoalFor(match.home_team_id, null)}
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                  disabled={busy}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary disabled:opacity-40"
                   aria-label="Togli gol senza marcatore"
                 >
                   <Minus size={11} />
                 </button>
                 <button
                   onClick={() => addGoal(match.home_team_id, null)}
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                  disabled={busy}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold disabled:opacity-40"
                   aria-label="Aggiungi gol senza marcatore"
                 >
                   <Plus size={11} />
@@ -281,14 +302,16 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
                   <span className="text-gold">{p.goals_count}</span>
                   <button
                     onClick={() => removeLastGoalFor(match.home_team_id, p.id)}
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                    disabled={busy}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary disabled:opacity-40"
                     aria-label={`Togli gol a ${p.first_name} ${p.last_name}`}
                   >
                     <Minus size={11} />
                   </button>
                   <button
                     onClick={() => addGoal(match.home_team_id, p)}
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                    disabled={busy}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold disabled:opacity-40"
                     aria-label={`Aggiungi gol a ${p.first_name} ${p.last_name}`}
                   >
                     <Plus size={11} />
@@ -309,14 +332,16 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
                 </span>
                 <button
                   onClick={() => removeLastGoalFor(match.away_team_id, null)}
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                  disabled={busy}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary disabled:opacity-40"
                   aria-label="Togli gol senza marcatore"
                 >
                   <Minus size={11} />
                 </button>
                 <button
                   onClick={() => addGoal(match.away_team_id, null)}
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                  disabled={busy}
+                  className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold disabled:opacity-40"
                   aria-label="Aggiungi gol senza marcatore"
                 >
                   <Plus size={11} />
@@ -330,14 +355,16 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
                   <span className="text-gold">{p.goals_count}</span>
                   <button
                     onClick={() => removeLastGoalFor(match.away_team_id, p.id)}
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary"
+                    disabled={busy}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-primary hover:text-primary disabled:opacity-40"
                     aria-label={`Togli gol a ${p.first_name} ${p.last_name}`}
                   >
                     <Minus size={11} />
                   </button>
                   <button
                     onClick={() => addGoal(match.away_team_id, p)}
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold"
+                    disabled={busy}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-line hover:border-gold hover:text-gold disabled:opacity-40"
                     aria-label={`Aggiungi gol a ${p.first_name} ${p.last_name}`}
                   >
                     <Plus size={11} />
