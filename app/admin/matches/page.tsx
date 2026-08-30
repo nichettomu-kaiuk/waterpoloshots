@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, Wand2, ChevronRight, Video } from "lucide-react";
+import { Plus, Wand2, ChevronRight, Video, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchStatus, RoundType, Team, Venue } from "@/lib/supabase/types";
 
@@ -118,6 +118,25 @@ export default function AdminMatchesPage() {
     load();
   }
 
+  async function handleDeleteMatch(id: string) {
+    if (!confirm("Eliminare questa partita? L'operazione non è reversibile.")) return;
+    await supabase.from("matches").delete().eq("id", id);
+    load();
+  }
+
+  async function handleDeleteGiornata(round: RoundType, giornataNum: number, count: number) {
+    if (
+      !confirm(
+        `Eliminare tutte le ${count} partite della Giornata ${giornataNum} (Girone di ${
+          round === "andata" ? "Andata" : "Ritorno"
+        })? L'operazione non è reversibile.`
+      )
+    )
+      return;
+    await supabase.from("matches").delete().eq("round_type", round).eq("giornata", giornataNum);
+    load();
+  }
+
   // Girone di Andata first, then Girone di Ritorno; within each, grouped by
   // giornata number ascending.
   const groupedByGirone = useMemo(() => {
@@ -220,43 +239,62 @@ export default function AdminMatchesPage() {
                 <div className="space-y-6">
                   {giornate.map(([giornataNum, giornataMatches]) => (
                     <div key={giornataNum}>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">
-                        Giornata {giornataNum}
-                      </p>
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+                          Giornata {giornataNum}
+                        </p>
+                        <button
+                          onClick={() => handleDeleteGiornata(round, giornataNum, giornataMatches.length)}
+                          className="flex items-center gap-1 text-[11px] text-muted hover:text-primary"
+                        >
+                          <Trash2 size={12} /> Elimina giornata
+                        </button>
+                      </div>
                       <div className="space-y-3">
                         {giornataMatches.map((m) => {
                           const needsDetails = !m.date_time || !m.venue_id;
                           return (
-                            <Link
+                            <div
                               key={m.id}
-                              href={`/admin/matches/${m.id}`}
-                              className={`flex items-center justify-between rounded-2xl border bg-surface p-4 transition hover:border-primary ${
+                              className={`flex items-center gap-2 rounded-2xl border bg-surface p-4 ${
                                 needsDetails ? "border-gold/50" : "border-line"
                               }`}
                             >
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {m.home_team?.name} <span className="text-muted">vs</span> {m.away_team?.name}
-                                </p>
-                                <p className="text-[11px] text-muted">
-                                  {m.date_time ? new Date(m.date_time).toLocaleString("it-IT") : "Data da definire"}
-                                  {" · "}
-                                  {statusLabels[m.status]}
-                                  {needsDetails && <span className="ml-1 text-gold">· da completare</span>}
-                                  {m.stream_url && (
-                                    <span className="ml-1 inline-flex items-center gap-0.5 text-primary">
-                                      <Video size={11} /> diretta
-                                    </span>
-                                  )}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="font-display tabular text-lg font-bold text-gold">
-                                  {m.home_score}-{m.away_score}
-                                </span>
-                                <ChevronRight size={16} className="text-muted" />
-                              </div>
-                            </Link>
+                              <Link
+                                href={`/admin/matches/${m.id}`}
+                                className="flex flex-1 items-center justify-between transition hover:opacity-80"
+                              >
+                                <div>
+                                  <p className="text-sm font-medium">
+                                    {m.home_team?.name} <span className="text-muted">vs</span> {m.away_team?.name}
+                                  </p>
+                                  <p className="text-[11px] text-muted">
+                                    {m.date_time ? new Date(m.date_time).toLocaleString("it-IT") : "Data da definire"}
+                                    {" · "}
+                                    {statusLabels[m.status]}
+                                    {needsDetails && <span className="ml-1 text-gold">· da completare</span>}
+                                    {m.stream_url && (
+                                      <span className="ml-1 inline-flex items-center gap-0.5 text-primary">
+                                        <Video size={11} /> diretta
+                                      </span>
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="font-display tabular text-lg font-bold text-gold">
+                                    {m.home_score}-{m.away_score}
+                                  </span>
+                                  <ChevronRight size={16} className="text-muted" />
+                                </div>
+                              </Link>
+                              <button
+                                onClick={() => handleDeleteMatch(m.id)}
+                                className="shrink-0 text-muted hover:text-primary"
+                                aria-label="Elimina partita"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           );
                         })}
                       </div>
