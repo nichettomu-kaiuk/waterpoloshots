@@ -85,11 +85,21 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
 
   const [busy, setBusy] = useState(false);
 
-  // Adds a goal for a team, with or without a known scorer. Updates the
-  // player's personal tally AND the match's total score together. Reads
-  // the current values fresh from the database right before writing (not
-  // from local state) so two quick clicks in a row can't both read the same
-  // stale number and silently "lose" one of the increments.
+  // The match score is always DERIVED by counting match_goals rows per
+  // team — never adjusted by +1/-1 math. That guarantees the score can
+  // never drift out of sync with the goal ledger (which is exactly the bug
+  // this fixes: deleting a goal wasn't reliably moving the score back).
+  async function syncScoreFromGoals() {
+    if (!match) return;
+    const { data: allGoals } = await supabase.from("match_goals").select("team_id").eq("match_id", match.id);
+    const homeScore = (allGoals ?? []).filter((g) => g.team_id === match.home_team_id).length;
+    const awayScore = (allGoals ?? []).filter((g) => g.team_id === match.away_team_id).length;
+    await supabase.from("matches").update({ home_score: homeScore, away_score: awayScore }).eq("id", match.id);
+  }
+
+  // Adds a goal for a team, with or without a known scorer: logs the
+  // match_goals row, bumps the player's personal tally (if any), then
+  // recomputes the match score from the ledger.
   async function addGoal(teamId: string, player: Player | null) {
     if (!match || busy) return;
     setBusy(true);
@@ -102,22 +112,15 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       await supabase.from("players").update({ goals_count: current + 1 }).eq("id", player.id);
     }
 
-    const { data: freshMatch } = await supabase.from("matches").select("home_score, away_score").eq("id", match.id).single();
-    const homeScore = freshMatch?.home_score ?? match.home_score;
-    const awayScore = freshMatch?.away_score ?? match.away_score;
-    const isHome = teamId === match.home_team_id;
-    const nextHome = isHome ? homeScore + 1 : homeScore;
-    const nextAway = !isHome ? awayScore + 1 : awayScore;
-    await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
-
+    await syncScoreFromGoals();
     await load();
     setBusy(false);
   }
 
   // Removes a previously logged goal: deletes the match_goals row, restores
-  // the player's personal tally (if one was credited), and decrements the
-  // match's total score — the fix for "ho sbagliato, tolgo quel gol". Same
-  // fresh-read approach as addGoal to stay correct under quick clicks.
+  // the player's personal tally (if one was credited), then recomputes the
+  // match score from what's left in the ledger — the fix for "ho sbagliato,
+  // tolgo quel gol" not moving the score back.
   async function removeGoal(goal: GoalRow) {
     if (!match || busy) return;
     setBusy(true);
@@ -131,14 +134,7 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       }
     }
 
-    const { data: freshMatch } = await supabase.from("matches").select("home_score, away_score").eq("id", match.id).single();
-    const homeScore = freshMatch?.home_score ?? match.home_score;
-    const awayScore = freshMatch?.away_score ?? match.away_score;
-    const isHome = goal.team_id === match.home_team_id;
-    const nextHome = isHome ? Math.max(0, homeScore - 1) : homeScore;
-    const nextAway = !isHome ? Math.max(0, awayScore - 1) : awayScore;
-    await supabase.from("matches").update({ home_score: nextHome, away_score: nextAway }).eq("id", match.id);
-
+    await syncScoreFromGoals();
     await load();
     setBusy(false);
   }
