@@ -84,17 +84,33 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   }, [params.id]);
 
   const [busy, setBusy] = useState(false);
+  const [goalError, setGoalError] = useState<string | null>(null);
 
   // The match score is always DERIVED by counting match_goals rows per
-  // team — never adjusted by +1/-1 math. That guarantees the score can
-  // never drift out of sync with the goal ledger (which is exactly the bug
-  // this fixes: deleting a goal wasn't reliably moving the score back).
-  async function syncScoreFromGoals() {
-    if (!match) return;
-    const { data: allGoals } = await supabase.from("match_goals").select("team_id").eq("match_id", match.id);
+  // team — never adjusted by +1/-1 math, so it can't drift from the ledger.
+  // Returns false (and surfaces the error) if the write didn't actually go
+  // through, instead of failing silently.
+  async function syncScoreFromGoals(): Promise<boolean> {
+    if (!match) return false;
+    const { data: allGoals, error: readError } = await supabase
+      .from("match_goals")
+      .select("team_id")
+      .eq("match_id", match.id);
+    if (readError) {
+      setGoalError(`Impossibile leggere i gol: ${readError.message}`);
+      return false;
+    }
     const homeScore = (allGoals ?? []).filter((g) => g.team_id === match.home_team_id).length;
     const awayScore = (allGoals ?? []).filter((g) => g.team_id === match.away_team_id).length;
-    await supabase.from("matches").update({ home_score: homeScore, away_score: awayScore }).eq("id", match.id);
+    const { error: writeError } = await supabase
+      .from("matches")
+      .update({ home_score: homeScore, away_score: awayScore })
+      .eq("id", match.id);
+    if (writeError) {
+      setGoalError(`Impossibile aggiornare il risultato: ${writeError.message}`);
+      return false;
+    }
+    return true;
   }
 
   // Adds a goal for a team, with or without a known scorer: logs the
@@ -103,13 +119,25 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   async function addGoal(teamId: string, player: Player | null) {
     if (!match || busy) return;
     setBusy(true);
+    setGoalError(null);
 
-    await supabase.from("match_goals").insert({ match_id: match.id, team_id: teamId, player_id: player?.id ?? null });
+    const { error: insertError } = await supabase
+      .from("match_goals")
+      .insert({ match_id: match.id, team_id: teamId, player_id: player?.id ?? null });
+    if (insertError) {
+      setGoalError(`Impossibile registrare il gol: ${insertError.message}`);
+      setBusy(false);
+      return;
+    }
 
     if (player) {
       const { data: freshPlayer } = await supabase.from("players").select("goals_count").eq("id", player.id).single();
       const current = freshPlayer?.goals_count ?? player.goals_count;
-      await supabase.from("players").update({ goals_count: current + 1 }).eq("id", player.id);
+      const { error: playerError } = await supabase
+        .from("players")
+        .update({ goals_count: current + 1 })
+        .eq("id", player.id);
+      if (playerError) setGoalError(`Gol registrato, ma non ho potuto aggiornare il marcatore: ${playerError.message}`);
     }
 
     await syncScoreFromGoals();
@@ -119,18 +147,27 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
 
   // Removes a previously logged goal: deletes the match_goals row, restores
   // the player's personal tally (if one was credited), then recomputes the
-  // match score from what's left in the ledger — the fix for "ho sbagliato,
-  // tolgo quel gol" not moving the score back.
+  // match score from what's left in the ledger.
   async function removeGoal(goal: GoalRow) {
     if (!match || busy) return;
     setBusy(true);
+    setGoalError(null);
 
-    await supabase.from("match_goals").delete().eq("id", goal.id);
+    const { error: deleteError } = await supabase.from("match_goals").delete().eq("id", goal.id);
+    if (deleteError) {
+      setGoalError(`Impossibile rimuovere il gol: ${deleteError.message}`);
+      setBusy(false);
+      return;
+    }
 
     if (goal.player_id) {
       const { data: freshPlayer } = await supabase.from("players").select("goals_count").eq("id", goal.player_id).single();
       if (freshPlayer) {
-        await supabase.from("players").update({ goals_count: Math.max(0, freshPlayer.goals_count - 1) }).eq("id", goal.player_id);
+        const { error: playerError } = await supabase
+          .from("players")
+          .update({ goals_count: Math.max(0, freshPlayer.goals_count - 1) })
+          .eq("id", goal.player_id);
+        if (playerError) setGoalError(`Gol rimosso, ma non ho potuto aggiornare il marcatore: ${playerError.message}`);
       }
     }
 
@@ -295,7 +332,9 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
               <div key={p.id} className="flex items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs">
                 <span>{p.last_name} #{p.cap_number}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-gold">{p.goals_count}</span>
+                  <span className="text-gold">
+                    {goals.filter((g) => g.player_id === p.id).length}
+                  </span>
                   <button
                     onClick={() => removeLastGoalFor(match.home_team_id, p.id)}
                     disabled={busy}
@@ -348,7 +387,9 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
               <div key={p.id} className="flex items-center justify-between rounded-lg border border-line px-2 py-1.5 text-xs">
                 <span>{p.last_name} #{p.cap_number}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-gold">{p.goals_count}</span>
+                  <span className="text-gold">
+                    {goals.filter((g) => g.player_id === p.id).length}
+                  </span>
                   <button
                     onClick={() => removeLastGoalFor(match.away_team_id, p.id)}
                     disabled={busy}
