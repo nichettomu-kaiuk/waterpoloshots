@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
-import { ArrowLeft, CalendarClock, Video, Target, Trash2, UserX, Save, Plus, Minus } from "lucide-react";
+import { ArrowLeft, CalendarClock, Video, Target, Trash2, UserX, Save, Plus, Minus, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchGoal, MatchStatus, Player, Venue } from "@/lib/supabase/types";
 
@@ -300,6 +300,13 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
           <Save size={14} /> {saving ? "Salvataggio..." : "Salva partita e torna all'elenco"}
         </button>
       </div>
+
+      {goalError && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs text-primary">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          <span>{goalError}</span>
+        </div>
+      )}
 
       <div className="mb-4 rounded-2xl border border-line bg-surface p-4">
         <p className="mb-2 flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted">
