@@ -14,7 +14,7 @@ const statusLabels: Record<MatchStatus, string> = {
   completed: "Terminata",
 };
 
-type GoalRow = MatchGoal & { player?: { first_name: string; last_name: string } | null };
+type GoalRow = MatchGoal;
 
 // Converts an ISO timestamp to the `YYYY-MM-DDTHH:mm` format the
 // datetime-local input expects, in local time.
@@ -54,7 +54,7 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       supabase.from("venues").select("*").order("name"),
       supabase
         .from("match_goals")
-        .select("*, player:players!match_goals_player_id_fkey(first_name, last_name)")
+        .select("*")
         .eq("match_id", params.id)
         .order("created_at", { ascending: true }),
     ]);
@@ -430,7 +430,8 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
             {goals.map((g) => {
               const isHome = g.team_id === match.home_team_id;
               const teamName = isHome ? match.home_team?.name : match.away_team?.name;
-              const label = g.player ? `${g.player.first_name} ${g.player.last_name}` : "Gol senza marcatore";
+              const scorer = g.player_id ? [...homeRoster, ...awayRoster].find((p) => p.id === g.player_id) : null;
+              const label = scorer ? `${scorer.first_name} ${scorer.last_name}` : "Gol senza marcatore";
               return (
                 <div
                   key={g.id}
