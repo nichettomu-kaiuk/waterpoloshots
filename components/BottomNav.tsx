@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, Trophy, ListOrdered, Users, UserRound, Newspaper } from "lucide-react";
+import { Home, CalendarDays, Trophy, Users, UserRound, Newspaper } from "lucide-react";
 import clsx from "clsx";
 
 // Mirrors the quick-nav bento-grid on the home page, plus Home restored in
-// its original first position.
+// its original first position. Classifica + Marcatori are merged into one
+// "Classifiche" page/link.
 const items = [
   { href: "/", label: "Home", icon: Home },
   { href: "/calendario", label: "Calendario", icon: CalendarDays },
-  { href: "/classifiche", label: "Classifica", icon: Trophy },
-  { href: "/marcatori", label: "Marcatori", icon: ListOrdered },
+  { href: "/classifiche", label: "Classifiche", icon: Trophy },
   { href: "/squadre", label: "Squadre", icon: Users },
   { href: "/giocatori", label: "Giocatori", icon: UserRound },
   { href: "/news", label: "News", icon: Newspaper },
@@ -22,7 +22,7 @@ export default function BottomNav() {
 
   return (
     <nav className="bottom-nav fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-line bg-ink/95 backdrop-blur lg:max-w-5xl xl:max-w-6xl">
-      <ul className="grid grid-cols-7">
+      <ul className="grid grid-cols-6">
         {items.map(({ href, label, icon: Icon }) => {
           const basePath = href.split("#")[0];
           const active = pathname === basePath;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Trophy, ListOrdered, Newspaper, Users, UserRound } from "lucide-react";
+import { CalendarDays, Trophy, Newspaper, Users, UserRound } from "lucide-react";
 import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
 import Hero from "@/components/Hero";
@@ -44,7 +44,7 @@ export default async function HomePage() {
         {settings?.header_bg_url && <div className="absolute inset-0 bg-ink/88" />}
         <div className="relative">
           {SHOW_QUICK_NAV && (
-            <section className="grid grid-cols-6 gap-1 px-3 py-4">
+            <section className="grid grid-cols-5 gap-1 px-3 py-4">
               <Link
                 href="/calendario"
                 className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
@@ -57,14 +57,7 @@ export default async function HomePage() {
                 className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
               >
                 <Trophy size={16} className="text-gold" />
-                <span className="text-[8px] font-medium leading-tight">Classifica</span>
-              </Link>
-              <Link
-                href="/marcatori"
-                className="mx-auto flex w-full max-w-[46px] flex-col items-center gap-0.5 rounded-lg border border-line bg-surface py-2 text-center transition active:scale-95"
-              >
-                <ListOrdered size={16} className="text-gold" />
-                <span className="text-[8px] font-medium leading-tight">Marcatori</span>
+                <span className="text-[8px] font-medium leading-tight">Classifiche</span>
               </Link>
               <Link
                 href="/squadre"
