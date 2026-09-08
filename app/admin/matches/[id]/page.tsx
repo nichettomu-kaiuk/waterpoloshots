@@ -43,7 +43,7 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    const [{ data: m }, { data: v }, { data: g }] = await Promise.all([
+    const [{ data: m }, { data: v }, { data: g, error: goalsReadError }] = await Promise.all([
       supabase
         .from("matches")
         .select(
@@ -54,10 +54,16 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       supabase.from("venues").select("*").order("name"),
       supabase
         .from("match_goals")
-        .select("*, player:players(first_name, last_name)")
+        .select("*, player:players!match_goals_player_id_fkey(first_name, last_name)")
         .eq("match_id", params.id)
         .order("created_at", { ascending: true }),
     ]);
+
+    if (goalsReadError) {
+      setGoalError(
+        `Impossibile caricare l'elenco gol: ${goalsReadError.message}. Probabile causa: lo schema del database non è aggiornato — esegui la migrazione più recente di supabase/schema.sql.`
+      );
+    }
 
     if (m) {
       setMatch(m as any);
