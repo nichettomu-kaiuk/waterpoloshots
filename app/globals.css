@@ -14,13 +14,6 @@
   --color-line: #232327;
   --color-muted: #8f8f97;
   --color-fg: #f5f5f6;
-  /* Brighter red used ONLY as text on translucent red badges (bg-primary/10,
-     bg-primary/15 — LiveBadge, "Diretta" tag, admin alert banners). The
-     brand red (--color-primary) sits at ~3.3–4:1 on those tinted dark
-     backgrounds, below the WCAG AA 4.5:1 text minimum; this tone keeps the
-     same hue but reaches ~6:1. Never used for large text, borders or solid
-     fills, only this one text-on-tint case. */
-  --color-primary-on-tint: #ff6b78;
 }
 
 /* Light variants of Classico / Corsia / Regolamento: same shapes, borders
@@ -36,20 +29,6 @@
   --color-line: #dcdcdf;
   --color-muted: #6b6b73;
   --color-fg: #0a0a0b;
-  /* The brand gold (#d4af37) is ~2.1:1 on a white/light background — badly
-     below the 4.5:1 AA minimum for text, and it's used as text color in
-     30+ places across the app (classifica points, gol count, marcatori,
-     credits icon…). Fallback only: app/layout.tsx sets --color-gold /
-     --color-gold-dim inline on <body> (darkened from whatever secondary_color
-     Admin picked), which wins over this class on <html> for everything
-     rendered inside body — these two lines only apply if that inline style
-     is ever missing (e.g. this stylesheet reused outside RootLayout). */
-  --color-gold: #96690a;
-  --color-gold-dim: #7a5a10;
-  /* Same badge-legibility fix as the dark theme, but here bg-primary/10-15
-     sits on a near-white surface, so plain --color-primary already clears
-     4.5:1 — no brightening needed. */
-  --color-primary-on-tint: var(--color-primary);
 }
 .theme-light body {
   color: var(--color-fg);
@@ -93,78 +72,6 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
-}
-
-/* ── Elevazione e transizioni condivise (tutti e 3 i temi) ───────────────
-   Applicata sugli stessi class hook stabili già usati dal sistema temi
-   (vedi PROJECT_STATUS.md), così ogni card guadagna un'ombra leggera e un
-   sollevamento morbido all'hover/focus senza toccare i singoli componenti
-   né duplicare la regola nelle varianti -lane/-regulation. */
-.match-card,
-.match-card-bare,
-.news-card,
-.site-card,
-.grouped-card,
-.player-card {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-@media (hover: hover) {
-  .match-card:hover,
-  .news-card:hover,
-  .site-card:hover,
-  .player-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-gold-dim);
-    box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.45);
-  }
-  .grouped-card > *:hover {
-    background: var(--color-surface-raised);
-  }
-}
-
-/* ── TopNav (barra di navigazione desktop, `lg` in su) ────────────────────
-   Controparte desktop di BottomNav (nascosta con `lg:hidden`, vedi sotto):
-   una barra fissa in mobile diventata larga quanto il layout 5xl/6xl
-   sembrava un residuo mobile, quindi da `lg` la navigazione primaria si
-   sposta qui, in alto, sticky. Stesso pattern di class hook stabili delle
-   altre varianti di tema. */
-.top-nav-item.is-active {
-  background: var(--color-surface-raised);
-}
-.theme-lane .top-nav-item.is-active {
-  background: var(--color-gold);
-  color: var(--color-ink) !important;
-}
-.theme-lane .top-nav-item.is-active svg {
-  color: var(--color-ink) !important;
-}
-.theme-regulation .top-nav-item {
-  border-radius: 0;
-}
-.theme-regulation .top-nav-item.is-active {
-  background: transparent;
-  box-shadow: inset 0 -2px 0 var(--color-gold);
-}
-
-/* Le due icone flottanti (Credits/Admin) restano lo stesso componente ma da
-   `lg` si spostano dentro la riga del TopNav invece di restare ancorate
-   all'angolo del viewport, staccate dal resto del layout centrato. */
-@media (min-width: 1024px) {
-  .corner-icon-group {
-    top: 50%;
-    right: max(2rem, calc((100vw - 1152px) / 2 + 2rem));
-    transform: translateY(-50%);
-  }
-}
-
-/* Stato di focus visibile via tastiera — nessuna regola precedente lo
-   definiva esplicitamente. Non tocca il click con il mouse (:focus-visible
-   si attiva solo su navigazione da tastiera nei browser moderni). */
-:focus-visible {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 2px;
-  border-radius: 6px;
 }
 
 /* ────────────────────────────────────────────────────────────────────────

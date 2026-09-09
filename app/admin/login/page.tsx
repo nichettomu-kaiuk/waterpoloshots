@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
 
   return (
     <main className="flex min-h-[80vh] flex-col justify-center px-6">
-      <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-[color:var(--color-primary-on-tint)]">
+      <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary">
         <Lock size={22} />
       </div>
       <h1 className="mb-1 text-center font-display text-2xl font-bold">Accesso Admin</h1>

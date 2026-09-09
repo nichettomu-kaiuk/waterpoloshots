@@ -78,7 +78,7 @@ export default function CalendarClient({
             className={clsx(
               "rounded-full border px-4 py-1.5 text-xs font-medium transition",
               activeGirone === f.value
-                ? "border-primary bg-primary/15 text-[color:var(--color-primary-on-tint)]"
+                ? "border-primary bg-primary/15 text-primary"
                 : "border-line text-muted"
             )}
           >
@@ -103,7 +103,7 @@ export default function CalendarClient({
                     <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">
                       Giornata {giornataNum}
                     </p>
-                    <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface lg:mx-auto lg:max-w-2xl">
+                    <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                       {giornataMatches.map((m) => (
                         <MatchCard key={m.id} match={m} bare />
                       ))}

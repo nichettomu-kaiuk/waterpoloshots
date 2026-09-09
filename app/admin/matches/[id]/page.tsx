@@ -284,7 +284,7 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
               onClick={() => setStatus(s)}
               className={clsx(
                 "flex-1 rounded-full border px-2 py-1.5 text-[11px] font-medium",
-                status === s ? "border-primary bg-primary/15 text-[color:var(--color-primary-on-tint)]" : "border-line text-muted"
+                status === s ? "border-primary bg-primary/15 text-primary" : "border-line text-muted"
               )}
             >
               {statusLabels[s]}
@@ -302,7 +302,7 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       </div>
 
       {goalError && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs text-[color:var(--color-primary-on-tint)]">
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs text-primary">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <span>{goalError}</span>
         </div>
