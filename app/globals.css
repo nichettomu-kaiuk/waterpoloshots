@@ -442,8 +442,7 @@ body {
 
 .theme-impact .cap-badge,
 .theme-impact .cap-badge img {
-  border-width: 2px !important;
-  border-color: var(--color-gold-dim) !important;
+  border-width: 0 !important;
 }
 
 /* Standings rank: plain mono number, no per-row highlight. */
@@ -692,8 +691,7 @@ body {
 
 .theme-poster .cap-badge,
 .theme-poster .cap-badge img {
-  border-width: 2px !important;
-  border-color: var(--color-primary) !important;
+  border-width: 0 !important;
 }
 
 .theme-poster .match-score,
