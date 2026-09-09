@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Venue } from "@/lib/supabase/types";
 
@@ -10,6 +10,7 @@ export default function AdminVenuesPage() {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [form, setForm] = useState({ name: "", location_tag: "", address: "" });
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
     const { data } = await supabase.from("venues").select("*").order("name");
@@ -20,16 +21,39 @@ export default function AdminVenuesPage() {
     load();
   }, []);
 
-  async function handleAdd(e: React.FormEvent) {
+  function startEdit(venue: Venue) {
+    setEditingId(venue.id);
+    setForm({
+      name: venue.name,
+      location_tag: venue.location_tag ?? "",
+      address: venue.address ?? "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ name: "", location_tag: "", address: "" });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) return;
     setSaving(true);
-    await supabase.from("venues").insert({
+
+    const payload = {
       name: form.name.trim(),
       location_tag: form.location_tag.trim() || null,
       address: form.address.trim() || null,
-    });
-    setForm({ name: "", location_tag: "", address: "" });
+    };
+
+    if (editingId) {
+      await supabase.from("venues").update(payload).eq("id", editingId);
+    } else {
+      await supabase.from("venues").insert(payload);
+    }
+
+    cancelEdit();
     setSaving(false);
     load();
   }
@@ -37,6 +61,7 @@ export default function AdminVenuesPage() {
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questa piscina?")) return;
     await supabase.from("venues").delete().eq("id", id);
+    if (editingId === id) cancelEdit();
     load();
   }
 
@@ -44,7 +69,15 @@ export default function AdminVenuesPage() {
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Piscine</h2>
 
-      <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
+      <form onSubmit={handleSubmit} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
+        {editingId && (
+          <div className="mb-1 flex items-center justify-between text-xs text-gold">
+            <span>Modifica piscina</span>
+            <button type="button" onClick={cancelEdit} className="flex items-center gap-1 text-muted hover:text-white">
+              <X size={13} /> Annulla
+            </button>
+          </div>
+        )}
         <input
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -68,7 +101,7 @@ export default function AdminVenuesPage() {
           disabled={saving}
           className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
-          <Plus size={15} /> {saving ? "Salvataggio..." : "Aggiungi piscina"}
+          <Plus size={15} /> {saving ? "Salvataggio..." : editingId ? "Salva modifiche" : "Aggiungi piscina"}
         </button>
       </form>
 
@@ -79,6 +112,9 @@ export default function AdminVenuesPage() {
               <p className="text-sm font-medium">{v.name}</p>
               {v.location_tag && <p className="text-[11px] text-muted">{v.location_tag}</p>}
             </div>
+            <button onClick={() => startEdit(v)} className="text-muted hover:text-gold">
+              <Pencil size={16} />
+            </button>
             <button onClick={() => handleDelete(v.id)} className="text-muted hover:text-primary">
               <Trash2 size={16} />
             </button>
