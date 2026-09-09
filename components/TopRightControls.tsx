@@ -25,7 +25,7 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
 
   return (
     <>
-      <div className="fixed right-3 top-3 z-40 flex items-center gap-2">
+      <div className="corner-icon-group fixed right-3 top-3 z-40 flex items-center gap-2">
         <button
           onClick={() => setInfoOpen(true)}
           aria-label="Credits"

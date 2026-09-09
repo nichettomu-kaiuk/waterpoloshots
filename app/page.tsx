@@ -106,7 +106,7 @@ export default async function HomePage() {
               <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">
                 In corso
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-3 lg:mx-auto lg:max-w-2xl">
                 {live.map((m) => (
                   <MatchCard key={m.id} match={m} />
                 ))}
@@ -122,7 +122,7 @@ export default async function HomePage() {
                 </h2>
                 <Link href="/calendario" className="text-xs text-primary">Vedi tutti</Link>
               </div>
-              <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+              <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface lg:mx-auto lg:max-w-2xl">
                 {upcoming.map((m) => (
                   <MatchCard key={m.id} match={m} bare />
                 ))}
@@ -142,7 +142,7 @@ export default async function HomePage() {
             {recent.length === 0 ? (
               <p className="text-sm text-muted">Nessun risultato disponibile.</p>
             ) : (
-              <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+              <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface lg:mx-auto lg:max-w-2xl">
                 {recent.map((m) => (
                   <MatchCard key={m.id} match={m} bare />
                 ))}
