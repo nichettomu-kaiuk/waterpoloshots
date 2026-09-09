@@ -161,6 +161,12 @@ export default function AdminSettingsPage() {
                   { value: "lane-light", label: "Corsia Chiara", hint: "Stesse forme, sfondo bianco", dark: false },
                   { value: "regulation", label: "Regolamento", hint: "Card piatte, badge a cuffia", dark: true },
                   { value: "regulation-light", label: "Regolamento Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "impact", label: "Onda d'Urto", hint: "Energico: diagonali, card a biglietto dorate", dark: true },
+                  { value: "impact-light", label: "Onda d'Urto Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "broadcast", label: "Broadcast Gold", hint: "Premium TV: hairline dorate, card vetro", dark: true },
+                  { value: "broadcast-light", label: "Broadcast Gold Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "poster", label: "Poster Arena", hint: "Manifesto: blocchi netti, badge squadrati", dark: true },
+                  { value: "poster-light", label: "Poster Arena Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
                 ] as const
               ).map((opt) => (
                 <button

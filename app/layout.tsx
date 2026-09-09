@@ -44,13 +44,21 @@ export default async function RootLayout({
 
   // Theme is stored as a single value (e.g. "lane-light") but applied as two
   // composable classes: the structural shape (theme-lane / theme-regulation
-  // / none for classic) and, if it's a light variant, `theme-light` — which
-  // just swaps the background/text color tokens and leaves every shape rule
-  // (clip-paths, borders, etc.) untouched.
+  // / theme-impact / theme-broadcast / theme-poster / none for classic) and,
+  // if it's a light variant, `theme-light` — which just swaps the
+  // background/text color tokens and leaves every shape rule (clip-paths,
+  // borders, etc.) untouched.
   const theme = settings?.theme ?? "classic";
   const isLight = theme.endsWith("-light");
   const baseTheme = isLight ? theme.replace("-light", "") : theme;
-  const structuralClass = baseTheme === "lane" ? "theme-lane" : baseTheme === "regulation" ? "theme-regulation" : "";
+  const structuralClassMap: Record<string, string> = {
+    lane: "theme-lane",
+    regulation: "theme-regulation",
+    impact: "theme-impact",
+    broadcast: "theme-broadcast",
+    poster: "theme-poster",
+  };
+  const structuralClass = structuralClassMap[baseTheme] ?? "";
   const themeClass = [structuralClass, isLight ? "theme-light" : ""].filter(Boolean).join(" ");
 
   return (

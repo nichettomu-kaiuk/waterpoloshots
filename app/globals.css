@@ -347,3 +347,430 @@ body {
 .theme-regulation .corner-icon {
   border-radius: 0;
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme: "Impact" (Onda d'Urto)
+   A fourth visual identity: high-energy hybrid of broadcast graphics and
+   the existing "Corsia" ticket-card language — a steep diagonal wash and
+   a motion stripe across the hero, heavier gold-edged ticket cards, and a
+   primary→gold gradient applied to the few highest-emphasis numbers
+   (scores, goal tallies). Same color tokens and class-hook system as the
+   themes above — see "Corsia" for how the hook system works.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.theme-impact .app-hero {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
+  padding-bottom: 34px;
+}
+.theme-impact .app-hero::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto auto;
+  width: 70%;
+  height: 75%;
+  background: linear-gradient(
+    128deg,
+    transparent 40%,
+    color-mix(in srgb, var(--color-primary) 55%, transparent) 52%,
+    color-mix(in srgb, var(--color-primary) 12%, transparent) 68%,
+    transparent 80%
+  );
+  transform: rotate(-3deg);
+  pointer-events: none;
+}
+.theme-impact .app-hero::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: 14px;
+  height: 10px;
+  background: repeating-linear-gradient(
+    -55deg,
+    var(--color-primary) 0 14px,
+    var(--color-gold) 14px 16px,
+    transparent 16px 30px
+  );
+  opacity: 0.85;
+  pointer-events: none;
+}
+.theme-impact .hero-eyebrow {
+  position: relative;
+  padding-left: 12px;
+}
+.theme-impact .hero-eyebrow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 999px;
+  background: var(--color-primary);
+}
+
+/* Ticket-notch cards (steeper cut than Corsia) with a heavier gold edge
+   that switches to red while the match is live. */
+.theme-impact .match-card,
+.theme-impact .news-card,
+.theme-impact .grouped-card,
+.theme-impact .site-card,
+.theme-impact .player-card {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  border-left: 4px solid var(--color-gold) !important;
+}
+.theme-impact .match-card.is-live {
+  border-left-color: var(--color-primary) !important;
+}
+
+/* Scores and goal tallies get the signature two-tone gradient treatment;
+   a live score stays a plain, urgent red instead. */
+.theme-impact .match-score,
+.theme-impact .player-cap-number {
+  font-family: var(--font-mono);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-gold) 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+.theme-impact .match-score.text-primary {
+  background: none;
+  -webkit-text-fill-color: unset;
+  color: var(--color-primary) !important;
+}
+
+.theme-impact .cap-badge,
+.theme-impact .cap-badge img {
+  border-width: 2px !important;
+  border-color: var(--color-gold-dim) !important;
+}
+
+/* Standings rank: podium-style gold discs for the top three. */
+.theme-impact .rank-box span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.theme-impact .site-card table tbody tr:nth-child(-n + 3) .rank-box span {
+  border-radius: 999px;
+  background: var(--color-gold);
+  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
+     "-light" variants, which would leave this text unreadable on gold. */
+  color: #0a0a0b;
+}
+
+.theme-impact .podium-pedestal {
+  clip-path: polygon(0 10px, 100% 0, 100% 100%, 0 100%);
+  border-top: 2px solid var(--color-gold);
+  background: linear-gradient(to top, color-mix(in srgb, var(--color-primary) 30%, transparent), transparent);
+}
+
+.theme-impact .detail-hero-image {
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+}
+
+.theme-impact .corner-icon {
+  border-radius: 8px;
+}
+
+.theme-impact .bottom-nav {
+  bottom: 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  overflow: hidden;
+}
+.theme-impact .bottom-nav-item.is-active {
+  background: linear-gradient(120deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 65%, var(--color-gold)));
+  border-radius: 999px;
+  margin: 2px;
+}
+.theme-impact .bottom-nav-item.is-active .bottom-nav-icon {
+  color: var(--color-gold);
+}
+.theme-impact .bottom-nav-item.is-active span {
+  color: #fff;
+}
+
+.theme-impact .lane-rope {
+  height: 5px;
+  margin: 18px 0;
+  border-radius: 3px;
+  background-image: repeating-linear-gradient(
+    -55deg,
+    var(--color-primary) 0 14px,
+    var(--color-gold) 14px 16px,
+    transparent 16px 30px
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme: "Broadcast" (Broadcast Gold)
+   A fifth visual identity: a calmer, premium sports-broadcast graphics
+   package — thin gold hairlines, softly tinted "glass" panels, and mono
+   numerals flanked by short rule marks. Same tokens and class-hook system
+   as the themes above.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.theme-broadcast .app-hero {
+  background-image: radial-gradient(
+    ellipse 70% 45% at 50% 0%,
+    color-mix(in srgb, var(--color-gold) 12%, transparent),
+    transparent 60%
+  );
+  border-top: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent);
+}
+.theme-broadcast .app-hero h1 {
+  letter-spacing: 0.02em;
+}
+.theme-broadcast .hero-eyebrow {
+  position: relative;
+  padding-left: 30px;
+}
+.theme-broadcast .hero-eyebrow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 20px;
+  height: 1px;
+  transform: translateY(-50%);
+  background: var(--color-gold);
+}
+
+.theme-broadcast .match-card,
+.theme-broadcast .news-card,
+.theme-broadcast .grouped-card,
+.theme-broadcast .site-card,
+.theme-broadcast .player-card {
+  border-color: color-mix(in srgb, var(--color-gold) 35%, transparent) !important;
+  background: color-mix(in srgb, var(--color-fg) 3%, var(--color-surface));
+}
+
+.theme-broadcast .match-score,
+.theme-broadcast .player-cap-number {
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gold) !important;
+}
+.theme-broadcast .match-score.text-primary {
+  color: var(--color-primary) !important;
+}
+.theme-broadcast .match-score::before,
+.theme-broadcast .match-score::after,
+.theme-broadcast .player-cap-number::before,
+.theme-broadcast .player-cap-number::after {
+  content: "";
+  width: 10px;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-gold) 45%, transparent);
+  display: inline-block;
+}
+
+.theme-broadcast .cap-badge,
+.theme-broadcast .cap-badge img {
+  border-width: 1.4px !important;
+  border-color: var(--color-gold) !important;
+}
+
+.theme-broadcast .rank-box span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--font-mono);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent);
+  color: var(--color-gold);
+}
+
+.theme-broadcast .podium-pedestal {
+  border-top: 2px solid var(--color-gold);
+  background: linear-gradient(to top, color-mix(in srgb, var(--color-gold) 18%, transparent), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-gold) 20%, transparent);
+}
+
+.theme-broadcast .detail-hero-image {
+  border-top: 2px solid var(--color-gold);
+}
+
+.theme-broadcast .bottom-nav {
+  border-top: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent);
+}
+.theme-broadcast .bottom-nav-item {
+  position: relative;
+}
+.theme-broadcast .bottom-nav-item.is-active .bottom-nav-icon {
+  color: var(--color-gold);
+}
+.theme-broadcast .bottom-nav-item.is-active span {
+  color: var(--color-gold);
+}
+.theme-broadcast .bottom-nav-item.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: var(--color-gold);
+}
+
+.theme-broadcast .lane-rope {
+  height: 1px;
+  margin: 20px 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-gold) 55%, transparent) 25%,
+    color-mix(in srgb, var(--color-gold) 55%, transparent) 75%,
+    transparent
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme: "Poster" (Poster Arena)
+   A sixth visual identity: a bold graphic-poster look — flat rectangular
+   blocks (zero radius everywhere), thick rule lines instead of soft
+   borders, square badges, and a large outlined letter watermark behind the
+   hero. Same tokens and class-hook system as the themes above.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.theme-poster .app-hero {
+  border-bottom: 2px solid var(--color-fg);
+}
+.theme-poster .app-hero::before {
+  content: "W";
+  position: absolute;
+  top: -0.35em;
+  right: -0.12em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13rem;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--color-fg) 8%, transparent);
+  pointer-events: none;
+}
+.theme-poster .app-hero h1 {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.theme-poster .hero-eyebrow {
+  display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 3px 10px;
+  letter-spacing: 0.12em;
+}
+
+.theme-poster .match-card,
+.theme-poster .news-card,
+.theme-poster .grouped-card,
+.theme-poster .site-card,
+.theme-poster .player-card,
+.theme-poster .detail-hero-image,
+.theme-poster .podium-pedestal,
+.theme-poster .corner-icon,
+.theme-poster .cap-badge,
+.theme-poster .cap-badge img {
+  border-radius: 0 !important;
+}
+.theme-poster .match-card,
+.theme-poster .news-card,
+.theme-poster .grouped-card,
+.theme-poster .site-card,
+.theme-poster .player-card {
+  border-width: 2px !important;
+  border-left-width: 2px !important;
+  border-color: var(--color-fg) !important;
+}
+.theme-poster .match-card.is-live {
+  border-color: var(--color-primary) !important;
+}
+
+.theme-poster .cap-badge,
+.theme-poster .cap-badge img {
+  border-width: 2px !important;
+  border-color: var(--color-primary) !important;
+}
+
+.theme-poster .match-score,
+.theme-poster .player-cap-number {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background: var(--color-gold) !important;
+  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
+     "-light" variant, which would leave this text unreadable on gold. */
+  color: #0a0a0b !important;
+  padding: 2px 7px;
+  display: inline-block;
+}
+.theme-poster .match-score.text-primary {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.theme-poster .rank-box span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border: 2px solid var(--color-fg);
+}
+.theme-poster .site-card table tbody tr:nth-child(-n + 3) .rank-box span {
+  background: var(--color-gold);
+  color: #0a0a0b;
+  border-color: var(--color-gold);
+}
+
+.theme-poster .podium-pedestal {
+  border: 2px solid var(--color-fg);
+  border-bottom: none;
+  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.theme-poster .detail-hero-image {
+  border-top: 3px solid var(--color-primary);
+}
+
+.theme-poster .corner-icon {
+  border-width: 2px !important;
+}
+
+.theme-poster .bottom-nav {
+  border-radius: 0;
+  border-top: 2px solid var(--color-fg);
+}
+.theme-poster .bottom-nav-item.is-active {
+  background: var(--color-primary);
+}
+.theme-poster .bottom-nav-item.is-active .bottom-nav-icon,
+.theme-poster .bottom-nav-item.is-active span {
+  color: #fff !important;
+}
+.theme-poster .bottom-nav li:not(:last-child) .bottom-nav-item {
+  border-right: 1px solid var(--color-line);
+}
+
+.theme-poster .lane-rope {
+  height: 8px;
+  margin: 18px 0;
+  background-image: repeating-linear-gradient(
+    -55deg,
+    var(--color-primary) 0 16px,
+    var(--color-gold) 16px 18px,
+    transparent 18px 34px
+  );
+}
