@@ -718,7 +718,6 @@ body {
   height: 22px;
   font-family: var(--font-mono);
   font-weight: 700;
-  border: 2px solid var(--color-fg);
 }
 
 .theme-poster .podium-pedestal {
