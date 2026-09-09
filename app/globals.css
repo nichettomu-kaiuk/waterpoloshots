@@ -446,7 +446,7 @@ body {
   border-color: var(--color-gold-dim) !important;
 }
 
-/* Standings rank: podium-style gold discs for the top three. */
+/* Standings rank: plain mono number, no per-row highlight. */
 .theme-impact .rank-box span {
   display: inline-flex;
   align-items: center;
@@ -455,13 +455,6 @@ body {
   height: 22px;
   font-family: var(--font-mono);
   font-weight: 700;
-}
-.theme-impact .site-card table tbody tr:nth-child(-n + 3) .rank-box span {
-  border-radius: 999px;
-  background: var(--color-gold);
-  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
-     "-light" variants, which would leave this text unreadable on gold. */
-  color: #0a0a0b;
 }
 
 .theme-impact .podium-pedestal {
@@ -728,11 +721,6 @@ body {
   font-family: var(--font-mono);
   font-weight: 700;
   border: 2px solid var(--color-fg);
-}
-.theme-poster .site-card table tbody tr:nth-child(-n + 3) .rank-box span {
-  background: var(--color-gold);
-  color: #0a0a0b;
-  border-color: var(--color-gold);
 }
 
 .theme-poster .podium-pedestal {
