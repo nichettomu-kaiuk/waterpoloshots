@@ -167,6 +167,8 @@ export default function AdminSettingsPage() {
                   { value: "broadcast-light", label: "Broadcast Gold Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
                   { value: "poster", label: "Poster Arena", hint: "Manifesto: blocchi netti, badge squadrati", dark: true },
                   { value: "poster-light", label: "Poster Arena Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "magazine", label: "Magazine", hint: "Editoriale: fascia rossa, card piatte, Space Grotesk", dark: true },
+                  { value: "magazine-light", label: "Magazine Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
                 ] as const
               ).map((opt) => (
                 <button
