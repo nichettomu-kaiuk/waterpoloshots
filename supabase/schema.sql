@@ -18,9 +18,6 @@ create table teams (
   logo_url text,
   venue_id uuid references venues(id) on delete set null,
   coach_name text,
-  logo_large_scale int not null default 100,
-  logo_large_x int not null default 50,
-  logo_large_y int not null default 50,
   created_at timestamptz not null default now()
 );
 
@@ -175,11 +172,13 @@ create index if not exists matches_round_giornata_idx on matches(round_type, gio
 alter table teams add column if not exists venue_id uuid references venues(id) on delete set null;
 create index if not exists teams_venue_id_idx on teams(venue_id);
 
--- Adds: teams.logo_large_scale/x/y — lets the admin resize and reposition
--- the large background team logo on the player card page.
-alter table teams add column if not exists logo_large_scale int not null default 100;
-alter table teams add column if not exists logo_large_x int not null default 50;
-alter table teams add column if not exists logo_large_y int not null default 50;
+-- Removed: teams.logo_large_scale/x/y — used to resize/reposition the large
+-- background team logo on the player card page; that watermark and its
+-- admin controls were removed on explicit request, so the columns are
+-- dropped too (was: alter table teams add column ... logo_large_scale/x/y).
+alter table teams drop column if exists logo_large_scale;
+alter table teams drop column if exists logo_large_x;
+alter table teams drop column if exists logo_large_y;
 
 -- Adds: teams.coach_name (allenatore), editable in Admin → Squadre.
 alter table teams add column if not exists coach_name text;

@@ -68,34 +68,83 @@ supabase/schema.sql        CREATE TABLE (fresh install) + blocco MIGRAZIONE in f
 ## ⚠️ Nota permanente: migrazioni Supabase
 
 `supabase/schema.sql` contiene, in fondo al file, un unico blocco di
-migrazione con `alter table ... add column if not exists ...` per ogni
-colonna aggiunta nel tempo (giornata, venue_id, logo_large_*, coach_name,
-stream_url, player_id nullable, info_*, theme a 6 valori,
-match_goals.created_at, ecc.). **È sicuro rieseguire l'intero blocco più
-volte.** Buona parte dei bug "non funziona niente" riscontrati in questo
-progetto erano in realtà migrazioni non ancora eseguite sul DB live
-dell'utente — primo sospetto in caso di comportamento strano.
+migrazione con `alter table ... add/drop column if exists ...` per ogni
+colonna aggiunta (o rimossa) nel tempo (giornata, venue_id, coach_name,
+stream_url, player_id nullable, info_*, theme a 12 valori,
+match_goals.created_at, `teams.logo_large_scale/x/y` rimosse, ecc.). **È
+sicuro rieseguire l'intero blocco più volte.** Buona parte dei bug "non
+funziona niente" riscontrati in questo progetto erano in realtà migrazioni
+non ancora eseguite sul DB live dell'utente — primo sospetto in caso di
+comportamento strano.
 
 ## Sistema temi (Admin → Impostazioni → Aspetto grafico)
 
-`settings.theme`, 6 valori: `classic`, `lane`, `regulation`,
-`classic-light`, `lane-light`, `regulation-light`.
+`settings.theme`, **12 valori**: `classic`, `lane`, `regulation`, `impact`,
+`broadcast`, `poster`, e le rispettive varianti `-light`
+(`classic-light`, `lane-light`, `regulation-light`, `impact-light`,
+`broadcast-light`, `poster-light`).
 
-- Applicato come classe sull'elemento `<html>` in `app/layout.tsx`
+- Applicato come classe sull'elemento `<html>` in `app/layout.tsx`, via
+  `structuralClassMap` (`lane`→`theme-lane`, `regulation`→`theme-regulation`,
+  `impact`→`theme-impact`, `broadcast`→`theme-broadcast`,
+  `poster`→`theme-poster`, `classic`→nessuna classe)
 - CSS a cascata in `globals.css`, targettizzato su **class hook stabili**
-  aggiunte nel markup (`site-card`, `match-card`/`match-card-bare`,
-  `news-card`, `player-card`, `cap-badge`, `rank-box`, `bottom-nav`,
-  `bottom-nav-item`, `hero-eyebrow` — rimossa, causava un bug, vedi sotto —
-  `lane-rope`, `corner-icon`, `detail-hero-image`, `podium-pedestal`)
+  aggiunte nel markup (`app-hero`, `hero-eyebrow`, `site-card`,
+  `match-card`/`match-card-bare`, `match-score`, `news-card`, `player-card`,
+  `player-cap-number`, `cap-badge`, `rank-box`, `bottom-nav`,
+  `bottom-nav-item`, `lane-rope`, `corner-icon`, `detail-hero-image`,
+  `podium-pedestal`) — **nessuna modifica ai componenti .tsx** è mai stata
+  necessaria per aggiungere un tema nuovo, switchare tema non richiede mai
+  markup diverso
+- `hero-eyebrow`: il bug storico era in una regola `::after` legata a
+  `active_round` vuoto (rimossa allora); l'hook in sé è vivo e riusato da
+  Impact (pallino rosso prima del testo), Broadcast (trattino dorato) e
+  Poster (diventa un chip pieno rosso)
 - Le varianti "-light" invertono `--color-ink`/`--color-fg` e forzano
   `.text-white` a diventare scuro tramite `.theme-light` (classe composta
-  con le altre tre)
+  con le altre); Impact/Broadcast/Poster usano `var(--color-*)` ovunque
+  proprio per ereditare gratis le varianti chiare, tranne dove il testo sta
+  su un blocco pieno oro (`.match-score`/`.player-cap-number` in Poster) —
+  lì il colore testo è **hardcoded `#0a0a0b`** invece di `var(--color-ink)`,
+  perché `--color-ink` si inverte in bianco nelle varianti "-light" e
+  renderebbe il testo illeggibile sopra l'oro
+- **Nessun evidenziamento delle prime 3 posizioni** in `.rank-box` (pagina
+  Classifiche): rimosso esplicitamente su richiesta dell'utente — se in
+  futuro si volesse un accento pos. 1-3, ricordarsi di questa scelta prima
+  di riproporlo
+- **Nessuna cornice sul numero di posizione in classifica** (`.rank-box
+  span`) in Onda d'Urto e Poster Arena: Onda d'Urto non ne ha mai avuta
+  (solo numero mono), in Poster Arena è stato tolto il `border: 2px solid
+  var(--color-fg)` su richiesta esplicita — il numero resta un semplice
+  testo monospace senza riquadro
 - **Corsia**: card "a biglietto" (clip-path), hero diagonale, punteggi
   monospace, nav a pillola flottante, divisore "corsia" (lane-rope)
 - **Regolamento**: card piatte, badge a "cuffia" (ear-tab via `::after`),
   bordo superiore dorato sottile, punteggi tra due trattini
+- **Onda d'Urto** (`impact`): hero con wash diagonale rosso + striscia
+  "ticker" decorativa in fondo, card a biglietto con taglio più profondo e
+  bordo oro più spesso (rosso se live), punteggi/reti con testo a gradiente
+  rosso→oro (`background-clip: text`), nav a pillola con gradiente
+  rosso→oro sull'attivo, **loghi squadra/foto giocatore senza cornice**
+  (`.cap-badge` a `border-width: 0`, tolta su richiesta esplicita)
+- **Broadcast Gold** (`broadcast`): estetica da grafica TV — hairline dorate
+  sottili, card "vetro" (leggera tinta `color-mix` sul fondo + bordo oro
+  translucido), punteggi/numero maglia mono affiancati da trattini corti
+  dorati, nav con sottolineatura dorata sull'attivo invece del pallino
+- **Poster Arena** (`poster`): manifesto grafico — zero angoli arrotondati
+  ovunque (`!important` sugli hook), bordi spessi 2px su card/testo, badge
+  squadra/giocatore **quadrati e senza cornice** (`.cap-badge` a
+  `border-width: 0`, tolta su richiesta esplicita — resta solo l'angolo
+  vivo dato dal `border-radius: 0`), lettera "W" gigante in outline dietro
+  l'hero (`::before`, clippata dall'`overflow-hidden` esistente), punteggi/
+  numero maglia come blocco pieno oro, nav rettangolare
+  con divisori verticali e attivo = blocco rosso pieno
 - Pannello Admin resta **sempre Classico** indipendentemente dal tema
   scelto (per leggibilità dello strumento di gestione)
+- Migrazione `settings_theme_check` già eseguita sul progetto Supabase live
+  (`vjcvmlapgmlvuqldwzyy`) il giorno dell'estensione a 12 temi — non serve
+  ripeterla, ma il blocco è comunque in `supabase/schema.sql` (idempotente)
+  per chi clona il progetto da zero o lavora su un altro DB
 
 ## Modulo Partite/Gol (il più complesso, molto iterato)
 
@@ -133,6 +182,13 @@ dell'utente — primo sospetto in caso di comportamento strano.
    contenitore invece di coprire tutto lo schermo. Soluzione: `ShareButton`
    e `MatchDetailModal` usano **`createPortal(..., document.body)`**.
    Se si aggiungono nuovi modal/overlay, usare sempre un portal.
+   Nota di layout (non un bug, ma cambiato su richiesta esplicita): sia il
+   modal Credits (`TopRightControls`) sia `MatchDetailModal` sono passati da
+   "bottom sheet" (`items-end`, `rounded-t-3xl`, `border-t`) a finestra
+   **centrata** (`items-center` + `p-4` sul contenitore, `rounded-3xl` +
+   `border` sul pannello). `ShareButton` resta volutamente un bottom sheet
+   (non toccato) — se in futuro si vuole coerenza totale, ricordarsi che
+   quello è l'unico rimasto ancorato in basso.
 2. **`window.open()` per condividere**: non affidabile su mobile con
    parametri `width/height`. `ShareButton` usa `<a href target="_blank">`
    reali invece di `window.open()`.
@@ -150,8 +206,32 @@ dell'utente — primo sospetto in caso di comportamento strano.
 ## Cose esplicitamente NON fatte / decisioni prese
 
 - Pannello Admin non segue i temi grafici (resta sempre Classico).
+- `/admin/venues/page.tsx` (Piscine): aggiunta la modifica in linea (icona
+  matita accanto al cestino), stesso pattern già usato in
+  `/admin/teams/page.tsx` — `editingId`/`startEdit`/`cancelEdit`, form che
+  fa `update` invece di `insert` quando si è in modifica, banner "Modifica
+  piscina" con pulsante Annulla. Prima esisteva solo aggiunta ed
+  eliminazione.
 - "Locandina" (poster generato dai dati live) — proposta, poi **annullata
   su richiesta esplicita** dell'utente; nessun residuo di codice.
+- `app/giocatore/[id]/page.tsx`: rimosso il watermark col logo squadra in
+  grande dietro la foto del giocatore (era il `<div>` assoluto con
+  `backgroundImage: team.logo_url`, opacity 0.15, posizionato/scalato via
+  `logo_large_scale/x/y`) — su richiesta esplicita. Lo sfondo del riquadro
+  torna semplicemente `bg-ink` pieno.
+- `/admin/teams/page.tsx`: rimossi anche i controlli admin diventati inutili
+  dopo la modifica sopra — pannello "Logo grande — scheda giocatore" con
+  anteprima e slider dimensione/posizione X/Y, i relativi state
+  (`logoScale`/`logoX`/`logoY`/`editingLogoUrl`) e il salvataggio di
+  `logo_large_scale/x/y` in `handleSubmit` — su richiesta esplicita.
+- Le colonne `teams.logo_large_scale/x/y` sono state **eliminate anche dal
+  database** (su richiesta esplicita, come step successivo alla rimozione
+  UI sopra): migrazione applicata live via MCP Supabase (progetto
+  `vjcvmlapgmlvuqldwzyy`, `alter table teams drop column ...`, verificata
+  con `information_schema.columns`), `supabase/schema.sql` aggiornato
+  (rimosse dalla `CREATE TABLE` e il blocco add-column in fondo sostituito
+  con un blocco drop-column idempotente), e il tipo `Team` in
+  `lib/supabase/types.ts` non le elenca più.
 - Bento-grid in Home nascosto dietro `SHOW_QUICK_NAV = false` in
   `app/page.tsx` — codice presente ma non renderizzato, riattivabile
   cambiando quella riga.
