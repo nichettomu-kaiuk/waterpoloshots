@@ -13,14 +13,23 @@ zip più recente del progetto (o questo file) come contesto.
   (#e10f21), oro `--color-gold` (#d4af37) — font Oswald (display) + Inter
   (body) + JetBrains Mono (punteggi/numeri in alcuni temi)
 
-## ⚠️ Limite importante di questo ambiente
+## ⚠️ Limite importante di questo ambiente (aggiornato)
 
-**Il sandbox di lavoro non ha accesso alla rete npm** (registry.npmjs.org
-bloccato) — non è mai stato possibile eseguire `npm install` o `next build`
-qui dentro. Ogni modifica è verificata solo con controlli statici (bilancio
-parentesi/graffe via script Node, riletture manuali del codice). Il progetto
-compila e funziona su Vercel, ma eventuali errori di build vanno segnalati
-dall'utente dopo il deploy — non posso verificarli in anticipo.
+**Il registro npm È raggiungibile** in questo sandbox: `npm install`,
+`npx tsc --noEmit` e `npx next build` funzionano tutti (verificato più
+volte con successo). L'unica eccezione è **Google Fonts**, bloccato
+dall'allowlist di rete — `next/font/google` (Oswald/Inter/JetBrains
+Mono/Space Grotesk in `app/layout.tsx`) fallisce il fetch in build. Per
+verificare comunque una build reale: copiare il progetto in una directory
+isolata (mai quella consegnata all'utente), sostituire temporaneamente le
+chiamate `next/font/google` in quella sola copia con funzioni-stub che
+restituiscono `{ variable }`, poi eseguire `npm install` + `npx tsc
+--noEmit` + `npx next build` lì dentro. Serve anche un `.env.local` con
+`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` (bastano valori
+fittizi, non vengono davvero contattati durante la build). Cancellare la
+copia isolata a fine verifica; non lasciare mai `node_modules`/`.next`/
+`.env.local`/`package-lock.json` nella cartella che verrà rizippata per
+l'utente.
 
 **Il filesystem del sandbox può resettarsi tra un turno e l'altro.** Prima
 di ogni modifica, verificare che `/home/claude/waterpolo-app` esista; se
@@ -31,14 +40,14 @@ manca, ripristinarlo da `/mnt/user-data/outputs/waterpolo-tournament-app.zip`
 
 ```
 app/
-  layout.tsx              Root layout: font, classe tema su <html>, TopRightControls, BottomNav
-  page.tsx                 Home (Hero, bento-grid nascosto SHOW_QUICK_NAV=false, News, In corso/Prossimi/Ultimi)
+  layout.tsx              Root layout: font (incl. Space Grotesk per Magazine), classe tema su <html>, TopRightControls, BottomNav
+  page.tsx                 Home — rifatta (vedi "Rifacimento pagine 'Magazine'" sotto): LiveBanner se c'è una diretta, due colonne su desktop (risultati/prossimi/sponsor/news + sidebar classifica breve/marcatori). La bento-grid SHOW_QUICK_NAV non esiste più, sostituita da questo layout.
   globals.css               Design tokens + intero sistema temi (vedi sotto)
-  calendario/                Calendario partite (girone/giornata, ricerca anche per numero giornata)
-  classifiche/                Pagina UNICA "Classifiche" = Classifica squadre + Marcatori (uniti)
+  calendario/                Calendario partite (girone/giornata/stato Da giocare-In corso-Conclusa, ricerca anche per numero giornata)
+  classifiche/                Pagina UNICA "Classifiche" = Classifica squadre (con attributo data-rank-lead sulle prime PLAYOFF_SPOTS righe) + Marcatori (uniti)
   marcatori/                   Redirect verso /classifiche#marcatori (retro-compatibilità link vecchi)
-  squadre/, squadra/[id]/        Elenco squadre pubblico + scheda squadra (rosa in 4 colonne: N°/avatar/nome+ruolo/reti)
-  giocatori/, giocatore/[id]/     Elenco piatto ordinato per squadra + scheda giocatore (card "player template", frecce prev/next tra compagni di squadra)
+  squadre/, squadra/[id]/        Elenco squadre pubblico in lista (posizione/punti da classifica quando la stagione è iniziata) + scheda squadra (rosa in 4 colonne: N°/avatar/nome+ruolo/reti)
+  giocatori/, giocatore/[id]/     Elenco piatto ordinato per squadra + scheda giocatore (briciole di navigazione, card "player template", riga statistiche gol/calottina/posizione tra i marcatori di squadra, frecce prev/next tra compagni di squadra)
   news/, news/[id]/                Archivio News + dettaglio
   admin/
     login/, layout.tsx (nav interna, tema sempre Classico)
@@ -51,6 +60,8 @@ app/
 
 components/
   Hero.tsx                Hero condivisa su TUTTE le pagine pubbliche (logo, titolo, sottotitolo, LiveBadge, social icons)
+  LiveBanner.tsx            Fascia rossa a tutta larghezza in Home quando c'è una diretta: squadre/logo/punteggio live + link streaming
+  SponsorStrip.tsx           Spazio sponsor in Home, sotto "Prossimi match" — elenco vuoto di default (`SPONSORS` in cima al file), si nasconde da solo se vuoto, nessuna tabella DB
   BottomNav.tsx             6 voci: Home, Calendario, Classifiche, Squadre, Giocatori, News
   TopRightControls.tsx       Icone fisse in alto a destra: "i" Credits (sempre) + lucchetto Admin (nascosto dentro /admin)
   MatchCard.tsx               Card partita (variant bare per raggruppamenti, ShareButton, TeamLogo)
@@ -176,15 +187,22 @@ comportamento strano.
   che includeva anche un rifacimento di più pagine condivise (Home,
   Calendario, Squadre, Scheda giocatore) e due componenti nuovi (fascia
   "live" a tutta larghezza `LiveBanner`, spazio sponsor `SponsorStrip`).
-  **Su scelta esplicita dell'utente, qui è stato integrato SOLO il tema in
-  sé** (CSS in `globals.css`, font, tipo, voce Admin, vincolo DB) **più
-  il minimo indispensabile in `app/classifiche/page.tsx`** per far
-  funzionare l'evidenziazione play-off del tema (vedi sotto) — il resto
-  della patch (Home/Calendario/Squadre/Giocatore/LiveBanner/SponsorStrip),
-  che avrebbe cambiato il layout per TUTTI i temi e non solo per Magazine,
-  **non è stato applicato**. Se in futuro si vuole applicare anche quella
-  parte, il pacchetto originale è nello zip fornito dall'utente; ripartire
-  da lì confrontando con lo stato corrente delle pagine.
+  L'integrazione è avvenuta in due passi, su richiesta esplicita
+  dell'utente entrambe le volte: prima SOLO il tema in sé (CSS in
+  `globals.css`, font, tipo, voce Admin, vincolo DB) più il minimo
+  indispensabile in `app/classifiche/page.tsx` per l'evidenziazione
+  play-off (vedi sotto); poi, su richiesta successiva ("applica il resto
+  della patch"), anche il rifacimento di Home, Calendario, Squadre e
+  Scheda giocatore più i due componenti nuovi (`LiveBanner`,
+  `SponsorStrip`) — **applicati integralmente e verbatim dalla patch
+  fornita dall'utente**. Questo cambia il layout di quelle pagine per
+  TUTTI i temi, non solo per Magazine (non c'è modo di limitarle a un
+  tema solo: sono pagine condivise, non CSS scoped sotto `.theme-*`). In
+  particolare la Home ha
+  perso la vecchia bento-grid `SHOW_QUICK_NAV` (rimossa, non solo
+  disattivata) ed è ora un layout a due colonne su desktop con fascia
+  live, sponsor e sidebar classifica/marcatori — vedi il file chiave
+  `app/page.tsx` sopra per il dettaglio.
   - Look editoriale/rivista sportiva: fascia hero rossa piena (non
     diagonale, non a wash — un blocco pieno con bordo inferiore netto),
     card piatte con raggio 2px e bordo sottile invece che spesso, font
@@ -301,9 +319,11 @@ comportamento strano.
   (rimosse dalla `CREATE TABLE` e il blocco add-column in fondo sostituito
   con un blocco drop-column idempotente), e il tipo `Team` in
   `lib/supabase/types.ts` non le elenca più.
-- Bento-grid in Home nascosto dietro `SHOW_QUICK_NAV = false` in
-  `app/page.tsx` — codice presente ma non renderizzato, riattivabile
-  cambiando quella riga.
+- Bento-grid in Home dietro `SHOW_QUICK_NAV = false`: **non esiste più**,
+  non solo disattivata — `app/page.tsx` è stato sostituito interamente dal
+  rifacimento "Magazine" (vedi "Sistema temi" → Magazine). Se in futuro
+  serve una scorciatoia rapida in stile bento-grid andrebbe ridisegnata da
+  zero sul nuovo layout, non "riattivata".
 
 ## Come continuare
 
