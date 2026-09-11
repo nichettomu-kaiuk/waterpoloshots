@@ -70,12 +70,6 @@ create table settings (
   info_text text,
   info_image_url text,
   info_email text,
-  -- NOTE: 'magazine'/'magazine-light' are kept here even though this
-  -- codebase copy has no matching CSS/type for them — the LIVE database
-  -- already allows and uses 'magazine-light' (added by a different/newer
-  -- deploy of this app that this project copy does not include). Removing
-  -- them from the constraint would break that live site. See
-  -- PROJECT_STATUS.md for details.
   theme text not null default 'classic' check (theme in ('classic','lane','regulation','impact','broadcast','poster','magazine','tabellone','classic-light','lane-light','regulation-light','impact-light','broadcast-light','poster-light','magazine-light','tabellone-light'))
 );
 
@@ -204,14 +198,11 @@ alter table settings add column if not exists info_email text;
 update settings set info_text = '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.'
   where info_text is null;
 
--- Adds: settings.theme — 'tabellone' + 'tabellone-light'. Also keeps
--- 'magazine' / 'magazine-light' in the allowed list: the LIVE Supabase
--- project already had these two values in its constraint (and the live
--- settings row was actually set to 'magazine-light') from a newer/different
--- deploy of this app that predates this codebase copy — this project has no
--- matching CSS/type for 'magazine', so dropping it from the constraint here
--- would have broken the live site's current theme selection. See
--- PROJECT_STATUS.md, "Sistema temi", for the full note.
+-- Adds: settings.theme — now 16 options: the original 6 structural themes
+-- ('classic', 'lane', 'regulation', 'impact', 'broadcast', 'poster') plus
+-- 'tabellone' and 'magazine', and all of their '-light' counterparts. See
+-- PROJECT_STATUS.md, "Sistema temi", for how Tabellone and Magazine were
+-- each integrated (both came from design material the user provided).
 alter table settings add column if not exists theme text not null default 'classic';
 alter table settings drop constraint if exists settings_theme_check;
 alter table settings add constraint settings_theme_check

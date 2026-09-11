@@ -57,15 +57,11 @@ export interface MatchGoal {
   created_at: string;
 }
 
-// NOTE ON "magazine" / "magazine-light": these two values are kept in the
-// union (and in the settings_theme_check DB constraint) purely because the
-// LIVE Supabase project's settings row was already set to "magazine-light"
-// when this "tabellone" theme was added — from a different/newer deploy of
-// this app that this project copy does not include any CSS or admin-picker
-// entry for. Removing them here would make TypeScript lie about what the
-// live DB can actually contain. There is intentionally no "magazine" entry
-// in the admin theme picker (app/admin/settings/page.tsx) or matching CSS
-// in globals.css in this copy — see PROJECT_STATUS.md, "Sistema temi".
+// "magazine" / "magazine-light": the 8th theme — editorial/sports-magazine
+// look (Space Grotesk, flat 2px-radius cards, solid red hero band). Full
+// implementation lives in globals.css (`.theme-magazine`), the admin picker
+// (app/admin/settings/page.tsx) and the settings_theme_check DB constraint.
+// See PROJECT_STATUS.md, "Sistema temi", for how it was integrated.
 export type AppTheme =
   | "classic"
   | "lane"

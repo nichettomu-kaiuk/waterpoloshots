@@ -5,6 +5,14 @@ import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 import Podium from "@/components/Podium";
 
+// Numero di posizioni marcate come "play-off promozione" in classifica.
+// L'attributo data-rank-lead che ne deriva è letto solo dal tema Magazine
+// (evidenzia il quadratino posizione in rosso) — gli altri temi lo
+// ignorano, quindi la scelta "niente evidenziazione pos. 1-3" resta
+// rispettata ovunque tranne che in Tabellone (che ha la sua, via CSS) e
+// ora Magazine.
+const PLAYOFF_SPOTS = 2;
+
 export default async function ClassifichePage() {
   const [standings, allScorers] = await Promise.all([getStandings(), getTopScorers(15)]);
   const scorers = allScorers.filter((p) => p.goals_count > 0);
@@ -43,7 +51,12 @@ export default async function ClassifichePage() {
               <tbody>
                 {standings.map((row, i) => (
                   <tr key={row.team.id} className="border-t border-line bg-surface">
-                    <td className="rank-box sticky left-0 bg-surface px-3 py-2.5 text-muted"><span>{i + 1}</span></td>
+                    <td
+                      className="rank-box sticky left-0 bg-surface px-3 py-2.5 text-muted"
+                      data-rank-lead={i < PLAYOFF_SPOTS ? "" : undefined}
+                    >
+                      <span>{i + 1}</span>
+                    </td>
                     <td className="sticky left-8 bg-surface px-3 py-2.5">
                       <Link href={`/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
                         {row.team.logo_url ? (

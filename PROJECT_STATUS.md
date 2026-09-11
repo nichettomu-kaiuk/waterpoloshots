@@ -79,16 +79,16 @@ comportamento strano.
 
 ## Sistema temi (Admin → Impostazioni → Aspetto grafico)
 
-`settings.theme`, **14 valori**: `classic`, `lane`, `regulation`, `impact`,
-`broadcast`, `poster`, `tabellone`, e le rispettive varianti `-light`
-(`classic-light`, `lane-light`, `regulation-light`, `impact-light`,
-`broadcast-light`, `poster-light`, `tabellone-light`).
+`settings.theme`, **16 valori**: `classic`, `lane`, `regulation`, `impact`,
+`broadcast`, `poster`, `tabellone`, `magazine`, e le rispettive varianti
+`-light` (`classic-light`, `lane-light`, `regulation-light`, `impact-light`,
+`broadcast-light`, `poster-light`, `tabellone-light`, `magazine-light`).
 
 - Applicato come classe sull'elemento `<html>` in `app/layout.tsx`, via
   `structuralClassMap` (`lane`→`theme-lane`, `regulation`→`theme-regulation`,
   `impact`→`theme-impact`, `broadcast`→`theme-broadcast`,
-  `poster`→`theme-poster`, `tabellone`→`theme-tabellone`, `classic`→nessuna
-  classe)
+  `poster`→`theme-poster`, `tabellone`→`theme-tabellone`,
+  `magazine`→`theme-magazine`, `classic`→nessuna classe)
 - CSS a cascata in `globals.css`, targettizzato su **class hook stabili**
   aggiunte nel markup (`app-hero`, `hero-eyebrow`, `site-card`,
   `match-card`/`match-card-bare`, `match-score`, `news-card`, `player-card`,
@@ -165,33 +165,55 @@ comportamento strano.
     come caratteristica distintiva di questo solo tema, seguendo lo stesso
     principio già usato per i badge quadrati di Poster Arena ("ogni tema può
     introdurre un trattamento nuovo"). Non toccare gli altri temi.
+- **Magazine** (`magazine`): scoperto per la prima volta come effetto
+  collaterale dell'aggiunta di Tabellone — il vincolo `theme` sul database
+  Supabase LIVE conteneva già `'magazine'`/`'magazine-light'` (con la riga
+  `settings` live impostata proprio su `'magazine-light'`), segno che il
+  sito effettivamente deployato girava una versione del codice più recente
+  di questo zip, con un tema "Magazine" implementato altrove. L'utente ha
+  poi fornito la patch completa di quel tema (zip "Water Polo Shots UI
+  Mockups", cartella `patch-magazine/`), scritta per una copia del progetto
+  che includeva anche un rifacimento di più pagine condivise (Home,
+  Calendario, Squadre, Scheda giocatore) e due componenti nuovi (fascia
+  "live" a tutta larghezza `LiveBanner`, spazio sponsor `SponsorStrip`).
+  **Su scelta esplicita dell'utente, qui è stato integrato SOLO il tema in
+  sé** (CSS in `globals.css`, font, tipo, voce Admin, vincolo DB) **più
+  il minimo indispensabile in `app/classifiche/page.tsx`** per far
+  funzionare l'evidenziazione play-off del tema (vedi sotto) — il resto
+  della patch (Home/Calendario/Squadre/Giocatore/LiveBanner/SponsorStrip),
+  che avrebbe cambiato il layout per TUTTI i temi e non solo per Magazine,
+  **non è stato applicato**. Se in futuro si vuole applicare anche quella
+  parte, il pacchetto originale è nello zip fornito dall'utente; ripartire
+  da lì confrontando con lo stato corrente delle pagine.
+  - Look editoriale/rivista sportiva: fascia hero rossa piena (non
+    diagonale, non a wash — un blocco pieno con bordo inferiore netto),
+    card piatte con raggio 2px e bordo sottile invece che spesso, font
+    Space Grotesk con numeri tabulari (font registrato via `next/font` come
+    `--font-magazine` in `app/layout.tsx`, poi `.theme-magazine` rimappa
+    `--font-display: var(--font-magazine)` — tecnica diversa e più pulita
+    di quella usata per Tabellone, che sovrascrive `.font-display`
+    direttamente via un `@import` CSS), oro riservato solo allo stato live
+    del punteggio (testo `#2a2004` hardcoded sul chip oro, stessa
+    precauzione già presa per Poster/Tabellone).
+  - **ECCEZIONE DELIBERATA — evidenziazione play-off in classifica**:
+    Magazine è il secondo tema (dopo Tabellone) che reintroduce
+    un'evidenziazione in `.rank-box`, qui limitata alle prime
+    `PLAYOFF_SPOTS` (2, costante in cima a `app/classifiche/page.tsx`)
+    posizioni — quadratino rosso pieno invece del solito neutro. Il
+    meccanismo è un attributo `data-rank-lead` aggiunto sulla cella
+    `.rank-box` per le prime `PLAYOFF_SPOTS` righe: è presente nel markup
+    per tutti i temi, ma **solo la CSS di Magazine reagisce**
+    (`.theme-magazine .rank-box[data-rank-lead] span`) — gli altri temi lo
+    ignorano, quindi "niente evidenziazione pos. 1-3" resta rispettato
+    ovunque tranne Tabellone (che ha la sua, via `:nth-child`) e ora
+    Magazine. Non toccare `app/classifiche/page.tsx` pensando che
+    l'attributo sia inutile: serve a questo.
 - Pannello Admin resta **sempre Classico** indipendentemente dal tema
   scelto (per leggibilità dello strumento di gestione)
 - Migrazione `settings_theme_check` estesa più volte sul progetto Supabase
-  live (`vjcvmlapgmlvuqldwzyy`) — l'ultima volta per aggiungere `tabellone`/
-  `tabellone-light`; il blocco è comunque in `supabase/schema.sql`
-  (idempotente) per chi clona il progetto da zero o lavora su un altro DB.
-- ⚠️ **Scoperta durante l'aggiunta di Tabellone**: il vincolo `theme` sul
-  database Supabase LIVE conteneva già due valori — `'magazine'` e
-  `'magazine-light'` — che NON esistono da nessuna parte in questa copia del
-  progetto (nessun CSS in `globals.css`, nessuna voce nel picker di
-  `app/admin/settings/page.tsx`, nessun valore nel tipo `AppTheme` prima di
-  questa modifica). La riga `settings` live aveva infatti `theme =
-  'magazine-light'` impostato. Questo indica che il sito effettivamente
-  deployato (su Vercel) sta girando una versione del codice **diversa/più
-  recente** di questo zip, con un tema "Magazine" implementato altrove.
-  Per non rompere la scelta attuale dell'utente sul sito live, non ho
-  rimosso questi due valori dal vincolo (l'ho esteso, non sostituito) e li
-  ho aggiunti anche al tipo `AppTheme` con una nota esplicativa — ma
-  **questa copia del progetto non contiene il CSS del tema Magazine**: se
-  viene ridistribuita (deploy) sopra al sito attuale, il tema "Magazine"
-  selezionato smetterà di avere il suo stile e la pagina ricadrà
-  sostanzialmente su Classico chiaro (nessuna classe strutturale
-  corrispondente + variante `-light`). Prima di ri-deployare questo zip,
-  consigliare all'utente di: (a) fornire il codice del tema Magazine
-  attualmente live così da poterlo reintegrare qui, oppure (b) selezionare
-  manualmente un tema noto (es. Classico) da Admin → Impostazioni prima del
-  deploy, per evitare un cambio di aspetto a sorpresa.
+  live (`vjcvmlapgmlvuqldwzyy`) — l'ultima volta per portarla ai 16 valori
+  correnti; il blocco è comunque in `supabase/schema.sql` (idempotente) per
+  chi clona il progetto da zero o lavora su un altro DB.
 
 ## Modulo Partite/Gol (il più complesso, molto iterato)
 

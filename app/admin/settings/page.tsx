@@ -169,6 +169,8 @@ export default function AdminSettingsPage() {
                   { value: "poster-light", label: "Poster Arena Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
                   { value: "tabellone", label: "Tabellone", hint: "Sportivo: angoli squadrati, podio in classifica", dark: true },
                   { value: "tabellone-light", label: "Tabellone Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
+                  { value: "magazine", label: "Magazine", hint: "Editoriale: fascia rossa, card piatte, Space Grotesk", dark: true },
+                  { value: "magazine-light", label: "Magazine Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
                 ] as const
               ).map((opt) => (
                 <button

@@ -861,3 +861,154 @@ body {
   width: 22px;
   height: 22px;
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Tema "Magazine" (magazine) — fornito dall'utente come patch pronta
+   ("Water Polo Shots UI Mockups.zip"), scritta per una copia più recente
+   di questo progetto che includeva anche un rifacimento di più pagine
+   condivise (Home, Calendario, Squadre, Scheda giocatore) e due componenti
+   nuovi (fascia "live", spazio sponsor). Su scelta esplicita dell'utente,
+   qui è stato integrato SOLO il tema (questo blocco CSS + font + voce
+   Admin) più il minimo indispensabile sulla pagina Classifiche per far
+   funzionare l'evidenziazione play-off (attributo data-rank-lead) — il
+   resto della patch (Home/Calendario/Squadre/Giocatore/LiveBanner/
+   SponsorStrip) NON è stato applicato. Vedi PROJECT_STATUS.md, "Sistema
+   temi", per i dettagli e per dove ritrovare il pacchetto completo se in
+   futuro si vorrà applicare anche quella parte.
+
+   Editoriale/rivista sportiva: fascia hero rossa piena, card piatte con
+   raggio 2px e righe sottili, Space Grotesk con numeri tabulari, oro
+   riservato allo stato "live". Stessi token colore e stesso sistema di
+   class hook degli altri temi: tutto sotto `.theme-magazine` (applicata su
+   <html> in app/layout.tsx), nessuna modifica ai componenti. I colori
+   seguono i brand token, quindi Admin → Impostazioni → Colori brand li
+   guida; l'abbinamento pensato per i mockup è Primario #e71327 / Oro
+   #e7b313.
+   ──────────────────────────────────────────────────────────────────────── */
+.theme-magazine {
+  /* Font display di tutto il tema; --font-magazine è registrato in
+     app/layout.tsx accanto alle altre variabili next/font. */
+  --font-display: var(--font-magazine);
+}
+
+.theme-magazine h1,
+.theme-magazine h2,
+.theme-magazine h3,
+.theme-magazine .match-score,
+.theme-magazine .player-cap-number,
+.theme-magazine .rank-box {
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-magazine .app-hero {
+  background-color: color-mix(in srgb, var(--color-primary) 22%, #14060a);
+  border-bottom: 3px solid var(--color-primary);
+}
+.theme-magazine .app-hero h1 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.theme-magazine .hero-eyebrow {
+  display: inline-block;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.theme-magazine .match-card,
+.theme-magazine .news-card,
+.theme-magazine .grouped-card,
+.theme-magazine .site-card,
+.theme-magazine .player-card {
+  border-radius: 2px !important;
+  border-color: var(--color-line) !important;
+  background: var(--color-surface);
+}
+.theme-magazine .match-card.is-live {
+  border-color: var(--color-gold) !important;
+  background: color-mix(in srgb, var(--color-gold) 12%, var(--color-surface));
+}
+
+.theme-magazine .match-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.theme-magazine .match-score.text-primary {
+  background: var(--color-gold);
+  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
+     "-light" variant, which would leave this text unreadable on gold. */
+  color: #2a2004 !important;
+  padding: 1px 8px;
+  border-radius: 2px;
+}
+
+.theme-magazine .player-cap-number {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.theme-magazine .cap-badge,
+.theme-magazine .cap-badge img {
+  border-radius: 2px !important;
+  border-width: 1px !important;
+  border-color: var(--color-line) !important;
+}
+
+/* Podio in classifica: quadratino rosso pieno per le posizioni play-off
+   (segnate con l'attributo data-rank-lead, aggiunto in
+   app/classifiche/page.tsx), neutro per le altre — caratteristica propria
+   di questo tema, come Tabellone ha la sua. */
+.theme-magazine .rank-box span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  font-weight: 700;
+  background: var(--color-surface-raised);
+  color: var(--color-fg);
+}
+.theme-magazine .rank-box[data-rank-lead] span {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.theme-magazine .podium-pedestal {
+  border-radius: 2px !important;
+  border-top: 3px solid var(--color-primary);
+  background: linear-gradient(to top, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent);
+}
+
+.theme-magazine .detail-hero-image {
+  border-radius: 2px !important;
+  border-bottom: 3px solid var(--color-primary);
+}
+
+.theme-magazine .corner-icon {
+  border-radius: 2px;
+}
+
+.theme-magazine .bottom-nav {
+  border-radius: 0;
+  border-top: 2px solid var(--color-primary);
+}
+.theme-magazine .bottom-nav-item.is-active {
+  background: var(--color-primary);
+  border-radius: 2px;
+  margin: 3px;
+}
+.theme-magazine .bottom-nav-item.is-active .bottom-nav-icon,
+.theme-magazine .bottom-nav-item.is-active span {
+  color: #fff !important;
+}
+
+.theme-magazine .lane-rope {
+  height: 2px;
+  margin: 20px 0;
+  background: linear-gradient(90deg, var(--color-primary) 0 35%, var(--color-gold) 35% 45%, var(--color-line) 45%);
+}
