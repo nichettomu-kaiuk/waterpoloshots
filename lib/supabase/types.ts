@@ -64,12 +64,14 @@ export type AppTheme =
   | "impact"
   | "broadcast"
   | "poster"
+  | "magazine"
   | "classic-light"
   | "lane-light"
   | "regulation-light"
   | "impact-light"
   | "broadcast-light"
-  | "poster-light";
+  | "poster-light"
+  | "magazine-light";
 
 export interface Settings {
   id: string;
@@ -106,17 +108,3 @@ export interface StandingRow {
   goal_diff: number;
   points: number;
 }
-
-// NOTE ON TYPE SAFETY: the Supabase clients in lib/supabase/client.ts and
-// lib/supabase/server.ts are intentionally left untyped (no Database
-// generic). A hand-written Database type that doesn't match
-// @supabase/supabase-js's exact expected shape can make its insert()/
-// update() argument types silently collapse to `never`, which fails
-// `next build`. Once the Supabase project is linked, generate real types
-// with the Supabase CLI and wire them in for full type safety:
-//
-//   npx supabase gen types typescript --project-id <id> --schema public > lib/supabase/database.types.ts
-//
-// then in client.ts / server.ts:
-//   import type { Database } from "./database.types";
-//   createBrowserClient<Database>(...) / createServerClient<Database>(...)
