@@ -30,26 +30,10 @@ export default async function GiocatorePage({ params }: { params: { id: string }
   const prevPlayer = hasSiblings ? roster[(rosterIndex - 1 + roster.length) % roster.length] : null;
   const nextPlayer = hasSiblings ? roster[(rosterIndex + 1) % roster.length] : null;
 
-  // Posizione tra i marcatori della propria squadra (solo se ha segnato).
-  const scoringRoster = roster.filter((p) => p.goals_count > 0).sort((a, b) => b.goals_count - a.goals_count);
-  const scorerRank = player.goals_count > 0 ? scoringRoster.findIndex((p) => p.id === player.id) + 1 : null;
-
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
       <Hero />
       <div className="px-5 py-6 lg:px-8">
-        <p className="mb-3 text-xs text-muted">
-          <Link href="/giocatori" className="hover:text-primary">Giocatori</Link>
-          {team && (
-            <>
-              {" / "}
-              <Link href={`/squadra/${team.id}`} className="hover:text-primary">{team.name}</Link>
-            </>
-          )}
-          {" / "}
-          {player.first_name} {player.last_name}
-        </p>
-
         <div className="player-card overflow-hidden rounded-2xl border border-line bg-ink">
           {/* Top bar: team logo (white box) + team name + season */}
           <div className="flex items-stretch">
@@ -119,34 +103,13 @@ export default async function GiocatorePage({ params }: { params: { id: string }
               <div>
                 <p className="font-display text-sm font-semibold sm:text-lg lg:text-xl">{player.first_name}</p>
                 <p className="font-display text-lg font-bold uppercase sm:text-xl lg:text-2xl">{player.last_name}</p>
+                {player.goals_count > 0 && (
+                  <p className="mt-1 text-[10px] text-muted sm:text-xs">{player.goals_count} gol segnati</p>
+                )}
               </div>
             </div>
           </div>
         </div>
-
-        {/* Statistiche: la riga compare solo quando c'è qualcosa da
-            mostrare, così in pre-stagione la scheda resta la sola
-            anagrafica (stato "senza statistiche" dei mockup). */}
-        {player.goals_count > 0 ? (
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="site-card rounded-2xl border border-line bg-surface p-4">
-              <p className="tabular font-display text-3xl font-bold">{player.goals_count}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-widest text-muted">Gol</p>
-            </div>
-            <div className="site-card rounded-2xl border border-line bg-surface p-4">
-              <p className="tabular font-display text-3xl font-bold">{player.cap_number}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-widest text-muted">Calottina</p>
-            </div>
-            <div className="site-card rounded-2xl border border-line bg-surface p-4">
-              <p className="tabular font-display text-3xl font-bold">{scorerRank ?? "—"}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-widest text-muted">In squadra</p>
-            </div>
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-muted">
-            Le statistiche compaiono dalla prima giornata: per ora è disponibile solo l&apos;anagrafica.
-          </p>
-        )}
 
         {(prevPlayer || nextPlayer) && (
           <div className="mt-4 flex items-center justify-center gap-4">

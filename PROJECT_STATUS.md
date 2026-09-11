@@ -79,15 +79,16 @@ comportamento strano.
 
 ## Sistema temi (Admin → Impostazioni → Aspetto grafico)
 
-`settings.theme`, **12 valori**: `classic`, `lane`, `regulation`, `impact`,
-`broadcast`, `poster`, e le rispettive varianti `-light`
+`settings.theme`, **14 valori**: `classic`, `lane`, `regulation`, `impact`,
+`broadcast`, `poster`, `tabellone`, e le rispettive varianti `-light`
 (`classic-light`, `lane-light`, `regulation-light`, `impact-light`,
-`broadcast-light`, `poster-light`).
+`broadcast-light`, `poster-light`, `tabellone-light`).
 
 - Applicato come classe sull'elemento `<html>` in `app/layout.tsx`, via
   `structuralClassMap` (`lane`→`theme-lane`, `regulation`→`theme-regulation`,
   `impact`→`theme-impact`, `broadcast`→`theme-broadcast`,
-  `poster`→`theme-poster`, `classic`→nessuna classe)
+  `poster`→`theme-poster`, `tabellone`→`theme-tabellone`, `classic`→nessuna
+  classe)
 - CSS a cascata in `globals.css`, targettizzato su **class hook stabili**
   aggiunte nel markup (`app-hero`, `hero-eyebrow`, `site-card`,
   `match-card`/`match-card-bare`, `match-score`, `news-card`, `player-card`,
@@ -139,12 +140,58 @@ comportamento strano.
   l'hero (`::before`, clippata dall'`overflow-hidden` esistente), punteggi/
   numero maglia come blocco pieno oro, nav rettangolare
   con divisori verticali e attivo = blocco rosso pieno
+- **Tabellone** (`tabellone`): nato dalla revisione grafica a due direzioni
+  condivisa dall'utente su un canvas Claude Design ("Waterpolo Serie B - UI
+  Mockups"), che confrontava due proposte ("Turno 1"/"Turno 2"). L'utente ha
+  scelto **Turno 2** (rosso/oro, Space Grotesk). **Turno 1** ("Broadsheet":
+  serif Source Serif 4, palette teal/magenta/giallo che richiama la stampa
+  CMYK, effetto "lastre di stampa disallineate" con `feColorMatrix` SVG +
+  script JS di tracking del puntatore + markup con copie multiple dello
+  stesso testo per elemento) è stato **scartato deliberatamente**: avrebbe
+  richiesto un nuovo file JS e struttura markup dedicata, violando la regola
+  di questo progetto per cui cambiare tema non deve mai richiedere markup
+  diverso nei componenti. Turno 2 invece è puro CSS sugli hook esistenti,
+  stesso identico pattern di tutti gli altri temi.
+  - Font Space Grotesk (`@import` in cima a `globals.css`, applicato via
+    `.theme-tabellone .font-display`), angoli quasi squadrati (`border-radius:
+    6px` invece di 0 come Poster o pieno come Corsia), punteggi/numero
+    maglia in stile monospaziato tabellone.
+  - **ECCEZIONE DELIBERATA — podio in classifica**: Tabellone è l'UNICO tema
+    che evidenzia le prime 3 posizioni in `.rank-box` (1°/2° = blocco rosso
+    pieno, 3° = tinta oro tenue con testo `#0a0a0b` hardcoded per lo stesso
+    motivo di contrasto già documentato per Poster). Questo era stato
+    esplicitamente rimosso da TUTTI gli altri temi su richiesta dell'utente
+    in una fase precedente del progetto — qui viene volutamente reintrodotto
+    come caratteristica distintiva di questo solo tema, seguendo lo stesso
+    principio già usato per i badge quadrati di Poster Arena ("ogni tema può
+    introdurre un trattamento nuovo"). Non toccare gli altri temi.
 - Pannello Admin resta **sempre Classico** indipendentemente dal tema
   scelto (per leggibilità dello strumento di gestione)
-- Migrazione `settings_theme_check` già eseguita sul progetto Supabase live
-  (`vjcvmlapgmlvuqldwzyy`) il giorno dell'estensione a 12 temi — non serve
-  ripeterla, ma il blocco è comunque in `supabase/schema.sql` (idempotente)
-  per chi clona il progetto da zero o lavora su un altro DB
+- Migrazione `settings_theme_check` estesa più volte sul progetto Supabase
+  live (`vjcvmlapgmlvuqldwzyy`) — l'ultima volta per aggiungere `tabellone`/
+  `tabellone-light`; il blocco è comunque in `supabase/schema.sql`
+  (idempotente) per chi clona il progetto da zero o lavora su un altro DB.
+- ⚠️ **Scoperta durante l'aggiunta di Tabellone**: il vincolo `theme` sul
+  database Supabase LIVE conteneva già due valori — `'magazine'` e
+  `'magazine-light'` — che NON esistono da nessuna parte in questa copia del
+  progetto (nessun CSS in `globals.css`, nessuna voce nel picker di
+  `app/admin/settings/page.tsx`, nessun valore nel tipo `AppTheme` prima di
+  questa modifica). La riga `settings` live aveva infatti `theme =
+  'magazine-light'` impostato. Questo indica che il sito effettivamente
+  deployato (su Vercel) sta girando una versione del codice **diversa/più
+  recente** di questo zip, con un tema "Magazine" implementato altrove.
+  Per non rompere la scelta attuale dell'utente sul sito live, non ho
+  rimosso questi due valori dal vincolo (l'ho esteso, non sostituito) e li
+  ho aggiunti anche al tipo `AppTheme` con una nota esplicativa — ma
+  **questa copia del progetto non contiene il CSS del tema Magazine**: se
+  viene ridistribuita (deploy) sopra al sito attuale, il tema "Magazine"
+  selezionato smetterà di avere il suo stile e la pagina ricadrà
+  sostanzialmente su Classico chiaro (nessuna classe strutturale
+  corrispondente + variante `-light`). Prima di ri-deployare questo zip,
+  consigliare all'utente di: (a) fornire il codice del tema Magazine
+  attualmente live così da poterlo reintegrare qui, oppure (b) selezionare
+  manualmente un tema noto (es. Classico) da Admin → Impostazioni prima del
+  deploy, per evitare un cambio di aspetto a sorpresa.
 
 ## Modulo Partite/Gol (il più complesso, molto iterato)
 

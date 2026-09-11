@@ -57,6 +57,15 @@ export interface MatchGoal {
   created_at: string;
 }
 
+// NOTE ON "magazine" / "magazine-light": these two values are kept in the
+// union (and in the settings_theme_check DB constraint) purely because the
+// LIVE Supabase project's settings row was already set to "magazine-light"
+// when this "tabellone" theme was added — from a different/newer deploy of
+// this app that this project copy does not include any CSS or admin-picker
+// entry for. Removing them here would make TypeScript lie about what the
+// live DB can actually contain. There is intentionally no "magazine" entry
+// in the admin theme picker (app/admin/settings/page.tsx) or matching CSS
+// in globals.css in this copy — see PROJECT_STATUS.md, "Sistema temi".
 export type AppTheme =
   | "classic"
   | "lane"
@@ -65,13 +74,15 @@ export type AppTheme =
   | "broadcast"
   | "poster"
   | "magazine"
+  | "tabellone"
   | "classic-light"
   | "lane-light"
   | "regulation-light"
   | "impact-light"
   | "broadcast-light"
   | "poster-light"
-  | "magazine-light";
+  | "magazine-light"
+  | "tabellone-light";
 
 export interface Settings {
   id: string;
@@ -108,3 +119,17 @@ export interface StandingRow {
   goal_diff: number;
   points: number;
 }
+
+// NOTE ON TYPE SAFETY: the Supabase clients in lib/supabase/client.ts and
+// lib/supabase/server.ts are intentionally left untyped (no Database
+// generic). A hand-written Database type that doesn't match
+// @supabase/supabase-js's exact expected shape can make its insert()/
+// update() argument types silently collapse to `never`, which fails
+// `next build`. Once the Supabase project is linked, generate real types
+// with the Supabase CLI and wire them in for full type safety:
+//
+//   npx supabase gen types typescript --project-id <id> --schema public > lib/supabase/database.types.ts
+//
+// then in client.ts / server.ts:
+//   import type { Database } from "./database.types";
+//   createBrowserClient<Database>(...) / createServerClient<Database>(...)

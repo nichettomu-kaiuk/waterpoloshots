@@ -1,3 +1,8 @@
+/* Space Grotesk is only used by the Tabellone theme (below), but @import
+   rules must precede every other rule in the file to take effect, so it
+   lives here rather than next to the rest of that theme's block. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -627,155 +632,6 @@ body {
   );
 }
 
-
-/* ────────────────────────────────────────────────────────────────────────
-   Theme: "Magazine" (magazine)
-   A seventh visual identity, derived from the UI mockups: an editorial /
-   sports-magazine package — a solid deep-red hero band, flat cards with a
-   2px radius and hairline rules, Space Grotesk display type with tabular
-   numerals, and gold reserved for the live state. Same color tokens and
-   class-hook system as the themes above: every rule is scoped under
-   `.theme-magazine` (applied to <html> in app/layout.tsx) and targets the
-   existing stable hooks, so no component markup changes.
-
-   Colors come from the brand tokens, so Admin → Impostazioni → Colori
-   brand drives them. The intended pairing is
-   Primario #e71327 / Oro #e7b313.
-   ──────────────────────────────────────────────────────────────────────── */
-
-.theme-magazine {
-  /* Display face for the whole theme; --font-magazine is registered in
-     app/layout.tsx next to the other next/font variables. */
-  --font-display: var(--font-magazine);
-}
-
-.theme-magazine h1,
-.theme-magazine h2,
-.theme-magazine h3,
-.theme-magazine .match-score,
-.theme-magazine .player-cap-number,
-.theme-magazine .rank-box {
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Hero: a solid block of the deepest brand red with a flat bottom edge —
-   the masthead band from the mockups. */
-.theme-magazine .app-hero {
-  background-color: color-mix(in srgb, var(--color-primary) 22%, #14060a);
-  border-bottom: 3px solid var(--color-primary);
-}
-.theme-magazine .app-hero h1 {
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
-.theme-magazine .hero-eyebrow {
-  display: inline-block;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-gold);
-}
-
-/* Cards: flat panels, minimal radius, hairline rule — no cuts, no heavy
-   left edge. The live fixture is the only colored surface. */
-.theme-magazine .match-card,
-.theme-magazine .news-card,
-.theme-magazine .grouped-card,
-.theme-magazine .site-card,
-.theme-magazine .player-card {
-  border-radius: 2px !important;
-  border-color: var(--color-line) !important;
-  background: var(--color-surface);
-}
-.theme-magazine .match-card.is-live {
-  border-color: var(--color-gold) !important;
-  background: color-mix(in srgb, var(--color-gold) 12%, var(--color-surface));
-}
-
-/* Scores: big tabular figures, no rules or gradients. A live score prints
-   on the gold chip — dark ink hardcoded, because --color-ink flips white
-   in the "-light" variants. */
-.theme-magazine .match-score {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.theme-magazine .match-score.text-primary {
-  background: var(--color-gold);
-  color: #2a2004 !important;
-  padding: 1px 8px;
-  border-radius: 2px;
-}
-
-.theme-magazine .player-cap-number {
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.theme-magazine .cap-badge,
-.theme-magazine .cap-badge img {
-  border-radius: 2px !important;
-  border-width: 1px !important;
-  border-color: var(--color-line) !important;
-}
-
-/* Standings: the rank is a small filled square, red for the promotion
-   places and neutral below — the treatment used in the mockups. */
-.theme-magazine .rank-box span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 2px;
-  font-weight: 700;
-  background: var(--color-surface-raised);
-  color: var(--color-fg);
-}
-.theme-magazine .rank-box:nth-child(-n + 2) span {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.theme-magazine .podium-pedestal {
-  border-radius: 2px !important;
-  border-top: 3px solid var(--color-primary);
-  background: linear-gradient(to top, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent);
-}
-
-.theme-magazine .detail-hero-image {
-  border-radius: 2px !important;
-  border-bottom: 3px solid var(--color-primary);
-}
-
-.theme-magazine .corner-icon {
-  border-radius: 2px;
-}
-
-/* Bottom nav: flat bar, active item is a filled red block. */
-.theme-magazine .bottom-nav {
-  border-radius: 0;
-  border-top: 2px solid var(--color-primary);
-}
-.theme-magazine .bottom-nav-item.is-active {
-  background: var(--color-primary);
-  border-radius: 2px;
-  margin: 3px;
-}
-.theme-magazine .bottom-nav-item.is-active .bottom-nav-icon,
-.theme-magazine .bottom-nav-item.is-active span {
-  color: #fff !important;
-}
-
-/* Section divider: a thin two-tone rule, red into gold. */
-.theme-magazine .lane-rope {
-  height: 2px;
-  margin: 20px 0;
-  background: linear-gradient(90deg, var(--color-primary) 0 35%, var(--color-gold) 35% 45%, var(--color-line) 45%);
-}
-
 /* ────────────────────────────────────────────────────────────────────────
    Theme: "Poster" (Poster Arena)
    A sixth visual identity: a bold graphic-poster look — flat rectangular
@@ -907,4 +763,101 @@ body {
     var(--color-gold) 16px 18px,
     transparent 18px 34px
   );
+}
+
+/* ============================================================
+   Tema Tabellone — nato dalla "Turno 2" di una revisione grafica
+   a due direzioni condivisa dall'utente su un canvas Claude
+   Design. Sportivo/da tabellone segnapunti: Space Grotesk,
+   angoli quasi squadrati, e un podio (1°/2°/3°) evidenziato in
+   classifica.
+
+   ATTENZIONE — eccezione deliberata: tutti gli altri temi di
+   questo progetto NON evidenziano più i primi 3 posti in
+   classifica (rimosso su richiesta esplicita). Il tema Tabellone
+   lo reintroduce di proposito come propria caratteristica
+   distintiva, seguendo lo stesso principio già documentato per i
+   badge quadrati del tema Poster Arena: ogni tema può introdurre
+   un trattamento nuovo, purché resti opt-in (attivabile/disattiv-
+   abile dall'utente) e non tocchi il markup dei componenti. Non è
+   una regressione: è un'eccezione scoped a QUESTO tema soltanto.
+   ============================================================ */
+.theme-tabellone .font-display {
+  font-family: 'Space Grotesk', var(--font-display), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.theme-tabellone .match-card,
+.theme-tabellone .news-card,
+.theme-tabellone .grouped-card,
+.theme-tabellone .site-card,
+.theme-tabellone .player-card,
+.theme-tabellone .detail-hero-image,
+.theme-tabellone .podium-pedestal,
+.theme-tabellone .corner-icon,
+.theme-tabellone .cap-badge,
+.theme-tabellone .cap-badge img {
+  border-radius: 6px !important;
+}
+
+.theme-tabellone .match-score,
+.theme-tabellone .player-cap-number {
+  font-family: 'Space Grotesk', var(--font-mono), monospace;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: 4px;
+}
+
+.theme-tabellone .hero-eyebrow {
+  display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+.theme-tabellone .bottom-nav-item.is-active {
+  background: var(--color-primary);
+  border-radius: 6px;
+}
+.theme-tabellone .bottom-nav-item.is-active .bottom-nav-icon,
+.theme-tabellone .bottom-nav-item.is-active span {
+  color: #fff !important;
+}
+
+.theme-tabellone .lane-rope {
+  height: 6px;
+  margin: 18px 0;
+  border-radius: 3px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-primary) 0 22px,
+    var(--color-gold) 22px 30px
+  );
+}
+
+/* Podio in classifica: 1°/2° in rosso pieno, 3° in oro tenue —
+   caratteristica esclusiva di questo tema, vedi nota sopra. */
+.theme-tabellone .site-card table tbody tr:nth-child(-n + 2) .rank-box span {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.theme-tabellone .site-card table tbody tr:nth-child(3) .rank-box span {
+  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
+     "-light" variant, which would leave this text unreadable on gold. */
+  color: #0a0a0b;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.theme-tabellone .rank-box span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
 }
