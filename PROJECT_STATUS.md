@@ -213,6 +213,15 @@ comportamento strano.
     direttamente via un `@import` CSS), oro riservato solo allo stato live
     del punteggio (testo `#2a2004` hardcoded sul chip oro, stessa
     precauzione già presa per Poster/Tabellone).
+  - **Correzione**: l'header (`.app-hero`) usava un mix rosso/nero
+    hardcoded (`color-mix(in srgb, var(--color-primary) 22%, #14060a)`) che
+    restava scuro anche in Magazine Chiaro — a differenza di tutti gli
+    altri temi, che non fissano un colore di sfondo sull'hero e quindi
+    ereditano gratis lo sfondo chiaro di `.theme-light` (via `--color-ink`
+    che diventa bianco). Corretto aggiungendo
+    `.theme-magazine.theme-light .app-hero { background-color:
+    var(--color-ink); }`, che sovrascrive il mix scuro solo nella variante
+    chiara — il bordo inferiore rosso resta invariato in entrambe.
   - **ECCEZIONE DELIBERATA — evidenziazione play-off in classifica**:
     Magazine è il secondo tema (dopo Tabellone) che reintroduce
     un'evidenziazione in `.rank-box`, qui limitata alle prime

@@ -905,6 +905,12 @@ body {
   background-color: color-mix(in srgb, var(--color-primary) 22%, #14060a);
   border-bottom: 3px solid var(--color-primary);
 }
+/* Magazine Chiaro: niente fascia scura — l'header torna a sfondo bianco
+   come nel resto del tema chiaro, il mix sopra è pensato solo per la
+   variante scura. Il bordo inferiore rosso resta, per continuità. */
+.theme-magazine.theme-light .app-hero {
+  background-color: var(--color-ink);
+}
 .theme-magazine .app-hero h1 {
   font-weight: 700;
   letter-spacing: -0.025em;
