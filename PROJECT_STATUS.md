@@ -147,50 +147,6 @@ dell'utente — primo sospetto in caso di comportamento strano.
    accanto è vuoto (es. `hero-eyebrow` quando `active_round` non è
    impostato) — rimosso.
 
-## Design review (09/2026): contrasto, navigazione desktop, rifiniture
-
-Audit richiesto su layout/contrasti/gerarchia + correzioni dirette nel codice.
-Preview prima/dopo pubblicata come artifact. Cambi fatti:
-
-1. **Oro illeggibile nei temi chiari** (bug reale, non ipotetico: `#d4af37`
-   su bianco ≈ 2.1:1, sotto la soglia AA 4.5:1 — e `text-gold` è usato in
-   30+ punti). Fix in `app/layout.tsx`: nuova funzione `darken(hex, factor)`,
-   applicata a `--color-gold`/`--color-gold-dim` **sull'inline style del
-   `<body>`** quando il tema è "-light" (0.62 e 0.48 di fattore). Importante:
-   l'inline style su `<body>` vince sempre sulla classe `.theme-light`
-   messa su `<html>` — un fix messo solo in `globals.css` in `.theme-light`
-   verrebbe silenziosamente sovrascritto da `brandVars`. Lasciato comunque
-   un fallback hardcoded (`#96690a`/`#7a5a10`) dentro `.theme-light` in
-   `globals.css` per sicurezza, ma la fonte di verità è `layout.tsx`.
-2. **Badge "Diretta"/LIVE poco leggibili** (rosso su rosso trasparente,
-   ~3.5:1). Nuova variabile `--color-primary-on-tint` (`#ff6b78` in dark,
-   uguale a `--color-primary` in light dove non serve). Applicata via
-   classe arbitraria Tailwind `text-[color:var(--color-primary-on-tint)]`
-   in: `LiveBadge.tsx`, `MatchCard.tsx` (badge "Diretta"), filtro
-   Andata/Ritorno in `CalendarClient.tsx`, chip di stato in
-   `admin/matches/[id]/page.tsx`, i due banner di errore/info in
-   `admin/matches/[id]/page.tsx` e `admin/news/page.tsx`, icona login admin.
-3. **Navigazione desktop**: `BottomNav` (tab bar mobile) ora `lg:hidden`.
-   Nuovo `components/TopNav.tsx` (sticky, visibile solo `lg:`, nascosto in
-   `/admin` che ha già la sua nav) con gli stessi 6 link. Le due icone
-   flottanti di `TopRightControls` si riposizionano dentro la riga del
-   TopNav da `lg` in su (`.corner-icon-group` in `globals.css`), invece di
-   restare ancorate all'angolo del viewport staccate dal contenuto centrato.
-4. **Footer mancante**: nuovo `components/Footer.tsx` (brand, social,
-   email, link Admin, copyright), montato in `app/layout.tsx` dopo
-   `{children}`, nascosto in `/admin`. `pb-24` del body diventa
-   `pb-24 lg:pb-0` (non serve più riservare spazio per la tab bar su desktop).
-5. **Rifiniture condivise** in `globals.css` (class hook esistenti, nessun
-   componente toccato): ombra + sollevamento all'hover su
-   `.match-card/.news-card/.site-card/.player-card`; `:focus-visible`
-   globale (prima assente); tabella classifica e liste partite (Home,
-   Calendario) limitate a `lg:max-w-2xl lg:mx-auto` invece di stirarsi a
-   piena larghezza su schermi ≥1024px.
-
-Non toccato, segnalato come "da valutare insieme": spaziatura interna di
-`MatchCard` "bare" su schermi larghissimi; stile pulsanti Admin non
-uniformato (nessun componente Button condiviso).
-
 ## Cose esplicitamente NON fatte / decisioni prese
 
 - Pannello Admin non segue i temi grafici (resta sempre Classico).

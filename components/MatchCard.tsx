@@ -80,7 +80,7 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
               {match.date_time ? `${formatDate(match.date_time)} · ${formatTime(match.date_time)}` : "Data da definire"}
             </span>
             {match.stream_url && (
-              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-medium text-[color:var(--color-primary-on-tint)]">
+              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-medium text-primary">
                 <Video size={11} /> Diretta
               </span>
             )}

@@ -73,7 +73,7 @@ create table settings (
   info_text text,
   info_image_url text,
   info_email text,
-  theme text not null default 'classic' check (theme in ('classic','lane','regulation','classic-light','lane-light','regulation-light'))
+  theme text not null default 'classic' check (theme in ('classic','lane','regulation','impact','broadcast','poster','classic-light','lane-light','regulation-light','impact-light','broadcast-light','poster-light'))
 );
 
 create table news_posts (
@@ -199,15 +199,16 @@ alter table settings add column if not exists info_email text;
 update settings set info_text = '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.'
   where info_text is null;
 
--- Adds: settings.theme — now 6 options: 'classic', 'lane', 'regulation' and
--- their light counterparts 'classic-light', 'lane-light', 'regulation-light'
--- (same shapes/layout, white background + black text instead of dark).
--- Lets the admin switch the whole site's visual style at any time from
--- Admin → Impostazioni.
+-- Adds: settings.theme — now 12 options: 'classic', 'lane', 'regulation',
+-- 'impact', 'broadcast', 'poster' and their light counterparts
+-- ('classic-light', 'lane-light', 'regulation-light', 'impact-light',
+-- 'broadcast-light', 'poster-light' — same shapes/layout, white background +
+-- black text instead of dark). Lets the admin switch the whole site's
+-- visual style at any time from Admin → Impostazioni.
 alter table settings add column if not exists theme text not null default 'classic';
 alter table settings drop constraint if exists settings_theme_check;
 alter table settings add constraint settings_theme_check
-  check (theme in ('classic','lane','regulation','classic-light','lane-light','regulation-light'));
+  check (theme in ('classic','lane','regulation','impact','broadcast','poster','classic-light','lane-light','regulation-light','impact-light','broadcast-light','poster-light'));
 
 -- Adds: match_goals.created_at, so the per-match goal log (Admin → Partite →
 -- modifica partita) can be listed in the order goals were actually added.

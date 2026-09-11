@@ -25,7 +25,7 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
 
   return (
     <>
-      <div className="corner-icon-group fixed right-3 top-3 z-40 flex items-center gap-2">
+      <div className="fixed right-3 top-3 z-40 flex items-center gap-2">
         <button
           onClick={() => setInfoOpen(true)}
           aria-label="Credits"
@@ -49,11 +49,11 @@ export default function TopRightControls({ settings }: { settings: Settings | nu
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
             onClick={() => setInfoOpen(false)}
           >
             <div
-              className="w-full max-w-md animate-rise rounded-t-3xl border-t border-line bg-surface p-6 pb-8"
+              className="w-full max-w-md animate-rise rounded-3xl border border-line bg-surface p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">

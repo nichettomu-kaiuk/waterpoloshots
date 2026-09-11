@@ -24,7 +24,7 @@ export default async function ClassifichePage() {
         {standings.length === 0 ? (
           <p className="text-sm text-muted">Nessun risultato confermato ancora.</p>
         ) : (
-          <div className="site-card overflow-x-auto rounded-2xl border border-line lg:mx-auto lg:max-w-2xl">
+          <div className="site-card overflow-x-auto rounded-2xl border border-line">
             <table className="w-full min-w-[560px] text-sm">
               <thead className="bg-surface-raised text-[11px] uppercase text-muted">
                 <tr>
