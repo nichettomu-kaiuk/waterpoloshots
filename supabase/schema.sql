@@ -212,3 +212,14 @@ alter table settings add constraint settings_theme_check
 -- Adds: match_goals.created_at, so the per-match goal log (Admin → Partite →
 -- modifica partita) can be listed in the order goals were actually added.
 alter table match_goals add column if not exists created_at timestamptz not null default now();
+
+-- Migrazione: tema "Magazine" (idempotente)
+-- Estende il check su settings.theme da 12 a 14 valori.
+alter table settings drop constraint if exists settings_theme_check;
+alter table settings add constraint settings_theme_check check (
+  theme in (
+    'classic', 'lane', 'regulation', 'impact', 'broadcast', 'poster', 'magazine',
+    'classic-light', 'lane-light', 'regulation-light', 'impact-light',
+    'broadcast-light', 'poster-light', 'magazine-light'
+  )
+);
