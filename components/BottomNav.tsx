@@ -21,7 +21,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bottom-nav fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-line bg-ink/95 backdrop-blur lg:max-w-5xl xl:max-w-6xl">
+    <nav className="bottom-nav fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-line bg-ink/95 backdrop-blur lg:hidden">
       <ul className="grid grid-cols-6">
         {items.map(({ href, label, icon: Icon }) => {
           const basePath = href.split("#")[0];

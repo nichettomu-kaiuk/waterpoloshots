@@ -74,9 +74,9 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
   }, [match.id, match.home_team_id, match.away_team_id, showScorers]);
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70" onClick={onClose}>
       <div
-        className="w-full max-w-md animate-rise rounded-3xl border border-line bg-surface p-6"
+        className="w-full max-w-md animate-rise rounded-t-3xl border-t border-line bg-surface p-6 pb-10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

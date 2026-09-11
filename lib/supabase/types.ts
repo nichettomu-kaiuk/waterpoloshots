@@ -64,15 +64,9 @@ export type AppTheme =
   | "classic"
   | "lane"
   | "regulation"
-  | "impact"
-  | "broadcast"
-  | "poster"
   | "classic-light"
   | "lane-light"
-  | "regulation-light"
-  | "impact-light"
-  | "broadcast-light"
-  | "poster-light";
+  | "regulation-light";
 
 export interface Settings {
   id: string;

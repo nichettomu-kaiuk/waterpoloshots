@@ -125,7 +125,7 @@ export default function AdminNewsPage() {
       <h2 className="mb-4 font-display text-lg font-bold">News</h2>
 
       {error && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs text-primary">
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs text-[color:var(--color-primary-on-tint)]">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
