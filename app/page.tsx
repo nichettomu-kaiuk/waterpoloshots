@@ -94,7 +94,7 @@ export default async function HomePage() {
                   </h2>
                   <Link href="/news" className="text-xs text-primary">Archivio News</Link>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-2">
                   {news.map((post) => (
                     <NewsCard key={post.id} post={post} />
                   ))}

@@ -41,7 +41,7 @@ manca, ripristinarlo da `/mnt/user-data/outputs/waterpolo-tournament-app.zip`
 ```
 app/
   layout.tsx              Root layout: font (incl. Space Grotesk per Magazine), classe tema su <html>, TopRightControls, BottomNav
-  page.tsx                 Home — rifatta (vedi "Rifacimento pagine 'Magazine'" sotto): LiveBanner se c'è una diretta, due colonne su desktop (risultati/prossimi/sponsor/news + sidebar classifica breve/marcatori). La bento-grid SHOW_QUICK_NAV non esiste più, sostituita da questo layout.
+  page.tsx                 Home — rifatta (vedi "Rifacimento pagine 'Magazine'" sotto): LiveBanner se c'è una diretta, due colonne su desktop (risultati/prossimi/sponsor/news + sidebar classifica breve/marcatori). La bento-grid SHOW_QUICK_NAV non esiste più, sostituita da questo layout. Griglia News: `sm:grid-cols-3 lg:grid-cols-2` — 3 colonne in tablet, 2 su desktop (richiesto esplicitamente per lasciare più spazio al testo dell'estratto, che altrimenti si stringe troppo nella colonna principale a 3 colonne).
   globals.css               Design tokens + intero sistema temi (vedi sotto)
   calendario/                Calendario partite (girone/giornata/stato Da giocare-In corso-Conclusa, ricerca anche per numero giornata)
   classifiche/                Pagina UNICA "Classifiche" = Classifica squadre (con attributo data-rank-lead sulle prime PLAYOFF_SPOTS righe) + Marcatori (uniti)
