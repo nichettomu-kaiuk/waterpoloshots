@@ -82,22 +82,23 @@ body {
 /* Hero background image: su smartphone la foto non deve mai essere
    ritagliata — "contain" invece di "cover", ancorata in alto e centrata in
    orizzontale, quindi ridotta (mai ingrandita) solo quanto basta per stare
-   interamente nel riquadro. Niente vignette sfumata qui: su un'immagine
-   "contain" (spesso più bassa del riquadro, con dello spazio libero sotto)
-   il fade radiale taglierebbe via porzioni della foto invece di sfumarne
-   solo i bordi. Da tablet in su si torna al comportamento originale: intero
-   riquadro coperto ("cover") con vignette radiale sui bordi. */
+   interamente nel riquadro. Il vignette radiale sui bordi (stesso su ogni
+   dimensione, su richiesta esplicita) resta attivo anche qui: con "contain"
+   la foto occupa in genere la parte alta del riquadro, quindi il fade
+   sfuma soprattutto la parte di immagine effettivamente visibile lì.
+   Da tablet in su si torna al comportamento originale: intero riquadro
+   coperto ("cover"), stesso vignette. */
 .hero-bg {
   background-size: contain;
   background-position: top center;
   background-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%);
 }
 @media (min-width: 640px) {
   .hero-bg {
     background-size: cover;
     background-position: center;
-    -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%);
-    mask-image: radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%);
   }
 }
 

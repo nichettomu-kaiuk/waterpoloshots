@@ -26,8 +26,8 @@ export default async function Hero({
               .hero-bg (globals.css): su smartphone "contain" invece di
               "cover", così la foto non viene mai ritagliata (solo ridotta
               quanto basta per starci intera), ancorata in alto e centrata
-              in orizzontale; da tablet in su torna il comportamento
-              originale ("cover" + vignette sfumata sui bordi). */}
+              in orizzontale; da tablet in su torna "cover". Il vignette
+              sfumato sui bordi è lo stesso su ogni dimensione. */}
           <div
             className="absolute inset-0 hero-bg"
             style={{
