@@ -59,7 +59,7 @@ app/
     settings/page.tsx                  Branding, colori, tema grafico, Info/Credits
 
 components/
-  Hero.tsx                Hero condivisa su TUTTE le pagine pubbliche (logo, titolo, sottotitolo, LiveBadge, social icons)
+  Hero.tsx                Hero condivisa su TUTTE le pagine pubbliche (logo, titolo, sottotitolo, LiveBadge, social icons). Titolo (`h1`) con `text-shadow` leggero inline (`[text-shadow:0_2px_8px_rgba(0,0,0,0.5)]`, non scoped a un tema: richiesto per la leggibilità su sfondi mossi — foto caricata, wash diagonali, texture — quasi invisibile sugli sfondi piatti dove non serve)
   LiveBanner.tsx            Fascia rossa a tutta larghezza in Home quando c'è una diretta: squadre/logo/punteggio live + link streaming
   SponsorStrip.tsx           Spazio sponsor in Home, sotto "Prossimi match" — elenco vuoto di default (`SPONSORS` in cima al file), si nasconde da solo se vuoto, nessuna tabella DB
   BottomNav.tsx             6 voci: Home, Calendario, Classifiche, Squadre, Giocatori, News
