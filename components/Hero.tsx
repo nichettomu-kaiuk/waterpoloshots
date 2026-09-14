@@ -22,19 +22,18 @@ export default async function Hero({
     <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">
       {settings?.home_bg_url && (
         <>
-          {/* Background image with soft faded edges — a radial mask fades
-              the photo to transparent toward every side so it blends into
-              the page instead of ending in a hard rectangle. */}
+          {/* Background image with soft faded edges — da tablet in su, un
+              radial mask (classe .hero-bg-mask, in globals.css) fa sfumare
+              la foto verso ogni lato. Su smartphone la maschera è disattivata:
+              l'immagine copre l'intera larghezza dello schermo edge-to-edge,
+              come richiesto, e non lascia intravedere lo sfondo della pagina
+              ai lati stretti di un telefono. */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 hero-bg-mask"
             style={{
               backgroundImage: `url(${settings.home_bg_url})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              WebkitMaskImage:
-                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
-              maskImage:
-                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
             }}
           />
           <div className="absolute inset-0 bg-ink/45" />
