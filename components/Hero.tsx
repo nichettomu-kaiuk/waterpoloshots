@@ -19,7 +19,7 @@ export default async function Hero({
   const live = liveProp !== undefined ? liveProp : await getLiveMatches();
 
   return (
-    <section className="app-hero relative overflow-hidden water-texture px-5 pb-12 pt-10">
+    <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">
       {settings?.home_bg_url && (
         <>
           {/* Background image with soft faded edges — a radial mask fades
@@ -70,7 +70,7 @@ export default async function Hero({
                 titolo quando l'hero ha uno sfondo mosso (foto caricata,
                 wash diagonali di alcuni temi, texture) — quasi invisibile
                 su sfondi piatti, dove non serve. */}
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">
               {settings?.tournament_title ?? "Serie B - Girone 3"}
             </h1>
             <div className="mt-1 flex items-center justify-between gap-3">
