@@ -79,18 +79,23 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Hero background image mask: su smartphone niente maschera, la foto deve
-   coprire tutta la larghezza dello schermo edge-to-edge (background-size:
-   cover da sola già garantisce la copertura, ma la sfumatura radiale usata
-   da tablet in su lasciava trasparire lo sfondo della pagina ai lati stretti
-   di un telefono, dando l'impressione che l'immagine non "si adattasse"
-   alla larghezza). Da tablet in su si ripristina il vignette originale. */
-.hero-bg-mask {
-  -webkit-mask-image: none;
-  mask-image: none;
+/* Hero background image: su smartphone la foto non deve mai essere
+   ritagliata — "contain" invece di "cover", ancorata in alto e centrata in
+   orizzontale, quindi ridotta (mai ingrandita) solo quanto basta per stare
+   interamente nel riquadro. Niente vignette sfumata qui: su un'immagine
+   "contain" (spesso più bassa del riquadro, con dello spazio libero sotto)
+   il fade radiale taglierebbe via porzioni della foto invece di sfumarne
+   solo i bordi. Da tablet in su si torna al comportamento originale: intero
+   riquadro coperto ("cover") con vignette radiale sui bordi. */
+.hero-bg {
+  background-size: contain;
+  background-position: top center;
+  background-repeat: no-repeat;
 }
 @media (min-width: 640px) {
-  .hero-bg-mask {
+  .hero-bg {
+    background-size: cover;
+    background-position: center;
     -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%);
     mask-image: radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%);
   }

@@ -22,18 +22,16 @@ export default async function Hero({
     <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">
       {settings?.home_bg_url && (
         <>
-          {/* Background image with soft faded edges — da tablet in su, un
-              radial mask (classe .hero-bg-mask, in globals.css) fa sfumare
-              la foto verso ogni lato. Su smartphone la maschera è disattivata:
-              l'immagine copre l'intera larghezza dello schermo edge-to-edge,
-              come richiesto, e non lascia intravedere lo sfondo della pagina
-              ai lati stretti di un telefono. */}
+          {/* Background image — dimensioni e maschera gestite dalla classe
+              .hero-bg (globals.css): su smartphone "contain" invece di
+              "cover", così la foto non viene mai ritagliata (solo ridotta
+              quanto basta per starci intera), ancorata in alto e centrata
+              in orizzontale; da tablet in su torna il comportamento
+              originale ("cover" + vignette sfumata sui bordi). */}
           <div
-            className="absolute inset-0 hero-bg-mask"
+            className="absolute inset-0 hero-bg"
             style={{
               backgroundImage: `url(${settings.home_bg_url})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
             }}
           />
           <div className="absolute inset-0 bg-ink/45" />
