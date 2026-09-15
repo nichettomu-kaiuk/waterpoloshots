@@ -14,7 +14,7 @@ export default async function HomePage() {
     getLiveMatches(),
     getUpcomingMatches(4),
     getRecentResults(4),
-    getNewsPosts(3),
+    getNewsPosts(4),
     getStandings(),
     getTopScorers(5),
   ]);
@@ -95,8 +95,18 @@ export default async function HomePage() {
                   <Link href="/news" className="text-xs text-primary">Archivio News</Link>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-2">
-                  {news.map((post) => (
-                    <NewsCard key={post.id} post={post} />
+                  {news.map((post, i) => (
+                    <NewsCard
+                      key={post.id}
+                      post={post}
+                      // Da desktop (lg, griglia a 2 colonne): se il numero di
+                      // news è dispari, l'ultima resta da sola nell'ultima
+                      // riga — la facciamo occupare tutta la riga invece di
+                      // lasciarla accostata a uno spazio vuoto. Solo lg:
+                      // su mobile/tablet la griglia ha un'altra spaziatura
+                      // (1 o 3 colonne) e non serve questa correzione.
+                      className={news.length % 2 !== 0 && i === news.length - 1 ? "lg:col-span-2" : undefined}
+                    />
                   ))}
                 </div>
               </section>

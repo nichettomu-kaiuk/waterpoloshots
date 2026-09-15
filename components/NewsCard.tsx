@@ -19,15 +19,20 @@ function formatDate(iso: string) {
 export default function NewsCard({
   post,
   variant = "vertical",
+  className,
 }: {
   post: NewsPost;
   variant?: "vertical" | "horizontal";
+  // Classi extra sul contenitore esterno (es. per farla occupare più
+  // colonne in una griglia — vedi la Home, dove l'ultima news "orfana" in
+  // una riga dispari riceve `lg:col-span-2`).
+  className?: string;
 }) {
   if (variant === "horizontal") {
     return (
       <Link
         href={`/news/${post.id}`}
-        className="flex w-full animate-rise items-center gap-3 rounded-2xl border border-line bg-surface p-3 transition active:scale-[0.99]"
+        className={`flex w-full animate-rise items-center gap-3 rounded-2xl border border-line bg-surface p-3 transition active:scale-[0.99]${className ? ` ${className}` : ""}`}
       >
         {post.image_url ? (
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl">
@@ -49,7 +54,7 @@ export default function NewsCard({
   }
 
   return (
-    <article className="news-card flex animate-rise items-center overflow-hidden rounded-2xl border border-line bg-surface">
+    <article className={`news-card flex animate-rise items-center overflow-hidden rounded-2xl border border-line bg-surface${className ? ` ${className}` : ""}`}>
       {post.image_url ? (
         <div className="relative m-3 h-[90px] w-[90px] shrink-0 overflow-hidden rounded-xl">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" />

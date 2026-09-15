@@ -52,6 +52,31 @@ export default function CalendarClient({
   const [activeStatus, setActiveStatus] = useState("");
   const [search, setSearch] = useState(q);
 
+  // La giornata "attiva" è la prima, nell'ordine naturale Andata poi
+  // Ritorno, che non risulta ancora Conclusa — cioè il turno che il
+  // torneo sta giocando adesso (o il prossimo in programma). Calcolata
+  // sempre sul calendario completo (non su quello filtrato), così il
+  // segnalino non si sposta cambiando girone/stato/ricerca.
+  const activeGiornata = useMemo(() => {
+    const girons: RoundType[] = ["andata", "ritorno"];
+    for (const round of girons) {
+      const roundMatches = matches.filter((m) => m.round_type === round);
+      const giornateMap = new Map<number, Match[]>();
+      for (const m of roundMatches) {
+        const list = giornateMap.get(m.giornata) ?? [];
+        list.push(m);
+        giornateMap.set(m.giornata, list);
+      }
+      const giornate = Array.from(giornateMap.entries()).sort((a, b) => a[0] - b[0]);
+      for (const [num, ms] of giornate) {
+        if (giornataState(ms).label !== "Conclusa") {
+          return { round, num };
+        }
+      }
+    }
+    return null;
+  }, [matches]);
+
   const filtered = useMemo(() => {
     const searchLower = search.toLowerCase().trim();
     const searchDigits = searchLower.replace(/[^0-9]/g, "");
@@ -146,13 +171,19 @@ export default function CalendarClient({
                 {giornate.map(([giornataNum, giornataMatches]) => {
                   const state = giornataState(giornataMatches);
                   const dates = giornataDates(giornataMatches);
+                  const isActive =
+                    activeGiornata?.round === round && activeGiornata?.num === giornataNum;
                   return (
                     <div key={giornataNum}>
-                      {/* Fascia giornata: stato e date, come nei mockup. */}
+                      {/* Fascia giornata: stato e date, come nei mockup.
+                          data-giornata-active marca il turno corrente: solo
+                          nei temi Poster Arena e Tabellone (versioni scure)
+                          riceve un risalto extra via CSS (globals.css). */}
                       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                         <span
+                          data-giornata-active={isActive || undefined}
                           className={clsx(
-                            "rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest",
+                            "giornata-badge rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest",
                             state.live
                               ? "bg-gold text-[#2a2004]"
                               : "bg-primary text-white"

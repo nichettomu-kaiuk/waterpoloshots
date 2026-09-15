@@ -717,6 +717,12 @@ body {
   border-color: var(--color-primary) !important;
 }
 
+/* Giornata attiva in Calendario (turno in corso, o il prossimo in
+   programma se nessuno è live) — risalto extra scoped a questo tema. */
+.theme-poster .giornata-badge[data-giornata-active] {
+  box-shadow: 0 0 0 2px var(--color-gold);
+}
+
 .theme-poster .cap-badge,
 .theme-poster .cap-badge img {
   border-width: 0 !important;
@@ -850,6 +856,12 @@ body {
   color: #fff !important;
 }
 
+/* Giornata attiva in Calendario (turno in corso, o il prossimo in
+   programma se nessuno è live) — risalto extra scoped a questo tema. */
+.theme-tabellone .giornata-badge[data-giornata-active] {
+  box-shadow: 0 0 0 2px var(--color-gold);
+}
+
 .theme-tabellone .lane-rope {
   height: 6px;
   margin: 18px 0;
@@ -861,22 +873,10 @@ body {
   );
 }
 
-/* Podio in classifica: 1°/2° in rosso pieno, 3° in oro tenue —
-   caratteristica esclusiva di questo tema, vedi nota sopra. */
-.theme-tabellone .site-card table tbody tr:nth-child(-n + 2) .rank-box span {
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 4px;
-  font-weight: 700;
-}
-.theme-tabellone .site-card table tbody tr:nth-child(3) .rank-box span {
-  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
-  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
-     "-light" variant, which would leave this text unreadable on gold. */
-  color: #0a0a0b;
-  border-radius: 4px;
-  font-weight: 700;
-}
+/* Podio in classifica (1°/2° in rosso pieno, 3° in oro tenue) RIMOSSO su
+   richiesta esplicita: come tutti gli altri temi, anche Tabellone ora non
+   evidenzia più nessuna posizione in classifica. Resta solo lo stile base
+   del numero (dimensione/font), sotto. */
 .theme-tabellone .rank-box span {
   display: inline-flex;
   align-items: center;
@@ -987,10 +987,12 @@ body {
   border-color: var(--color-line) !important;
 }
 
-/* Podio in classifica: quadratino rosso pieno per le posizioni play-off
-   (segnate con l'attributo data-rank-lead, aggiunto in
-   app/classifiche/page.tsx), neutro per le altre — caratteristica propria
-   di questo tema, come Tabellone ha la sua. */
+/* Evidenziazione quadratino play-off (via data-rank-lead) RIMOSSA su
+   richiesta esplicita: come Tabellone, anche Magazine ora non evidenzia
+   più nessuna posizione in classifica. L'attributo data-rank-lead resta
+   presente nel markup (app/classifiche/page.tsx) per un'eventuale ripresa
+   futura, ma non ha più alcun effetto qui. Resta solo lo stile base del
+   numero (dimensione/font). */
 .theme-magazine .rank-box span {
   display: inline-flex;
   align-items: center;
@@ -1001,10 +1003,6 @@ body {
   font-weight: 700;
   background: var(--color-surface-raised);
   color: var(--color-fg);
-}
-.theme-magazine .rank-box[data-rank-lead] span {
-  background: var(--color-primary);
-  color: #fff;
 }
 
 .theme-magazine .podium-pedestal {

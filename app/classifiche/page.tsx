@@ -5,8 +5,12 @@ import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 import Podium from "@/components/Podium";
 
-// Numero di posizioni marcate come "play-off promozione" in classifica.
-const PLAYOFF_SPOTS = 2;
+// Numero di posizioni citate in legenda come "play-off promozione" /
+// "play-out retrocessione". Non producono più alcuna evidenziazione visiva
+// in nessun tema (rimossa su richiesta esplicita, vedi PROJECT_STATUS.md) —
+// contano solo per il testo sotto la tabella.
+const PLAYOFF_SPOTS = 4;
+const RELEGATION_SPOTS = 4;
 
 export default async function ClassifichePage() {
   const [standings, allScorers] = await Promise.all([getStandings(), getTopScorers(15)]);
@@ -92,7 +96,9 @@ export default async function ClassifichePage() {
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] leading-relaxed text-muted">
             <span>Pt punti · G giocate · V vinte · N nulle · P perse</span>
             <span>GF gol fatti · GS gol subiti · DR differenza reti</span>
-            <span className="text-primary">Prime {PLAYOFF_SPOTS}: play-off promozione</span>
+            <span className="text-primary">
+              Prime {PLAYOFF_SPOTS}: play-off promozione/Ultime {RELEGATION_SPOTS}: play-out retrocessione.
+            </span>
           </div>
         )}
 
