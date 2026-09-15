@@ -53,9 +53,10 @@ export default function GiocatoriClient({ players }: { players: PlayerWithTeam[]
               href={`/giocatore/${p.id}`}
               className="site-card flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5 transition active:scale-[0.99]"
             >
-              {/* Numero di calottina: sempre prima della foto, stessa
-                  grandezza (h-10 w-10), senza prefisso "N." — cifra nuda. */}
-              <span className="cap-badge player-cap-number relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-sm font-bold text-gold">
+              {/* Numero di calottina: sempre prima della foto, cifra nuda
+                  senza prefisso "N." e senza alcun riquadro/bordo — solo
+                  alta quanto la foto (h-10), centrata verticalmente. */}
+              <span className="player-cap-number flex h-10 shrink-0 items-center font-display text-3xl font-bold leading-none text-gold">
                 {p.cap_number}
               </span>
               {p.photo_url ? (

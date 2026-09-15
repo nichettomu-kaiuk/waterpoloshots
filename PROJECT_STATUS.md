@@ -43,11 +43,11 @@ app/
   layout.tsx              Root layout: font (incl. Space Grotesk per Magazine), classe tema su <html>, TopRightControls, BottomNav
   page.tsx                 Home — rifatta (vedi "Rifacimento pagine 'Magazine'" sotto): LiveBanner se c'è una diretta, due colonne su desktop (risultati/prossimi/sponsor/news + sidebar classifica breve/marcatori). La bento-grid SHOW_QUICK_NAV non esiste più, sostituita da questo layout. Griglia News: `sm:grid-cols-3 lg:grid-cols-2` — 3 colonne in tablet, 2 su desktop; **max 4 news** (`getNewsPosts(4)`, prima erano 3) e, **solo da desktop (`lg:`)**, se il numero di news è dispari l'ultima (rimasta sola nell'ultima riga a 2 colonne) riceve `lg:col-span-2` e occupa l'intera riga invece di restare accostata a uno spazio vuoto — passato come `className` a `NewsCard` (prop nuova, opzionale, si aggiunge alle classi di base).
   globals.css               Design tokens + intero sistema temi (vedi sotto)
-  calendario/                Calendario partite (girone/giornata/stato Da giocare-In corso-Conclusa, ricerca anche per numero giornata). Badge "Giornata N" con classe hook `giornata-badge` + attributo `data-giornata-active` sul turno corrente — vedi "Giornata attiva in Calendario" in "Sistema temi".
+  calendario/                Calendario partite (girone/giornata/stato Da giocare-In corso-Conclusa, ricerca anche per numero giornata)
   classifiche/                Pagina UNICA "Classifiche" = Classifica squadre (attributo `data-rank-lead` sulle prime `PLAYOFF_SPOTS` righe, presente nel markup ma senza più alcun effetto visivo in nessun tema — vedi "Evidenziazione classifica rimossa") + Marcatori (uniti). Legenda: "Prime `PLAYOFF_SPOTS` (4): play-off promozione/Ultime `RELEGATION_SPOTS` (4): play-out retrocessione."
   marcatori/                   Redirect verso /classifiche#marcatori (retro-compatibilità link vecchi)
   squadre/, squadra/[id]/        Elenco squadre pubblico in lista (posizione/punti da classifica quando la stagione è iniziata) + scheda squadra (rosa in 4 colonne: N°/avatar/nome+ruolo/reti)
-  giocatori/, giocatore/[id]/     Elenco piatto ordinato per squadra (ogni riga: numero calottina — cifra nuda, senza "N.", stessa grandezza 40×40 dell'avatar, subito prima della foto/fallback iniziali — poi foto/avatar, nome, squadra, reti) + scheda giocatore (briciole di navigazione, card "player template", riga statistiche gol/calottina/posizione tra i marcatori di squadra, frecce prev/next tra compagni di squadra)
+  giocatori/, giocatore/[id]/     Elenco piatto ordinato per squadra (ogni riga: numero calottina — cifra nuda, senza "N." e senza alcun riquadro/bordo, solo alta quanto la foto/avatar (h-10), subito prima della foto/fallback iniziali — poi foto/avatar, nome, squadra, reti) + scheda giocatore (briciole di navigazione, card "player template", riga statistiche gol/calottina/posizione tra i marcatori di squadra, frecce prev/next tra compagni di squadra)
   news/, news/[id]/                Archivio News (griglia `sm:grid-cols-2`, prima era una lista verticale a colonna singola) + dettaglio
   admin/
     login/, layout.tsx (nav interna, tema sempre Classico)
@@ -151,9 +151,6 @@ comportamento strano.
   l'hero (`::before`, clippata dall'`overflow-hidden` esistente), punteggi/
   numero maglia come blocco pieno oro, nav rettangolare
   con divisori verticali e attivo = blocco rosso pieno
-  - **Giornata attiva in Calendario**: risalto extra sul badge "Giornata N"
-    del turno corrente — vedi "Giornata attiva in Calendario" più sotto,
-    sezione condivisa con Tabellone.
 - **Tabellone** (`tabellone`): nato dalla revisione grafica a due direzioni
   condivisa dall'utente su un canvas Claude Design ("Waterpolo Serie B - UI
   Mockups"), che confrontava due proposte ("Turno 1"/"Turno 2"). L'utente ha
@@ -170,15 +167,16 @@ comportamento strano.
     `.theme-tabellone .font-display`), angoli quasi squadrati (`border-radius:
     6px` invece di 0 come Poster o pieno come Corsia), punteggi/numero
     maglia in stile monospaziato tabellone.
-  - **Podio in classifica RIMOSSO** (era una eccezione deliberata di questo
-    solo tema — 1°/2° blocco rosso pieno, 3° tinta oro — ma è stata tolta
-    su richiesta esplicita successiva: vedi "Evidenziazione classifica
-    rimossa" più sotto). `.rank-box span` in Tabellone ora ha solo lo stile
-    base (dimensione/font monospaziato), come tutti gli altri temi.
-  - **Giornata attiva in Calendario**: risalto extra (anello dorato via
-    `box-shadow`) sul badge "Giornata N" del turno corrente — vedi
-    "Giornata attiva in Calendario" più sotto, sezione condivisa con
-    Poster Arena.
+  - **ECCEZIONE DELIBERATA — podio in classifica**: Tabellone è l'UNICO tema
+    che evidenzia le prime 3 posizioni in `.rank-box` (1°/2° = blocco rosso
+    pieno, 3° = tinta oro tenue con testo `#0a0a0b` hardcoded per lo stesso
+    motivo di contrasto già documentato per Poster). Era stato rimosso per
+    errore durante un giro di modifiche (insieme all'analoga evidenziazione
+    di Magazine, tolta invece deliberatamente — vedi sotto) e **reintrodotto
+    subito dopo su correzione esplicita dell'utente**: resta una
+    caratteristica distintiva di questo solo tema, seguendo lo stesso
+    principio già usato per i badge quadrati di Poster Arena ("ogni tema può
+    introdurre un trattamento nuovo"). Non toccare gli altri temi.
 - **Magazine** (`magazine`): scoperto per la prima volta come effetto
   collaterale dell'aggiunta di Tabellone — il vincolo `theme` sul database
   Supabase LIVE conteneva già `'magazine'`/`'magazine-light'` (con la riga
@@ -228,32 +226,48 @@ comportamento strano.
   - **Evidenziazione play-off in classifica RIMOSSA** (era una eccezione
     deliberata di questo solo tema — quadratino rosso pieno sulle prime
     `PLAYOFF_SPOTS` righe via l'attributo `data-rank-lead` — ma è stata
-    tolta su richiesta esplicita successiva: vedi "Evidenziazione
-    classifica rimossa" più sotto). L'attributo `data-rank-lead` resta nel
-    markup di `app/classifiche/page.tsx` (per un'eventuale ripresa futura)
-    ma non ha più alcun effetto visivo in nessun tema.
-- **Evidenziazione classifica rimossa** (su richiesta esplicita): sia il
-  podio di Tabellone (1°/2°/3°, via `:nth-child`) sia il quadratino play-off
-  di Magazine (via `data-rank-lead`) sono stati tolti — nessun tema
-  evidenzia più alcuna posizione in `.rank-box`, tornando alla regola
-  originale valida per tutti gli altri temi. La legenda testuale sotto la
-  tabella (`app/classifiche/page.tsx`) resta comunque aggiornata: "Prime
+    tolta su richiesta esplicita: vedi "Evidenziazione classifica —
+    Magazine rimossa, Tabellone confermato" più sotto). L'attributo
+    `data-rank-lead` resta nel markup di `app/classifiche/page.tsx` (per
+    un'eventuale ripresa futura) ma non ha più alcun effetto visivo in
+    nessun tema.
+- **Evidenziazione classifica — Magazine rimossa, Tabellone confermato**:
+  su richiesta esplicita è stato tolto solo il quadratino play-off di
+  Magazine (via `data-rank-lead`) — il podio di Tabellone (1°/2°/3°, via
+  `:nth-child`, vedi sopra) NON va toccato, resta la sua caratteristica
+  distintiva (un giro di modifiche lo aveva rimosso per errore insieme a
+  Magazine; è stato reintrodotto identico a prima su correzione
+  dell'utente). La legenda testuale sotto la tabella
+  (`app/classifiche/page.tsx`) resta comunque aggiornata: "Prime
   `PLAYOFF_SPOTS`: play-off promozione/Ultime `RELEGATION_SPOTS`: play-out
   retrocessione." — `PLAYOFF_SPOTS` e `RELEGATION_SPOTS` sono ora 4
   (prima `PLAYOFF_SPOTS` era 2), ma contano solo per il testo: non
-  producono più alcun effetto visivo in classifica.
-- **Giornata attiva in Calendario** (`app/calendario/CalendarClient.tsx`):
-  la giornata "attiva" è calcolata come la prima, nell'ordine naturale
-  Andata poi Ritorno, che non risulta ancora Conclusa (cioè il turno in
-  corso, o il prossimo in programma) — sempre sul calendario completo, non
-  su quello filtrato dai controlli di ricerca/stato, così il segnalino non
-  si sposta cambiando filtro. Il badge "Giornata N" riceve una classe
-  hook stabile (`giornata-badge`) e un attributo `data-giornata-active`
-  quando è quella attiva; **solo Poster Arena e Tabellone (versioni
-  scure, non le `-light`)** applicano un risalto extra via CSS (anello
-  dorato, `box-shadow: 0 0 0 2px var(--color-gold)`), su richiesta
-  esplicita — gli altri temi ignorano l'attributo, nessun cambiamento
-  visivo per loro.
+  producono alcun effetto visivo proprio, a parte il podio di Tabellone
+  che resta indipendente da queste costanti (usa `:nth-child`, non
+  `data-rank-lead`).
+- **Riga "Giornata attiva" nell'header/hero evidenziata in tutti i temi**
+  (`components/Hero.tsx` mostra `settings.active_round` nell'eyebrow sopra
+  al titolo, es. "Girone di andata" — non è legata al Calendario, che non è
+  stato toccato da questa richiesta). Poster Arena e Tabellone avevano già
+  una pillola piena colorata su questo testo; su richiesta esplicita lo
+  stesso tipo di risalto (sfondo/pillola, non più solo testo dorato) è
+  stato **esteso a tutti gli altri temi**, ciascuno con una variante
+  coerente col proprio stile invece di clonare quella di Poster/Tabellone:
+  - **Classico** e **Corsia** (`lane`, che non la sovrascrive): pillola
+    piena col colore primario, raggio pieno — regola di base non scoped
+    (`.hero-eyebrow` senza prefisso tema, perché Classico non ha una classe
+    `.theme-*` propria).
+  - **Regolamento**: pillola vuota (solo bordo dorato), angoli vivi —
+    coerente con l'estetica piatta/istituzionale.
+  - **Onda d'Urto** (`impact`): pillola col gradiente rosso→oro (lo stesso
+    usato per punteggi/reti in questo tema), sostituisce il vecchio
+    pallino puntino.
+  - **Broadcast Gold**: pillola "vetro" (tinta dorata translucida + bordo
+    hairline), sostituisce il vecchio trattino.
+  - **Magazine**: pillola piatta (raggio 2px, come le sue card) col colore
+    primario, sostituisce il solo testo dorato di prima.
+  - **Poster Arena** e **Tabellone**: invariati, erano già il modello di
+    riferimento per questa richiesta.
 - Pannello Admin resta **sempre Classico** indipendentemente dal tema
   scelto (per leggibilità dello strumento di gestione)
 - Migrazione `settings_theme_check` estesa più volte sul progetto Supabase

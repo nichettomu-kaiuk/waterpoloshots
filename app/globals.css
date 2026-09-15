@@ -102,6 +102,23 @@ body {
   }
 }
 
+/* Riga "Giornata attiva" nell'header/hero (l'eyebrow sopra al titolo:
+   "Girone di andata" o il testo impostato in Admin come "Girone attivo").
+   Trattamento di base — una pillola piena col colore primario — applicato
+   al tema Classico (che non ha una classe `.theme-*` propria) e a Corsia
+   (`.theme-lane`, che non lo sovrascrive: il suo linguaggio è già fatto di
+   pillole, vedi la nav). Ogni altro tema lo sovrascrive con una propria
+   variante coerente con il proprio stile, invece di ereditare questa —
+   vedi le sezioni dei singoli temi più sotto. */
+.hero-eyebrow {
+  display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
 /* ────────────────────────────────────────────────────────────────────────
    Theme: "Corsia" (lane)
    A second visual identity for the whole site, toggled in
@@ -223,6 +240,18 @@ body {
 }
 .theme-regulation .app-hero h1 {
   font-weight: 600;
+}
+/* Pillola vuota (solo bordo) invece che piena — coerente con l'estetica
+   piatta/istituzionale del tema, meno "gridata" della pillola piena di
+   base. */
+.theme-regulation .hero-eyebrow {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold);
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 0;
 }
 
 /* Flat "regulation" cards: square corners, thin top rule instead of a
@@ -422,20 +451,15 @@ body {
   opacity: 0.85;
   pointer-events: none;
 }
+/* Pillola col gradiente rosso→oro, lo stesso usato per punteggi/reti in
+   questo tema (invece del pallino puntino usato prima). */
 .theme-impact .hero-eyebrow {
-  position: relative;
-  padding-left: 12px;
-}
-.theme-impact .hero-eyebrow::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
+  display: inline-block;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-gold));
+  color: #fff;
+  font-weight: 700;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: var(--color-primary);
 }
 
 /* Ticket-notch cards (steeper cut than Corsia) with a heavier gold edge
@@ -547,19 +571,17 @@ body {
 .theme-broadcast .app-hero h1 {
   letter-spacing: 0.02em;
 }
+/* Pillola "vetro" — leggera tinta dorata + bordo hairline translucido,
+   coerente con le card "vetro" di questo tema (invece del trattino usato
+   prima). */
 .theme-broadcast .hero-eyebrow {
-  position: relative;
-  padding-left: 30px;
-}
-.theme-broadcast .hero-eyebrow::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 20px;
-  height: 1px;
-  transform: translateY(-50%);
-  background: var(--color-gold);
+  display: inline-block;
+  background: color-mix(in srgb, var(--color-gold) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  color: var(--color-gold);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
 }
 
 .theme-broadcast .match-card,
@@ -717,12 +739,6 @@ body {
   border-color: var(--color-primary) !important;
 }
 
-/* Giornata attiva in Calendario (turno in corso, o il prossimo in
-   programma se nessuno è live) — risalto extra scoped a questo tema. */
-.theme-poster .giornata-badge[data-giornata-active] {
-  box-shadow: 0 0 0 2px var(--color-gold);
-}
-
 .theme-poster .cap-badge,
 .theme-poster .cap-badge img {
   border-width: 0 !important;
@@ -856,12 +872,6 @@ body {
   color: #fff !important;
 }
 
-/* Giornata attiva in Calendario (turno in corso, o il prossimo in
-   programma se nessuno è live) — risalto extra scoped a questo tema. */
-.theme-tabellone .giornata-badge[data-giornata-active] {
-  box-shadow: 0 0 0 2px var(--color-gold);
-}
-
 .theme-tabellone .lane-rope {
   height: 6px;
   margin: 18px 0;
@@ -873,10 +883,24 @@ body {
   );
 }
 
-/* Podio in classifica (1°/2° in rosso pieno, 3° in oro tenue) RIMOSSO su
-   richiesta esplicita: come tutti gli altri temi, anche Tabellone ora non
-   evidenzia più nessuna posizione in classifica. Resta solo lo stile base
-   del numero (dimensione/font), sotto. */
+/* Podio in classifica: 1°/2° in rosso pieno, 3° in oro tenue —
+   caratteristica esclusiva di questo tema (reintrodotta dopo essere stata
+   rimossa per errore: resta un'eccezione deliberata, SOLO per Tabellone —
+   Magazine non la riprende più, vedi la sua sezione più sotto). */
+.theme-tabellone .site-card table tbody tr:nth-child(-n + 2) .rank-box span {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.theme-tabellone .site-card table tbody tr:nth-child(3) .rank-box span {
+  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
+     "-light" variant, which would leave this text unreadable on gold. */
+  color: #0a0a0b;
+  border-radius: 4px;
+  font-weight: 700;
+}
 .theme-tabellone .rank-box span {
   display: inline-flex;
   align-items: center;
@@ -938,12 +962,17 @@ body {
   font-weight: 700;
   letter-spacing: -0.025em;
 }
+/* Pillola piatta (raggio 2px, coerente con le card di questo tema) invece
+   del solo testo dorato usato prima. */
 .theme-magazine .hero-eyebrow {
   display: inline-block;
+  background: var(--color-primary);
+  color: #fff;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-gold);
+  padding: 3px 10px;
+  border-radius: 2px;
 }
 
 .theme-magazine .match-card,
