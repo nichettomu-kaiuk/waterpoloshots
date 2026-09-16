@@ -1,13 +1,45 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
+import type { Match, NewsPost, Player, Settings, StandingRow, Team, Tournament, Venue } from "@/lib/supabase/types";
 
 // Every function degrades gracefully to `null`/`[]` if Supabase env vars are
 // missing, so the UI can be previewed before the project is connected.
 
-export async function getSettings(): Promise<Settings | null> {
+// ── Campionati ───────────────────────────────────────────────────────────
+// The whole app is a template: every table below is scoped to one
+// tournament via tournament_id. getTournamentBySlug is wrapped in React's
+// cache() so every server component that needs to resolve the current
+// tournament from the URL slug within one request (layout + page + any
+// nested pages) shares a single query instead of repeating it.
+
+export async function getTournaments(): Promise<Tournament[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("settings").select("*").limit(1).maybeSingle();
+    const { data } = await supabase.from("tournaments").select("*").order("created_at", { ascending: true });
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export const getTournamentBySlug = cache(async (slug: string): Promise<Tournament | null> => {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase.from("tournaments").select("*").eq("slug", slug).maybeSingle();
+    return data ?? null;
+  } catch {
+    return null;
+  }
+});
+
+export async function getSettings(tournamentId: string): Promise<Settings | null> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("settings")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .maybeSingle();
     return data ?? null;
   } catch {
     return null;
@@ -15,18 +47,19 @@ export async function getSettings(): Promise<Settings | null> {
 }
 
 const MATCH_SELECT = `
-  id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata, stream_url,
+  id, tournament_id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata, stream_url,
   home_team:teams!matches_home_team_id_fkey ( id, name, logo_url, created_at ),
   away_team:teams!matches_away_team_id_fkey ( id, name, logo_url, created_at ),
   venue:venues ( id, name, location_tag, address )
 `;
 
-export async function getLiveMatches(): Promise<Match[]> {
+export async function getLiveMatches(tournamentId: string): Promise<Match[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("tournament_id", tournamentId)
       .eq("status", "live")
       .order("date_time", { ascending: true });
     return (data as unknown as Match[]) ?? [];
@@ -35,12 +68,13 @@ export async function getLiveMatches(): Promise<Match[]> {
   }
 }
 
-export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
+export async function getUpcomingMatches(tournamentId: string, limit = 5): Promise<Match[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("tournament_id", tournamentId)
       .eq("status", "scheduled")
       .order("date_time", { ascending: true })
       .limit(limit);
@@ -50,12 +84,13 @@ export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
   }
 }
 
-export async function getRecentResults(limit = 5): Promise<Match[]> {
+export async function getRecentResults(tournamentId: string, limit = 5): Promise<Match[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("tournament_id", tournamentId)
       .eq("status", "completed")
       .order("date_time", { ascending: false })
       .limit(limit);
@@ -65,12 +100,13 @@ export async function getRecentResults(limit = 5): Promise<Match[]> {
   }
 }
 
-export async function getAllMatches(roundType?: string, search?: string): Promise<Match[]> {
+export async function getAllMatches(tournamentId: string, roundType?: string, search?: string): Promise<Match[]> {
   try {
     const supabase = createClient();
     let query = supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("tournament_id", tournamentId)
       .order("giornata", { ascending: true })
       .order("date_time", { ascending: true });
     if (roundType) query = query.eq("round_type", roundType);
@@ -90,12 +126,13 @@ export async function getAllMatches(roundType?: string, search?: string): Promis
   }
 }
 
-export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
+export async function getNewsPosts(tournamentId: string, limit = 6): Promise<NewsPost[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("news_posts")
       .select("*")
+      .eq("tournament_id", tournamentId)
       .order("created_at", { ascending: false })
       .limit(limit);
     return data ?? [];
@@ -104,32 +141,45 @@ export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
   }
 }
 
-export async function getNewsPost(id: string): Promise<NewsPost | null> {
+export async function getNewsPost(tournamentId: string, id: string): Promise<NewsPost | null> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("news_posts").select("*").eq("id", id).maybeSingle();
+    const { data } = await supabase
+      .from("news_posts")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .eq("id", id)
+      .maybeSingle();
     return data ?? null;
   } catch {
     return null;
   }
 }
 
-export async function getTeams(): Promise<Team[]> {
+export async function getTeams(tournamentId: string): Promise<Team[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("teams").select("*").order("name");
+    const { data } = await supabase.from("teams").select("*").eq("tournament_id", tournamentId).order("name");
     return data ?? [];
   } catch {
     return [];
   }
 }
 
-export async function getTeamWithRoster(teamId: string): Promise<{ team: Team | null; players: Player[] }> {
+export async function getTeamWithRoster(
+  tournamentId: string,
+  teamId: string
+): Promise<{ team: Team | null; players: Player[] }> {
   try {
     const supabase = createClient();
     const [{ data: team }, { data: players }] = await Promise.all([
-      supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
-      supabase.from("players").select("*").eq("team_id", teamId).order("cap_number"),
+      supabase.from("teams").select("*").eq("tournament_id", tournamentId).eq("id", teamId).maybeSingle(),
+      supabase
+        .from("players")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .eq("team_id", teamId)
+        .order("cap_number"),
     ]);
     return { team: team ?? null, players: players ?? [] };
   } catch {
@@ -137,10 +187,18 @@ export async function getTeamWithRoster(teamId: string): Promise<{ team: Team | 
   }
 }
 
-export async function getPlayer(playerId: string): Promise<{ player: Player | null; team: Team | null }> {
+export async function getPlayer(
+  tournamentId: string,
+  playerId: string
+): Promise<{ player: Player | null; team: Team | null }> {
   try {
     const supabase = createClient();
-    const { data: player } = await supabase.from("players").select("*").eq("id", playerId).maybeSingle();
+    const { data: player } = await supabase
+      .from("players")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .eq("id", playerId)
+      .maybeSingle();
     if (!player) return { player: null, team: null };
     const { data: team } = await supabase.from("teams").select("*").eq("id", player.team_id).maybeSingle();
     return { player, team: team ?? null };
@@ -149,22 +207,23 @@ export async function getPlayer(playerId: string): Promise<{ player: Player | nu
   }
 }
 
-export async function getVenues(): Promise<Venue[]> {
+export async function getVenues(tournamentId: string): Promise<Venue[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("venues").select("*").order("name");
+    const { data } = await supabase.from("venues").select("*").eq("tournament_id", tournamentId).order("name");
     return data ?? [];
   } catch {
     return [];
   }
 }
 
-export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
+export async function getAllPlayers(tournamentId: string): Promise<(Player & { team?: Team })[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("players")
       .select("*, team:teams(*)")
+      .eq("tournament_id", tournamentId)
       .order("last_name");
     return (data as unknown as (Player & { team?: Team })[]) ?? [];
   } catch {
@@ -172,12 +231,13 @@ export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
   }
 }
 
-export async function getTopScorers(limit = 10): Promise<Player[]> {
+export async function getTopScorers(tournamentId: string, limit = 10): Promise<Player[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("players")
       .select("*, team:teams(*)")
+      .eq("tournament_id", tournamentId)
       .order("goals_count", { ascending: false })
       .limit(limit);
     return (data as unknown as Player[]) ?? [];
@@ -188,11 +248,15 @@ export async function getTopScorers(limit = 10): Promise<Player[]> {
 
 // Computes the team standings from completed matches. Kept in the app layer
 // (rather than a DB view) so it stays easy to read and adjust point rules.
-export async function getStandings(roundType?: string): Promise<StandingRow[]> {
+export async function getStandings(tournamentId: string, roundType?: string): Promise<StandingRow[]> {
   try {
     const supabase = createClient();
-    const teamsRes = await supabase.from("teams").select("*");
-    let matchQuery = supabase.from("matches").select("*").eq("status", "completed");
+    const teamsRes = await supabase.from("teams").select("*").eq("tournament_id", tournamentId);
+    let matchQuery = supabase
+      .from("matches")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .eq("status", "completed");
     if (roundType) matchQuery = matchQuery.eq("round_type", roundType);
     const matchesRes = await matchQuery;
 

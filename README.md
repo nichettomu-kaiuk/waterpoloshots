@@ -1,19 +1,32 @@
-# Torneo di Pallanuoto — Web App
+# Torneo di Pallanuoto — Web App (template multi-campionato)
 
-App per la gestione di tornei di pallanuoto: calendario, classifiche in tempo
-reale, schede squadre/giocatori e un pannello Admin protetto per gestire
-partite, risultati, gol e branding. Costruita con Next.js (App Router) +
+App/template per la gestione di uno o più tornei di pallanuoto ("campionati"):
+calendario, classifiche in tempo reale, schede squadre/giocatori e un
+pannello Admin protetto per gestire partite, risultati, gol e branding — per
+ciascun campionato indipendentemente. Costruita con Next.js (App Router) +
 Tailwind CSS, dati e auth su Supabase, pronta per il deploy su Vercel.
+
+Il sito è un **template**: da Admin → Campionati puoi creare quanti
+campionati vuoi (ognuno con le proprie squadre, partite, giocatori, news e
+aspetto grafico) ed eliminarli. La prima pagina del sito pubblico (`/`)
+elenca tutti i campionati creati; sceglierne uno porta a `/<indirizzo>/...`
+con calendario, classifiche, squadre, ecc. di quel solo campionato.
 
 ## 1. Crea il progetto Supabase
 
 1. Vai su [supabase.com](https://supabase.com) → **New project**.
 2. Apri **SQL Editor** e incolla il contenuto di `supabase/schema.sql`, poi
-   esegui. Questo crea tabelle, RLS, lo storage bucket `branding` e una riga
-   iniziale in `settings`.
+   esegui. Questo crea tabelle (inclusa `tournaments`, i campionati), RLS, lo
+   storage bucket `branding` e un primo campionato con la sua riga
+   `settings` (se il progetto Supabase è nuovo; se invece stai aggiornando
+   un progetto esistente che girava la versione precedente — a campionato
+   singolo — di questo schema, lo stesso file adotta automaticamente i dati
+   già presenti nel primo campionato, senza perdere nulla: vedi il blocco
+   "MULTI-CAMPIONATO" in fondo al file).
 3. Vai su **Authentication → Users → Add user** e crea l'account admin
    (email + password). Non è previsto un flusso di registrazione pubblica:
-   solo questo account potrà accedere a `/admin`.
+   solo questo account potrà accedere a `/admin`, da cui gestisce **tutti**
+   i campionati.
 
 ## 2. Configura le variabili d'ambiente
 
@@ -33,8 +46,10 @@ npm install
 npm run dev
 ```
 
-Apri `http://localhost:3000`. Il pannello admin è su `/admin` (redirect
-automatico a `/admin/login` se non autenticato).
+Apri `http://localhost:3000`: mostra l'elenco campionati (prima pagina del
+sito). Il pannello admin è su `/admin` (redirect automatico a
+`/admin/login` se non autenticato) — da lì crea/elimina campionati e, per
+ciascuno, entra nella sua gestione (`/admin/<indirizzo>/...`).
 
 ## 4. Deploy su Vercel
 
@@ -48,24 +63,33 @@ automatico a `/admin/login` se non autenticato).
 
 ```
 app/
-  page.tsx                  Home (hero, bento grid, live/upcoming/results)
-  calendario/                Calendario partite (filtri girone + ricerca)
-  classifiche/                Classifica squadre + podio marcatori
-  squadra/[id]/                Scheda squadra (rosa giocatori)
-  giocatore/[id]/               Scheda giocatore
+  page.tsx                   Elenco campionati — prima pagina del sito
+  [slug]/                     Tutto il sito pubblico di UN campionato
+    layout.tsx                 Risolve il campionato dallo slug, tema/branding, BottomNav
+    page.tsx                    Home (hero, live/upcoming/results)
+    calendario/                  Calendario partite (filtri girone + ricerca)
+    classifiche/                  Classifica squadre + podio marcatori
+    squadre/, squadra/[id]/        Elenco squadre + scheda squadra (rosa giocatori)
+    giocatori/, giocatore/[id]/      Elenco giocatori + scheda giocatore
+    news/, news/[id]/                Archivio news + dettaglio
   admin/
-    login/                      Login Supabase Auth
-    page.tsx                    Dashboard (metriche)
-    matches/                    Calendario + inserimento risultati/gol
-    teams/                       CRUD squadre (+ upload logo)
-    players/                     CRUD giocatori (+ upload foto)
-    venues/                      CRUD campi/piscine
-    settings/                    Branding: titolo, colori, immagini
+    login/                      Login Supabase Auth (globale, un solo account)
+    page.tsx                    Campionati: crea/elimina campionati
+    [slug]/                      Gestione di UN campionato
+      layout.tsx                  Risolve il campionato, lo espone via useTournament()
+      page.tsx                     Dashboard (metriche di questo campionato)
+      matches/                     Calendario + inserimento risultati/gol
+      teams/                        CRUD squadre (+ upload logo)
+      players/                      CRUD giocatori (+ upload foto)
+      venues/                       CRUD campi/piscine
+      news/                          CRUD news
+      settings/                      Branding di questo campionato: titolo, colori, tema, immagini
 components/                  MatchCard, MatchDetailModal, BottomNav, Podium...
 lib/
   supabase/                  Client browser/server + middleware auth
-  queries.ts                  Query lato server (classifiche calcolate live)
-supabase/schema.sql          Schema completo + RLS + storage bucket
+  queries.ts                  Query lato server, tutte scoped per tournament_id
+  tournament-context.tsx      Contesto React per le pagine admin client-side
+supabase/schema.sql          Schema completo (incl. tournaments) + RLS + storage bucket
 ```
 
 ## Note di design

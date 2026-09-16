@@ -20,6 +20,7 @@ export default function NewsCard({
   post,
   variant = "vertical",
   className,
+  slug,
 }: {
   post: NewsPost;
   variant?: "vertical" | "horizontal";
@@ -27,11 +28,12 @@ export default function NewsCard({
   // colonne in una griglia — vedi la Home, dove l'ultima news "orfana" in
   // una riga dispari riceve `lg:col-span-2`).
   className?: string;
+  slug: string;
 }) {
   if (variant === "horizontal") {
     return (
       <Link
-        href={`/news/${post.id}`}
+        href={`/${slug}/news/${post.id}`}
         className={`flex w-full animate-rise items-center gap-3 rounded-2xl border border-line bg-surface p-3 transition active:scale-[0.99]${className ? ` ${className}` : ""}`}
       >
         {post.image_url ? (
@@ -69,7 +71,7 @@ export default function NewsCard({
         <h3 className="mb-1.5 font-display text-base font-bold leading-snug">{post.title}</h3>
         <p className="mb-3 line-clamp-3 text-sm text-muted">{excerpt(post.content)}</p>
         <Link
-          href={`/news/${post.id}`}
+          href={`/${slug}/news/${post.id}`}
           className="inline-flex items-center gap-1 text-xs font-semibold text-primary"
         >
           Leggi tutto <ArrowRight size={13} />

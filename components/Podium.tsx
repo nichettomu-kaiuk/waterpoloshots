@@ -47,7 +47,7 @@ function PlayerAvatar({ player, size }: { player: Player; size: number }) {
   );
 }
 
-function PodiumColumn({ group, heightClass }: { group: ScorerGroup; heightClass: string }) {
+function PodiumColumn({ group, heightClass, slug }: { group: ScorerGroup; heightClass: string; slug: string }) {
   const tied = group.players.length > 1;
   const avatarSize = tied ? 40 : 56;
 
@@ -55,7 +55,7 @@ function PodiumColumn({ group, heightClass }: { group: ScorerGroup; heightClass:
     <div className="flex flex-1 flex-col items-center">
       <div className="mb-2 flex -space-x-3">
         {group.players.map((p) => (
-          <Link key={p.id} href={`/giocatore/${p.id}`}>
+          <Link key={p.id} href={`/${slug}/giocatore/${p.id}`}>
             <PlayerAvatar player={p} size={avatarSize} />
           </Link>
         ))}
@@ -65,7 +65,7 @@ function PodiumColumn({ group, heightClass }: { group: ScorerGroup; heightClass:
         {group.players.map((p) => (
           <Link
             key={p.id}
-            href={`/giocatore/${p.id}`}
+            href={`/${slug}/giocatore/${p.id}`}
             className="block max-w-[110px] truncate text-xs font-medium"
           >
             {p.last_name}
@@ -79,7 +79,7 @@ function PodiumColumn({ group, heightClass }: { group: ScorerGroup; heightClass:
   );
 }
 
-export default function Podium({ scorers }: { scorers: Player[] }) {
+export default function Podium({ scorers, slug }: { scorers: Player[]; slug: string }) {
   const groups = groupByGoals(scorers);
   const podiumGroups = groups.slice(0, 3);
   const restGroups = groups.slice(3);
@@ -101,7 +101,7 @@ export default function Podium({ scorers }: { scorers: Player[] }) {
     <div>
       <div className="flex items-end justify-center gap-3 px-2 pt-4">
         {orderedColumns.map(({ group, heightClass }) => (
-          <PodiumColumn key={group.goals} group={group} heightClass={heightClass} />
+          <PodiumColumn key={group.goals} group={group} heightClass={heightClass} slug={slug} />
         ))}
       </div>
 
@@ -117,7 +117,7 @@ export default function Podium({ scorers }: { scorers: Player[] }) {
               >
                 <div className="flex items-center gap-3">
                   <span className="w-6 text-xs text-muted">{rank}</span>
-                  <Link href={`/giocatore/${p.id}`} className="text-sm">
+                  <Link href={`/${slug}/giocatore/${p.id}`} className="text-sm">
                     {p.first_name} {p.last_name}
                   </Link>
                 </div>
