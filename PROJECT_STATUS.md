@@ -13,94 +13,6 @@ zip più recente del progetto (o questo file) come contesto.
   (#e10f21), oro `--color-gold` (#d4af37) — font Oswald (display) + Inter
   (body) + JetBrains Mono (punteggi/numeri in alcuni temi)
 
-## Multi-campionato (il sito è un template)
-
-Su richiesta esplicita dell'utente, l'intero sito è stato trasformato da
-"un torneo" a **template per N campionati**, gestibili dall'Admin.
-
-- **Tabella `tournaments`** (`supabase/schema.sql`): `id`, `slug` (univoco,
-  usato nell'URL), `name`, `created_at`. Ogni altra tabella (`venues`,
-  `teams`, `players`, `matches`, `match_goals`, `settings`, `news_posts`) ha
-  ora una colonna `tournament_id` (`not null references tournaments(id) on
-  delete cascade`) — eliminare un campionato elimina automaticamente tutto
-  il suo contenuto. `settings` è **una riga per campionato** (non più
-  un'unica riga globale): `unique(tournament_id)`.
-- **Routing pubblico**: `/` è la prima pagina del sito — elenco campionati
-  (`app/page.tsx`, legge `getTournaments()`), ciascuno linkato a
-  `/<slug>`. Tutte le pagine pubbliche che esistevano prima (home,
-  calendario, classifiche, squadre, squadra/[id], giocatori,
-  giocatore/[id], news, news/[id], marcatori) vivono ora sotto
-  `app/[slug]/...` invece che sotto `app/...` — stesso contenuto/logica di
-  prima, ma ogni query è scoped per `tournament_id` e ogni link interno è
-  prefissato con lo slug corrente (es. `/${slug}/calendario`, mai più
-  `/calendario` da solo).
-- **`app/[slug]/layout.tsx`** ha preso in carico tutto ciò che prima stava
-  nel root layout: risolve il campionato dallo slug (`getTournamentBySlug`,
-  wrappata in `cache()` di React così layout + pagina non duplicano la
-  query nella stessa request), 404 (`notFound()`) se lo slug non esiste o è
-  stato eliminato, calcola tema/colori come prima ma li applica a un `<div>`
-  wrapper (non più a `<html>`/`<body>`, che ora appartengono al root layout
-  condiviso anche dalla pagina elenco-campionati, che non ha un tema
-  proprio) — tutti gli hook CSS `.theme-*` in `globals.css` puntano a un
-  antenato `.theme-*` generico, quindi funzionano identici sul `<div>`.
-  `app/layout.tsx` (root) ora registra solo i font: niente
-  settings/tema/BottomNav/TopRightControls, che si vedono solo una volta
-  scelto un campionato.
-- **`Hero`** ora richiede sempre `tournamentId` (anche quando riceve
-  `settings`/`live` già pronti dal chiamante), così resta esplicito quale
-  campionato sta interrogando se li recupera da sé.
-- **Routing admin**: `/admin` (senza slug) è il **gestore campionati**
-  (`app/admin/page.tsx`, client component): crea (nome → slug auto-generato
-  e modificabile, con `slugify()` e blocklist di indirizzi riservati tipo
-  `admin`/`login`) ed elimina (con conferma, l'eliminazione è a cascata sul
-  DB) campionati. `/admin/[slug]/...` è la gestione di UN campionato —
-  dashboard, partite, squadre, giocatori, piscine, news, impostazioni:
-  stesse pagine/logica di prima, spostate da `app/admin/...` a
-  `app/admin/[slug]/...`, ogni query/insert/update/delete ora filtrata o
-  scritta con `tournament_id`. `app/admin/[slug]/layout.tsx` risolve il
-  campionato una volta (server component) e lo espone alle pagine client
-  sottostanti via **`lib/tournament-context.tsx`** (`TournamentProvider` +
-  hook `useTournament()`), evitando che ognuna rifaccia la query. Login
-  (`/admin/login`) resta globale: un solo account Admin gestisce tutti i
-  campionati, non ce n'è uno per campionato.
-- **`app/admin/layout.tsx`** (il nav a pillole in alto) capisce se è dentro
-  un campionato o no leggendo il secondo segmento del pathname (`usePathname()`
-  — non un prop, perché questo layout sta un livello sopra `[slug]`): su
-  `/admin` mostra solo l'intestazione "Campionati" senza il sottomenu CRUD;
-  su `/admin/<slug>/...` mostra il sottomenu (Dashboard/Partite/.../
-  Impostazioni, tutti prefissati `/admin/<slug>`) più un link "← Campionati"
-  per tornare al gestore.
-- **Componenti resi slug-aware** (prop `slug` aggiunta, nessun contesto
-  React lato pubblico — ogni pagina sotto `app/[slug]/...` riceve già
-  `params.slug` da Next e lo passa giù): `BottomNav`, `TopRightControls`
-  (più un nuovo terzo pulsante, icona griglia, "Cambia campionato" → `/`,
-  accanto a Credits e Admin — l'icona Admin ora punta a
-  `/admin/${slug}` invece di `/admin`), `MatchCard` (per il `path` di
-  `ShareButton`), `NewsCard`, `Podium`, `CalendarClient`, `GiocatoriClient`.
-- **Un campionato nuovo parte vuoto**: creandolo da Admin → Campionati si
-  inserisce anche la sua riga `settings` (titolo = nome scelto, tema
-  `classic`, nessuna squadra/partita/giocatore/news) — si popola poi dal suo
-  stesso pannello `/admin/<slug>/...`, esattamente come si popolava prima
-  l'unico torneo esistente.
-- **Migrazione dati esistenti**: su richiesta esplicita dell'utente, i dati
-  già presenti nel progetto (torneo "Serie B - Girone 3" con squadre,
-  calendario, giocatori, ecc. già inseriti) **non vanno persi** — il blocco
-  "MULTI-CAMPIONATO" in fondo a `supabase/schema.sql` (idempotente) crea un
-  primo campionato `serie-b-girone-3` e ci sposta dentro (`update ... set
-  tournament_id = ...`) tutte le righe preesistenti, SOLO la prima volta che
-  gira su un progetto che ha già dati ma non ha ancora la tabella
-  `tournaments`. Su un progetto Supabase nuovo (fresh install) questo blocco
-  è invece un no-op: il seed più in alto nel file crea già lui il primo
-  campionato.
-- **Non fatto/deciso esplicitamente**: nessun isolamento per-campionato
-  dell'account Admin (un solo login gestisce tutti i campionati, come da
-  richiesta — "un pulsante o menù nel pannello di amministrazione" per
-  crearli, non account separati); nessuna clonazione di squadre/impostazioni
-  tra campionati alla creazione (parte sempre vuoto); selezione del
-  campionato basata sull'URL (`/<slug>/...`), non su un cookie/sessione —
-  scelta esplicita dell'utente in fase di chiarimento, per link
-  condivisibili/bookmarkabili e più campionati navigabili in schede diverse.
-
 ## ⚠️ Limite importante di questo ambiente (aggiornato)
 
 **Il registro npm È raggiungibile** in questo sandbox: `npm install`,
@@ -126,41 +38,28 @@ manca, ripristinarlo da `/mnt/user-data/outputs/waterpolo-tournament-app.zip`
 
 ## File chiave
 
-Vedi "Multi-campionato" sopra per come `app/[slug]/...` e
-`app/admin/[slug]/...` sono strutturate (routing, scoping per
-`tournament_id`). Il resto di questa sezione descrive contenuto/logica delle
-singole pagine, invariati rispetto a prima della conversione a template —
-solo il percorso file e i link interni sono cambiati.
-
 ```
 app/
-  layout.tsx              Root layout, ora minimale: solo font (incl. Space Grotesk per Magazine). Niente più tema/settings/nav — quelli sono in app/[slug]/layout.tsx
-  page.tsx                 Elenco campionati (prima pagina del sito), non più la Home di un torneo
-  not-found.tsx             404 generico (slug/campionato inesistente o eliminato)
-  globals.css               Design tokens + intero sistema temi (vedi sotto) — invariato, gli hook .theme-* ora sono applicati a un <div> in app/[slug]/layout.tsx invece che a <html>
-  [slug]/
-    layout.tsx                Risolve il campionato dallo slug, tema/branding, TopRightControls, BottomNav (vedi "Multi-campionato")
-    page.tsx                   Home — rifatta (vedi "Rifacimento pagine 'Magazine'" sotto): LiveBanner se c'è una diretta, due colonne su desktop (risultati/prossimi/sponsor/news + sidebar classifica breve/marcatori). La bento-grid SHOW_QUICK_NAV non esiste più, sostituita da questo layout. Griglia News: `sm:grid-cols-3 lg:grid-cols-2` — 3 colonne in tablet, 2 su desktop; **max 4 news** (`getNewsPosts(tournamentId, 4)`, prima erano 3) e, **solo da desktop (`lg:`)**, se il numero di news è dispari l'ultima (rimasta sola nell'ultima riga a 2 colonne) riceve `lg:col-span-2` e occupa l'intera riga invece di restare accostata a uno spazio vuoto — passato come `className` a `NewsCard` (prop, si aggiunge alle classi di base).
-    calendario/                 Calendario partite (girone/giornata/stato Da giocare-In corso-Conclusa, ricerca anche per numero giornata)
-    classifiche/                 Pagina UNICA "Classifiche" = Classifica squadre (attributo `data-rank-lead` sulle prime `PLAYOFF_SPOTS` righe, presente nel markup ma senza più alcun effetto visivo in nessun tema — vedi "Evidenziazione classifica rimossa") + Marcatori (uniti). Legenda: "Prime `PLAYOFF_SPOTS` (4): play-off promozione/Ultime `RELEGATION_SPOTS` (4): play-out retrocessione."
-    marcatori/                    Redirect verso /<slug>/classifiche#marcatori (retro-compatibilità link vecchi)
-    squadre/, squadra/[id]/         Elenco squadre pubblico in lista (posizione/punti da classifica quando la stagione è iniziata) + scheda squadra (rosa in 4 colonne: N°/avatar/nome+ruolo/reti)
-    giocatori/, giocatore/[id]/      Elenco piatto ordinato per squadra (ogni riga: numero calottina — cifra nuda, senza "N." e senza alcun riquadro/bordo, solo alta quanto la foto/avatar (h-10), subito prima della foto/fallback iniziali — poi foto/avatar, nome, squadra, reti) + scheda giocatore (briciole di navigazione, card "player template", riga statistiche gol/calottina/posizione tra i marcatori di squadra, frecce prev/next tra compagni di squadra)
-    news/, news/[id]/                 Archivio News (griglia `sm:grid-cols-2`, prima era una lista verticale a colonna singola) + dettaglio
+  layout.tsx              Root layout: font (incl. Space Grotesk per Magazine), classe tema su <html>, TopRightControls, BottomNav
+  page.tsx                 Home — rifatta (vedi "Rifacimento pagine 'Magazine'" sotto): LiveBanner se c'è una diretta, due colonne su desktop (risultati/prossimi/sponsor/news + sidebar classifica breve/marcatori). La bento-grid SHOW_QUICK_NAV non esiste più, sostituita da questo layout. Griglia News: `sm:grid-cols-3 lg:grid-cols-2` — 3 colonne in tablet, 2 su desktop; **max 4 news** (`getNewsPosts(4)`, prima erano 3) e, **solo da desktop (`lg:`)**, se il numero di news è dispari l'ultima (rimasta sola nell'ultima riga a 2 colonne) riceve `lg:col-span-2` e occupa l'intera riga invece di restare accostata a uno spazio vuoto — passato come `className` a `NewsCard` (prop nuova, opzionale, si aggiunge alle classi di base).
+  globals.css               Design tokens + intero sistema temi (vedi sotto)
+  calendario/                Calendario partite (girone/giornata/stato Da giocare-In corso-Conclusa, ricerca anche per numero giornata)
+  classifiche/                Pagina UNICA "Classifiche" = Classifica squadre (attributo `data-rank-lead` sulle prime `PLAYOFF_SPOTS` righe, presente nel markup ma senza più alcun effetto visivo in nessun tema — vedi "Evidenziazione classifica rimossa") + Marcatori (uniti). Legenda: "Prime `PLAYOFF_SPOTS` (4): play-off promozione/Ultime `RELEGATION_SPOTS` (4): play-out retrocessione."
+  marcatori/                   Redirect verso /classifiche#marcatori (retro-compatibilità link vecchi)
+  squadre/, squadra/[id]/        Elenco squadre pubblico in lista (posizione/punti da classifica quando la stagione è iniziata) + scheda squadra (rosa in 4 colonne: N°/avatar/nome+ruolo/reti)
+  giocatori/, giocatore/[id]/     Elenco piatto ordinato per squadra (ogni riga: numero calottina — cifra nuda, senza "N." e senza alcun riquadro/bordo, solo alta quanto la foto/avatar (h-10), subito prima della foto/fallback iniziali — poi foto/avatar, nome, squadra, reti) + scheda giocatore (briciole di navigazione, card "player template", riga statistiche gol/calottina/posizione tra i marcatori di squadra, frecce prev/next tra compagni di squadra)
+  news/, news/[id]/                Archivio News (griglia `sm:grid-cols-2`, prima era una lista verticale a colonna singola) + dettaglio
   admin/
-    login/, layout.tsx (nav interna, tema sempre Classico — capisce se è dentro un campionato leggendo il pathname, vedi "Multi-campionato")
-    page.tsx                        Campionati: crea/elimina campionati (nuovo — vedi "Multi-campionato")
-    [slug]/
-      layout.tsx                     Risolve il campionato, TournamentProvider (vedi lib/tournament-context.tsx)
-      page.tsx                        Dashboard con contatori, scoped al campionato
-      matches/page.tsx                 Elenco partite raggruppato Girone→Giornata, elimina partita/giornata, "Genera calendario di Ritorno"
-      matches/[id]/page.tsx             Pagina DEDICATA di modifica partita (vedi sezione Gol sotto)
-      teams/, players/, venues/          CRUD con modifica (non solo elimina)
-      news/                              CRUD News
-      settings/page.tsx                  Branding, colori, tema grafico, Info/Credits — di questo campionato
+    login/, layout.tsx (nav interna, tema sempre Classico)
+    page.tsx                        Dashboard con contatori
+    matches/page.tsx                 Elenco partite raggruppato Girone→Giornata, elimina partita/giornata, "Genera calendario di Ritorno"
+    matches/[id]/page.tsx             Pagina DEDICATA di modifica partita (vedi sezione Gol sotto)
+    teams/, players/, venues/          CRUD con modifica (non solo elimina)
+    news/                              CRUD News
+    settings/page.tsx                  Branding, colori, tema grafico, Info/Credits
 
 components/
-  Hero.tsx                Hero condivisa su TUTTE le pagine pubbliche (logo, titolo, sottotitolo, LiveBadge, social icons); richiede sempre `tournamentId` (vedi "Multi-campionato"). Titolo (`h1`): `text-shadow` leggero inline (`[text-shadow:0_2px_8px_rgba(0,0,0,0.5)]`, per la leggibilità su sfondi mossi) e `tracking-normal` invece di `tracking-tight` (spaziatura tra le lettere leggermente aumentata, su richiesta esplicita — nessuna delle due è scoped a un tema, vale ovunque). Sezione hero: `pb-10 pt-8` invece di `pb-12 pt-10` (altezza complessiva ridotta leggermente, su richiesta esplicita) — attenzione: il tema Onda d'Urto (`impact`) sovrascrive `padding-bottom` a `34px` fisso via CSS, quindi non eredita questa riduzione, per via del taglio diagonale che gli serve sotto. Sfondo `home_bg_url`: dimensioni e maschera ora vivono nella classe `.hero-bg` (globals.css), responsive via media query invece che inline nello `style`. Iterazioni successive su richiesta esplicita: (1) solo maschera disattivata su smartphone, `cover` invariato — non bastava, la foto restava ritagliata per riempire un riquadro molto più largo che alto; (2) `background-size: contain` invece di `cover` su smartphone (la foto non viene mai ritagliata, solo rimpicciolita quanto basta per starci intera), ancorata in alto e centrata in orizzontale, vignette disattivata (temendo che tagliasse pezzi di un'immagine "contain" più bassa del riquadro); (3) **versione attuale**: la vignette radiale sui bordi è stata reintrodotta anche su smartphone, identica a tablet/desktop (regola base condivisa in `.hero-bg`, non più solo nel media query `sm:`) — resta però solo `contain` a cambiare per breakpoint, sempre nel media query `@media (min-width: 640px)` che passa a `cover`. Nota: `contain` garantisce la larghezza piena solo per foto proporzionalmente "larghe" (tipico per un banner header, es. 16:9 o più panoramiche) — una foto molto verticale verrebbe invece centrata con bande laterali, per non tagliarla mai. Lo sfondo separato `header_bg_url` (solo su Home, `app/[slug]/page.tsx`) non ha mai avuto maschera — è un semplice `background-size: cover` — e non è stato toccato: la richiesta era scoped esplicitamente a "header/hero", cioè questo componente condiviso.
+  Hero.tsx                Hero condivisa su TUTTE le pagine pubbliche (logo, titolo, sottotitolo, LiveBadge, social icons). Titolo (`h1`): `text-shadow` leggero inline (`[text-shadow:0_2px_8px_rgba(0,0,0,0.5)]`, per la leggibilità su sfondi mossi) e `tracking-normal` invece di `tracking-tight` (spaziatura tra le lettere leggermente aumentata, su richiesta esplicita — nessuna delle due è scoped a un tema, vale ovunque). Sezione hero: `pb-10 pt-8` invece di `pb-12 pt-10` (altezza complessiva ridotta leggermente, su richiesta esplicita) — attenzione: il tema Onda d'Urto (`impact`) sovrascrive `padding-bottom` a `34px` fisso via CSS, quindi non eredita questa riduzione, per via del taglio diagonale che gli serve sotto. Sfondo `home_bg_url`: dimensioni e maschera ora vivono nella classe `.hero-bg` (globals.css), responsive via media query invece che inline nello `style`. Iterazioni successive su richiesta esplicita: (1) solo maschera disattivata su smartphone, `cover` invariato — non bastava, la foto restava ritagliata per riempire un riquadro molto più largo che alto; (2) `background-size: contain` invece di `cover` su smartphone (la foto non viene mai ritagliata, solo rimpicciolita quanto basta per starci intera), ancorata in alto e centrata in orizzontale, vignette disattivata (temendo che tagliasse pezzi di un'immagine "contain" più bassa del riquadro); (3) **versione attuale**: la vignette radiale sui bordi è stata reintrodotta anche su smartphone, identica a tablet/desktop (regola base condivisa in `.hero-bg`, non più solo nel media query `sm:`) — resta però solo `contain` a cambiare per breakpoint, sempre nel media query `@media (min-width: 640px)` che passa a `cover`. Nota: `contain` garantisce la larghezza piena solo per foto proporzionalmente "larghe" (tipico per un banner header, es. 16:9 o più panoramiche) — una foto molto verticale verrebbe invece centrata con bande laterali, per non tagliarla mai. Lo sfondo separato `header_bg_url` (solo su Home, `app/page.tsx`) non ha mai avuto maschera — è un semplice `background-size: cover` — e non è stato toccato: la richiesta era scoped esplicitamente a "header/hero", cioè questo componente condiviso.
   LiveBanner.tsx            Fascia rossa a tutta larghezza in Home quando c'è una diretta: squadre/logo/punteggio live + link streaming
   SponsorStrip.tsx           Spazio sponsor in Home, sotto "Prossimi match" — elenco vuoto di default (`SPONSORS` in cima al file), si nasconde da solo se vuoto, nessuna tabella DB
   BottomNav.tsx             6 voci: Home, Calendario, Classifiche, Squadre, Giocatori, News
@@ -170,12 +69,11 @@ components/
   NewsCard.tsx, Podium.tsx, ShareButton.tsx, LaneRope.tsx
 
 lib/
-  queries.ts                Query lato server, tutte scoped per `tournamentId` (getSettings, getStandings, getTopScorers, getTeamWithRoster, ecc.) + getTournaments/getTournamentBySlug (quest'ultima wrappata in `cache()` di React)
-  tournament-context.tsx     TournamentProvider/useTournament — contesto React per le pagine "use client" sotto admin/[slug]/...
+  queries.ts                Query lato server (getSettings, getStandings, getTopScorers, getTeamWithRoster, ecc.)
   supabase/{client,server,middleware}.ts   Client Supabase (NON tipizzati con generic Database — vedi nota)
-  supabase/types.ts          Tutti i tipi: Tournament, Team, Player, Venue, Match, MatchGoal, Settings, AppTheme — tutti (tranne Tournament stesso) con `tournament_id`
+  supabase/types.ts          Tutti i tipi: Team, Player, Venue, Match, MatchGoal, Settings, AppTheme
 
-supabase/schema.sql        CREATE TABLE (fresh install, incl. `tournaments`) + blocco MIGRAZIONE in fondo (idempotente, incl. sezione MULTI-CAMPIONATO)
+supabase/schema.sql        CREATE TABLE (fresh install) + blocco MIGRAZIONE in fondo (idempotente)
 ```
 
 ## ⚠️ Nota permanente: migrazioni Supabase

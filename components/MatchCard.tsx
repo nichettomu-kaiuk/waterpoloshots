@@ -39,7 +39,7 @@ function TeamLogo({ url, name }: { url: string | null | undefined; name: string 
   );
 }
 
-export default function MatchCard({ match, bare = false, slug }: { match: Match; bare?: boolean; slug: string }) {
+export default function MatchCard({ match, bare = false }: { match: Match; bare?: boolean }) {
   const [open, setOpen] = useState(false);
 
   const statusLabel =
@@ -85,7 +85,7 @@ export default function MatchCard({ match, bare = false, slug }: { match: Match;
               </span>
             )}
           </div>
-          <ShareButton title={`${home} vs ${away}`} text={shareText} path={`/${slug}/calendario`} />
+          <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
         </div>
 
         <div className="flex items-center justify-between">

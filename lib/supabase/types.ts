@@ -2,18 +2,8 @@ export type MatchStatus = "scheduled" | "live" | "completed";
 export type RoundType = "andata" | "ritorno";
 export type PlayerRole = "portiere" | "difensore" | "centroboa" | "attaccante";
 
-// A "campionato" — the whole site is a template scoped by this id. See
-// PROJECT_STATUS.md, "Multi-campionato", for how the template system works.
-export interface Tournament {
-  id: string;
-  slug: string;
-  name: string;
-  created_at: string;
-}
-
 export interface Team {
   id: string;
-  tournament_id: string;
   name: string;
   logo_url: string | null;
   venue_id: string | null;
@@ -24,7 +14,6 @@ export interface Team {
 
 export interface Player {
   id: string;
-  tournament_id: string;
   team_id: string;
   first_name: string;
   last_name: string;
@@ -36,7 +25,6 @@ export interface Player {
 
 export interface Venue {
   id: string;
-  tournament_id: string;
   name: string;
   location_tag: string | null;
   address: string | null;
@@ -44,7 +32,6 @@ export interface Venue {
 
 export interface Match {
   id: string;
-  tournament_id: string;
   home_team_id: string;
   away_team_id: string;
   venue_id: string | null;
@@ -62,7 +49,6 @@ export interface Match {
 
 export interface MatchGoal {
   id: string;
-  tournament_id: string;
   match_id: string;
   player_id: string | null;
   team_id: string;
@@ -96,7 +82,6 @@ export type AppTheme =
 
 export interface Settings {
   id: string;
-  tournament_id: string;
   tournament_title: string;
   tournament_subtitle: string | null;
   logo_url: string | null;
@@ -113,7 +98,6 @@ export interface Settings {
 
 export interface NewsPost {
   id: string;
-  tournament_id: string;
   title: string;
   content: string;
   image_url: string | null;

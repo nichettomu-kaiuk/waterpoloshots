@@ -5,19 +5,18 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Info, Lock, LayoutGrid, X, Mail } from "lucide-react";
+import { Info, Lock, X, Mail } from "lucide-react";
 import type { Settings } from "@/lib/supabase/types";
 
 const DEFAULT_INFO_TEXT =
   "(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.";
 
-// Three small fixed corner icons shared across every tournament page: an
-// "i" info popup (always visible), a shortcut back to the campionati list
-// (the site's first page), and the Admin shortcut (hidden while already
+// Two small fixed corner icons shared across the whole app: an "i" info
+// popup (always visible) and the Admin shortcut (hidden while already
 // inside /admin, which has its own nav). Kept as one component so their
-// spacing is managed together instead of independently-positioned fixed
-// elements guessing at each other's width.
-export default function TopRightControls({ settings, slug }: { settings: Settings | null; slug: string }) {
+// spacing is managed together instead of two independently-positioned
+// fixed elements guessing at each other's width.
+export default function TopRightControls({ settings }: { settings: Settings | null }) {
   const pathname = usePathname();
   const [infoOpen, setInfoOpen] = useState(false);
   const isAdminSection = pathname.startsWith("/admin");
@@ -37,17 +36,7 @@ export default function TopRightControls({ settings, slug }: { settings: Setting
 
         {!isAdminSection && (
           <Link
-            href="/"
-            aria-label="Cambia campionato"
-            className="corner-icon flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
-          >
-            <LayoutGrid size={15} />
-          </Link>
-        )}
-
-        {!isAdminSection && (
-          <Link
-            href={`/admin/${slug}`}
+            href="/admin"
             aria-label="Pannello Admin"
             className="corner-icon flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
           >
