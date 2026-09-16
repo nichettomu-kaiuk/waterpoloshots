@@ -257,13 +257,13 @@ comportamento strano.
     piena col colore primario, raggio pieno — regola di base non scoped
     (`.hero-eyebrow` senza prefisso tema, perché Classico non ha una classe
     `.theme-*` propria).
-  - **Regolamento**: pillola vuota (solo bordo dorato), angoli vivi —
-    coerente con l'estetica piatta/istituzionale.
-  - **Onda d'Urto** (`impact`): pillola col gradiente rosso→oro (lo stesso
-    usato per punteggi/reti in questo tema), sostituisce il vecchio
-    pallino puntino.
-  - **Broadcast Gold**: pillola "vetro" (tinta dorata translucida + bordo
-    hairline), sostituisce il vecchio trattino.
+  - **Onda d'Urto** (`impact`), **Regolamento** e **Broadcast Gold**:
+    stessa identica pillola col gradiente rosso→oro (lo stesso usato per
+    punteggi/reti in Onda d'Urto) — su richiesta esplicita, Regolamento e
+    Broadcast Gold sono stati allineati esattamente allo stile di Onda
+    d'Urto (rispettivamente al posto della pillola vuota/bordata e della
+    pillola "vetro" usate nel primo giro di questa richiesta). Le tre
+    regole CSS sono ora testualmente identiche.
   - **Magazine**: pillola piatta (raggio 2px, come le sue card) col colore
     primario, sostituisce il solo testo dorato di prima.
   - **Poster Arena** e **Tabellone**: invariati, erano già il modello di

@@ -241,17 +241,15 @@ body {
 .theme-regulation .app-hero h1 {
   font-weight: 600;
 }
-/* Pillola vuota (solo bordo) invece che piena — coerente con l'estetica
-   piatta/istituzionale del tema, meno "gridata" della pillola piena di
-   base. */
+/* Stesso stile di Onda d'Urto (pillola col gradiente rosso→oro), su
+   richiesta esplicita — non più la pillola vuota/bordata usata prima. */
 .theme-regulation .hero-eyebrow {
   display: inline-block;
-  background: transparent;
-  border: 1px solid var(--color-gold);
-  color: var(--color-gold);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-gold));
+  color: #fff;
   font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
 }
 
 /* Flat "regulation" cards: square corners, thin top rule instead of a
@@ -571,14 +569,12 @@ body {
 .theme-broadcast .app-hero h1 {
   letter-spacing: 0.02em;
 }
-/* Pillola "vetro" — leggera tinta dorata + bordo hairline translucido,
-   coerente con le card "vetro" di questo tema (invece del trattino usato
-   prima). */
+/* Stesso stile di Onda d'Urto (pillola col gradiente rosso→oro), su
+   richiesta esplicita — non più la pillola "vetro" usata prima. */
 .theme-broadcast .hero-eyebrow {
   display: inline-block;
-  background: color-mix(in srgb, var(--color-gold) 18%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
-  color: var(--color-gold);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-gold));
+  color: #fff;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 999px;
