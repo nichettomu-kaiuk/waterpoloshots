@@ -3,6 +3,7 @@ import { Oswald, Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "../globals.css";
 import BottomNav from "@/components/BottomNav";
 import TopRightControls from "@/components/TopRightControls";
+import CookieConsent from "@/components/CookieConsent";
 import { getSettings } from "@/lib/queries";
 import { getChampionshipOrNotFound } from "@/lib/championship";
 import { getThemeVars } from "@/lib/theme";
@@ -64,6 +65,7 @@ export default async function ChampionshipLayout({
         <div className="flex min-h-screen flex-col pb-24">{children}</div>
         <TopRightControls settings={settings} slug={params.slug} />
         <BottomNav />
+        <CookieConsent />
       </body>
     </html>
   );
