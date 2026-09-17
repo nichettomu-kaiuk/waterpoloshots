@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Oswald, Inter, JetBrains_Mono } from "next/font/google";
 import "../globals.css";
+import CookieConsent from "@/components/CookieConsent";
 
 // Root layout for the top-level selector page (app/(site)/page.tsx) — the
 // very first thing a visitor sees, before picking a championship. It's a
@@ -25,7 +26,10 @@ export const metadata: Metadata = {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body className="font-body min-h-screen antialiased">{children}</body>
+      <body className="font-body min-h-screen antialiased">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }
