@@ -7,10 +7,10 @@ import { Plus, Trash2, Trophy, LogOut, ChevronRight, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Championship } from "@/lib/supabase/types";
 
-// Turns a championship name into a URL-friendly slug: lowercase, accents
+// Turns a tournament title into a URL-friendly slug: lowercase, accents
 // stripped, anything that isn't a letter/number collapsed to a single "-".
-function slugify(name: string) {
-  return name
+function slugify(title: string) {
+  return title
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
@@ -23,7 +23,7 @@ export default function AdminChampionshipsPage() {
   const router = useRouter();
   const [championships, setChampionships] = useState<Championship[]>([]);
   const [loading, setLoading] = useState(true);
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [subtitle, setSubtitle] = useState("");
@@ -41,13 +41,16 @@ export default function AdminChampionshipsPage() {
     load();
   }, []);
 
-  function handleNameChange(value: string) {
-    setName(value);
+  // Lo slug del campionato viene generato dal titolo del torneo, non da un
+  // nome a parte: finché l'utente non tocca manualmente il campo slug, resta
+  // agganciato a quello che digita qui.
+  function handleTitleChange(value: string) {
+    setTitle(value);
     if (!slugTouched) setSlug(slugify(value));
   }
 
   function resetForm() {
-    setName("");
+    setTitle("");
     setSlug("");
     setSlugTouched(false);
     setSubtitle("");
@@ -57,10 +60,10 @@ export default function AdminChampionshipsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const trimmedName = name.trim();
-    const baseSlug = slugify(slug || trimmedName);
-    if (!trimmedName || !baseSlug) {
-      setError("Inserisci un nome valido.");
+    const trimmedTitle = title.trim();
+    const baseSlug = slugify(slug || trimmedTitle);
+    if (!trimmedTitle || !baseSlug) {
+      setError("Inserisci un titolo valido.");
       return;
     }
     setCreating(true);
@@ -72,7 +75,7 @@ export default function AdminChampionshipsPage() {
     for (let attempt = 1; attempt <= 20 && !championship; attempt++) {
       const { data, error: insertError } = await supabase
         .from("championships")
-        .insert({ slug: candidate, name: trimmedName, subtitle: subtitle.trim() || null })
+        .insert({ slug: candidate, name: trimmedTitle, subtitle: subtitle.trim() || null })
         .select()
         .single();
 
@@ -100,7 +103,7 @@ export default function AdminChampionshipsPage() {
     // public pages (Hero, tema, ecc.) have sensible defaults immediately.
     await supabase.from("settings").insert({
       championship_id: championship.id,
-      tournament_title: trimmedName,
+      tournament_title: trimmedTitle,
       tournament_subtitle: subtitle.trim() || null,
     });
 
@@ -147,9 +150,9 @@ export default function AdminChampionshipsPage() {
               </button>
             </div>
             <input
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="Nome campionato (es. Serie A1 - Girone 1)"
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder="Titolo del torneo (es. Serie A1 - Girone 1)"
               autoFocus
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
