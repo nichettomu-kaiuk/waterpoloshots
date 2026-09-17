@@ -1,27 +1,29 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Trophy, Lock, ChevronRight } from "lucide-react";
-import { getChampionships, getChampionshipBySlug, getSettings, getLiveMatches } from "@/lib/queries";
+import { getChampionships, getSettings, getLiveMatches } from "@/lib/queries";
 import { getThemeVars } from "@/lib/theme";
 import Hero from "@/components/Hero";
-
-// Slug of the flagship championship whose header/hero is previewed at the
-// top of this selector page — it's the original "Serie B - Girone 3" from
-// the pre-multi-campionato migration, since renamed to "Serie B - Girone 4"
-// in Admin → Impostazioni (the slug itself never changes after creation).
-// Keeps its own branding (colors/theme/background) even once other
-// campionati are added to the list below.
-const FEATURED_SLUG = "serie-b-girone-3";
 
 // First page of the whole site: a visitor picks which championship to
 // browse. Every public page after this lives under /[slug]/... — see
 // app/[slug]/layout.tsx. Admin → Campionati is what adds/removes the cards
-// shown here.
+// shown here. With exactly one championship published, this selection step
+// is skipped entirely and the visitor lands straight on it.
 export default async function ChampionshipSelectorPage() {
-  const [championships, featured] = await Promise.all([
-    getChampionships(),
-    getChampionshipBySlug(FEATURED_SLUG),
-  ]);
+  const championships = await getChampionships();
 
+  if (championships.length === 1) {
+    redirect(`/${championships[0].slug}`);
+  }
+
+  // With 0 or 2+ championships, the selector is shown. When there's more
+  // than one, the first in the list (oldest — see getChampionships) gets its
+  // hero previewed at the top, with its own branding/theme, but without its
+  // title/subtitle/active round: those repeat the campionato's own name,
+  // which this page already gives each card below, and would be confusing
+  // for whichever championship isn't the one picked.
+  const featured = championships[0] ?? null;
   const [featuredSettings, featuredLive] = featured
     ? await Promise.all([getSettings(featured.id), getLiveMatches(featured.id)])
     : [null, []];
@@ -40,7 +42,14 @@ export default async function ChampionshipSelectorPage() {
 
       {featured && (
         <div className={themeClass} style={brandVars}>
-          <Hero championshipId={featured.id} settings={featuredSettings} live={featuredLive} />
+          <Hero
+            championshipId={featured.id}
+            settings={featuredSettings}
+            live={featuredLive}
+            showTitle={false}
+            showSubtitle={false}
+            showActiveRound={false}
+          />
         </div>
       )}
 
