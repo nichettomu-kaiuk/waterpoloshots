@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
-import { getStandings, getTopScorers, getTournamentBySlug } from "@/lib/queries";
+import { getStandings, getTopScorers } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 import Podium from "@/components/Podium";
@@ -14,23 +14,20 @@ const PLAYOFF_SPOTS = 4;
 const RELEGATION_SPOTS = 4;
 
 export default async function ClassifichePage({ params }: { params: { slug: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-  const slug = tournament.slug;
-
+  const championship = await getChampionshipOrNotFound(params.slug);
   const [standings, allScorers] = await Promise.all([
-    getStandings(tournament.id),
-    getTopScorers(tournament.id, 15),
+    getStandings(championship.id),
+    getTopScorers(championship.id, 15),
   ]);
   const scorers = allScorers.filter((p) => p.goals_count > 0);
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero tournamentId={tournament.id} />
+      <Hero championshipId={championship.id} />
       <div className="px-5 py-6 lg:px-8">
         <div className="mb-5 flex items-center justify-between">
           <h1 className="font-display text-2xl font-bold">Classifiche</h1>
-          <ShareButton title="Classifiche" path={`/${slug}/classifiche`} />
+          <ShareButton title="Classifiche" path={`/${params.slug}/classifiche`} />
         </div>
 
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">
@@ -65,7 +62,7 @@ export default async function ClassifichePage({ params }: { params: { slug: stri
                       <span>{i + 1}</span>
                     </td>
                     <td className="sticky left-8 bg-surface px-3 py-2.5">
-                      <Link href={`/${slug}/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
+                      <Link href={`/${params.slug}/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
                         {row.team.logo_url ? (
                           <span className="cap-badge relative inline-block h-[22px] w-[22px] shrink-0">
                             <Image
@@ -116,7 +113,7 @@ export default async function ClassifichePage({ params }: { params: { slug: stri
         {scorers.length === 0 ? (
           <p className="text-sm text-muted">Nessun gol registrato ancora.</p>
         ) : (
-          <Podium scorers={scorers} slug={slug} />
+          <Podium scorers={scorers} slug={params.slug} />
         )}
       </div>
     </main>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Wand2, ChevronRight, Video, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { Match, MatchStatus, RoundType, Team, Venue } from "@/lib/supabase/types";
 
 const statusLabels: Record<MatchStatus, string> = {
@@ -15,7 +15,7 @@ const statusLabels: Record<MatchStatus, string> = {
 
 export default function AdminMatchesPage() {
   const supabase = createClient();
-  const tournament = useTournament();
+  const championship = useChampionship();
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -35,11 +35,11 @@ export default function AdminMatchesPage() {
       supabase
         .from("matches")
         .select("*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*), venue:venues(*)")
-        .eq("tournament_id", tournament.id)
+        .eq("championship_id", championship.id)
         .order("giornata", { ascending: true })
         .order("date_time", { ascending: true }),
-      supabase.from("teams").select("*").eq("tournament_id", tournament.id).order("name"),
-      supabase.from("venues").select("*").eq("tournament_id", tournament.id).order("name"),
+      supabase.from("teams").select("*").eq("championship_id", championship.id).order("name"),
+      supabase.from("venues").select("*").eq("championship_id", championship.id).order("name"),
     ]);
     setMatches((m as any) ?? []);
     setTeams(t ?? []);
@@ -49,7 +49,7 @@ export default function AdminMatchesPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id]);
+  }, [championship.id]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +60,7 @@ export default function AdminMatchesPage() {
     }
     setSaving(true);
     await supabase.from("matches").insert({
-      tournament_id: tournament.id,
+      championship_id: championship.id,
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       venue_id: form.venue_id || null,
@@ -92,7 +92,7 @@ export default function AdminMatchesPage() {
     const toInsert = andata
       .filter((m) => !existingKeys.has(`${m.giornata}-${m.away_team_id}-${m.home_team_id}`))
       .map((m) => ({
-        tournament_id: tournament.id,
+        championship_id: championship.id,
         home_team_id: m.away_team_id,
         away_team_id: m.home_team_id,
         venue_id: null,
@@ -126,7 +126,7 @@ export default function AdminMatchesPage() {
 
   async function handleDeleteMatch(id: string) {
     if (!confirm("Eliminare questa partita? L'operazione non è reversibile.")) return;
-    await supabase.from("matches").delete().eq("id", id).eq("tournament_id", tournament.id);
+    await supabase.from("matches").delete().eq("id", id);
     load();
   }
 
@@ -142,7 +142,7 @@ export default function AdminMatchesPage() {
     await supabase
       .from("matches")
       .delete()
-      .eq("tournament_id", tournament.id)
+      .eq("championship_id", championship.id)
       .eq("round_type", round)
       .eq("giornata", giornataNum);
     load();
@@ -272,7 +272,7 @@ export default function AdminMatchesPage() {
                               }`}
                             >
                               <Link
-                                href={`/admin/${tournament.slug}/matches/${m.id}`}
+                                href={`/admin/${championship.slug}/matches/${m.id}`}
                                 className="flex flex-1 items-center justify-between transition hover:opacity-80"
                               >
                                 <div>

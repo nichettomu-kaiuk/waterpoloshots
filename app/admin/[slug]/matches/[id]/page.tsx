@@ -6,7 +6,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ArrowLeft, CalendarClock, Video, Target, Trash2, UserX, Save, Plus, Minus, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { Match, MatchGoal, MatchStatus, Player, Venue } from "@/lib/supabase/types";
 
 const statusLabels: Record<MatchStatus, string> = {
@@ -28,8 +28,8 @@ function toLocalInputValue(iso: string | null) {
 
 export default function AdminMatchEditPage({ params }: { params: { slug: string; id: string } }) {
   const supabase = createClient();
+  const championship = useChampionship();
   const router = useRouter();
-  const tournament = useTournament();
 
   const [match, setMatch] = useState<Match | null>(null);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -52,9 +52,8 @@ export default function AdminMatchEditPage({ params }: { params: { slug: string;
           "*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*), venue:venues(*)"
         )
         .eq("id", params.id)
-        .eq("tournament_id", tournament.id)
         .maybeSingle(),
-      supabase.from("venues").select("*").eq("tournament_id", tournament.id).order("name"),
+      supabase.from("venues").select("*").eq("championship_id", championship.id).order("name"),
       supabase
         .from("match_goals")
         .select("*")
@@ -90,7 +89,7 @@ export default function AdminMatchEditPage({ params }: { params: { slug: string;
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, tournament.id]);
+  }, [params.id, championship.id]);
 
   const [busy, setBusy] = useState(false);
   const [goalError, setGoalError] = useState<string | null>(null);
@@ -132,7 +131,7 @@ export default function AdminMatchEditPage({ params }: { params: { slug: string;
 
     const { error: insertError } = await supabase
       .from("match_goals")
-      .insert({ tournament_id: tournament.id, match_id: match.id, team_id: teamId, player_id: player?.id ?? null });
+      .insert({ match_id: match.id, team_id: teamId, player_id: player?.id ?? null });
     if (insertError) {
       setGoalError(`Impossibile registrare il gol: ${insertError.message}`);
       setBusy(false);
@@ -208,10 +207,9 @@ export default function AdminMatchEditPage({ params }: { params: { slug: string;
         stream_url: streamUrl.trim() || null,
         status,
       })
-      .eq("id", match.id)
-      .eq("tournament_id", tournament.id);
+      .eq("id", match.id);
     setSaving(false);
-    router.push(`/admin/${tournament.slug}/matches`);
+    router.push(`/admin/${championship.slug}/matches`);
   }
 
   if (loading) {
@@ -222,7 +220,7 @@ export default function AdminMatchEditPage({ params }: { params: { slug: string;
     return (
       <div>
         <p className="text-sm text-muted">Partita non trovata.</p>
-        <Link href={`/admin/${tournament.slug}/matches`} className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
+        <Link href={`/admin/${championship.slug}/matches`} className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
           <ArrowLeft size={13} /> Torna all'elenco
         </Link>
       </div>
@@ -231,7 +229,7 @@ export default function AdminMatchEditPage({ params }: { params: { slug: string;
 
   return (
     <div className="max-w-2xl">
-      <Link href={`/admin/${tournament.slug}/matches`} className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
+      <Link href={`/admin/${championship.slug}/matches`} className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
         <ArrowLeft size={14} /> Torna all'elenco partite
       </Link>
 

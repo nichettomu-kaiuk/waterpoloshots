@@ -2,8 +2,21 @@ export type MatchStatus = "scheduled" | "live" | "completed";
 export type RoundType = "andata" | "ritorno";
 export type PlayerRole = "portiere" | "difensore" | "centroboa" | "attaccante";
 
+// A championship ("campionato") is one full instance of the tournament
+// template — its own teams, calendar, standings, news and branding. The
+// public site's first page (app/(site)/page.tsx) lists these so a visitor
+// can pick one; Admin → Campionati can create/delete them.
+export interface Championship {
+  id: string;
+  slug: string;
+  name: string;
+  subtitle: string | null;
+  created_at: string;
+}
+
 export interface Team {
   id: string;
+  championship_id: string;
   name: string;
   logo_url: string | null;
   venue_id: string | null;
@@ -25,6 +38,7 @@ export interface Player {
 
 export interface Venue {
   id: string;
+  championship_id: string;
   name: string;
   location_tag: string | null;
   address: string | null;
@@ -32,6 +46,7 @@ export interface Venue {
 
 export interface Match {
   id: string;
+  championship_id: string;
   home_team_id: string;
   away_team_id: string;
   venue_id: string | null;
@@ -82,6 +97,7 @@ export type AppTheme =
 
 export interface Settings {
   id: string;
+  championship_id: string;
   tournament_title: string;
   tournament_subtitle: string | null;
   logo_url: string | null;
@@ -98,6 +114,7 @@ export interface Settings {
 
 export interface NewsPost {
   id: string;
+  championship_id: string;
   title: string;
   content: string;
   image_url: string | null;

@@ -8,15 +8,19 @@ import LiveBadge from "./LiveBadge";
 // Shared across every public page (fetches its own data unless the caller
 // already has it — the home page passes settings/live down to avoid
 // double-querying, since it needs the same data for its own sections).
+// championshipId is required so Hero knows which championship to fetch for
+// when the caller doesn't already have settings/live in hand.
 export default async function Hero({
+  championshipId,
   settings: settingsProp,
   live: liveProp,
 }: {
+  championshipId: string;
   settings?: Settings | null;
   live?: Match[];
-} = {}) {
-  const settings = settingsProp !== undefined ? settingsProp : await getSettings();
-  const live = liveProp !== undefined ? liveProp : await getLiveMatches();
+}) {
+  const settings = settingsProp !== undefined ? settingsProp : await getSettings(championshipId);
+  const live = liveProp !== undefined ? liveProp : await getLiveMatches(championshipId);
 
   return (
     <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">

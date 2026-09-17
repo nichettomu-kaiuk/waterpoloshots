@@ -5,12 +5,12 @@ import Image from "next/image";
 import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { AppTheme, Settings } from "@/lib/supabase/types";
 
 const BUCKET = "branding";
 
-const emptySettings: Omit<Settings, "id" | "tournament_id"> = {
+const emptySettings: Omit<Settings, "id" | "championship_id"> = {
   tournament_title: "Serie B - Girone 3",
   tournament_subtitle: "",
   logo_url: null,
@@ -40,8 +40,8 @@ function pathFromPublicUrl(url: string): string | null {
 
 export default function AdminSettingsPage() {
   const supabase = createClient();
+  const championship = useChampionship();
   const router = useRouter();
-  const tournament = useTournament();
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [form, setForm] = useState(emptySettings);
   const [saving, setSaving] = useState(false);
@@ -53,7 +53,7 @@ export default function AdminSettingsPage() {
       const { data } = await supabase
         .from("settings")
         .select("*")
-        .eq("tournament_id", tournament.id)
+        .eq("championship_id", championship.id)
         .maybeSingle();
       if (data) {
         setSettingsId(data.id);
@@ -61,7 +61,7 @@ export default function AdminSettingsPage() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id]);
+  }, [championship.id]);
 
   async function uploadImage(file: File, folder: string) {
     const path = `${folder}/${Date.now()}-${file.name}`;
@@ -103,11 +103,11 @@ export default function AdminSettingsPage() {
   async function handleSave() {
     setSaving(true);
     if (settingsId) {
-      await supabase.from("settings").update(form).eq("id", settingsId).eq("tournament_id", tournament.id);
+      await supabase.from("settings").update(form).eq("id", settingsId);
     } else {
       const { data } = await supabase
         .from("settings")
-        .insert({ ...form, tournament_id: tournament.id })
+        .insert({ ...form, championship_id: championship.id })
         .select()
         .single();
       if (data) setSettingsId(data.id);
@@ -133,7 +133,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-4xl space-y-5">
-      <h2 className="font-display text-lg font-bold">Branding &amp; impostazioni — {tournament.name}</h2>
+      <h2 className="font-display text-lg font-bold">Branding &amp; impostazioni</h2>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="space-y-5">
@@ -203,7 +203,7 @@ export default function AdminSettingsPage() {
               ))}
             </div>
             <p className="text-[11px] text-muted">
-              Cambia l&apos;aspetto grafico di questo campionato. Le versioni &quot;Chiaro&quot; hanno le stesse forme
+              Cambia l&apos;aspetto grafico dell&apos;intero sito. Le versioni &quot;Chiaro&quot; hanno le stesse forme
               e gli stessi colori d&apos;accento, solo con sfondo bianco e testo scuro al posto di sfondo nero e
               testo chiaro. Ricorda di premere &quot;Salva impostazioni&quot; qui sotto per rendere effettiva la
               scelta.

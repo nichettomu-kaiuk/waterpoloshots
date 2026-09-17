@@ -3,26 +3,26 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { Venue } from "@/lib/supabase/types";
 
 export default function AdminVenuesPage() {
   const supabase = createClient();
-  const tournament = useTournament();
+  const championship = useChampionship();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [form, setForm] = useState({ name: "", location_tag: "", address: "" });
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
-    const { data } = await supabase.from("venues").select("*").eq("tournament_id", tournament.id).order("name");
+    const { data } = await supabase.from("venues").select("*").eq("championship_id", championship.id).order("name");
     setVenues(data ?? []);
   }
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id]);
+  }, [championship.id]);
 
   function startEdit(venue: Venue) {
     setEditingId(venue.id);
@@ -51,9 +51,9 @@ export default function AdminVenuesPage() {
     };
 
     if (editingId) {
-      await supabase.from("venues").update(payload).eq("id", editingId).eq("tournament_id", tournament.id);
+      await supabase.from("venues").update(payload).eq("id", editingId);
     } else {
-      await supabase.from("venues").insert({ ...payload, tournament_id: tournament.id });
+      await supabase.from("venues").insert({ ...payload, championship_id: championship.id });
     }
 
     cancelEdit();
@@ -63,7 +63,7 @@ export default function AdminVenuesPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questa piscina?")) return;
-    await supabase.from("venues").delete().eq("id", id).eq("tournament_id", tournament.id);
+    await supabase.from("venues").delete().eq("id", id);
     if (editingId === id) cancelEdit();
     load();
   }

@@ -1,16 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
-import {
-  getTournamentBySlug,
-  getSettings,
-  getLiveMatches,
-  getUpcomingMatches,
-  getRecentResults,
-  getNewsPosts,
-  getStandings,
-  getTopScorers,
-} from "@/lib/queries";
+import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts, getStandings, getTopScorers } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 import MatchCard from "@/components/MatchCard";
 import Hero from "@/components/Hero";
 import NewsCard from "@/components/NewsCard";
@@ -19,25 +10,24 @@ import LiveBanner from "@/components/LiveBanner";
 import SponsorStrip from "@/components/SponsorStrip";
 
 export default async function HomePage({ params }: { params: { slug: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-  const slug = tournament.slug;
+  const championship = await getChampionshipOrNotFound(params.slug);
+  const id = championship.id;
 
   const [settings, live, upcoming, recent, news, standings, scorers] = await Promise.all([
-    getSettings(tournament.id),
-    getLiveMatches(tournament.id),
-    getUpcomingMatches(tournament.id, 4),
-    getRecentResults(tournament.id, 4),
-    getNewsPosts(tournament.id, 4),
-    getStandings(tournament.id),
-    getTopScorers(tournament.id, 5),
+    getSettings(id),
+    getLiveMatches(id),
+    getUpcomingMatches(id, 4),
+    getRecentResults(id, 4),
+    getNewsPosts(id, 4),
+    getStandings(id),
+    getTopScorers(id, 5),
   ]);
 
   const topScorers = scorers.filter((p) => p.goals_count > 0).slice(0, 4);
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero settings={settings} live={live} tournamentId={tournament.id} />
+      <Hero championshipId={id} settings={settings} live={live} />
 
       {/* Live band: the matchday headline from the mockups. Renders only
           while at least one match is live. */}
@@ -67,14 +57,14 @@ export default async function HomePage({ params }: { params: { slug: string } })
                 <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                   Ultimi risultati
                 </h2>
-                <Link href={`/${slug}/calendario`} className="text-xs text-primary">Calendario completo</Link>
+                <Link href={`/${params.slug}/calendario`} className="text-xs text-primary">Calendario completo</Link>
               </div>
               {recent.length === 0 ? (
                 <p className="text-sm text-muted">Nessun risultato disponibile.</p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {recent.map((m) => (
-                    <MatchCard key={m.id} match={m} slug={slug} />
+                    <MatchCard key={m.id} match={m} />
                   ))}
                 </div>
               )}
@@ -86,11 +76,11 @@ export default async function HomePage({ params }: { params: { slug: string } })
                   <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                     Prossimi match
                   </h2>
-                  <Link href={`/${slug}/calendario`} className="text-xs text-primary">Vedi tutti</Link>
+                  <Link href={`/${params.slug}/calendario`} className="text-xs text-primary">Vedi tutti</Link>
                 </div>
                 <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                   {upcoming.map((m) => (
-                    <MatchCard key={m.id} match={m} bare slug={slug} />
+                    <MatchCard key={m.id} match={m} bare />
                   ))}
                 </div>
               </section>
@@ -106,14 +96,14 @@ export default async function HomePage({ params }: { params: { slug: string } })
                   <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                     News
                   </h2>
-                  <Link href={`/${slug}/news`} className="text-xs text-primary">Archivio News</Link>
+                  <Link href={`/${params.slug}/news`} className="text-xs text-primary">Archivio News</Link>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-2">
                   {news.map((post, i) => (
                     <NewsCard
                       key={post.id}
                       post={post}
-                      slug={slug}
+                      slug={params.slug}
                       // Da desktop (lg, griglia a 2 colonne): se il numero di
                       // news è dispari, l'ultima resta da sola nell'ultima
                       // riga — la facciamo occupare tutta la riga invece di
@@ -138,7 +128,7 @@ export default async function HomePage({ params }: { params: { slug: string } })
                   <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                     Classifica
                   </h2>
-                  <Link href={`/${slug}/classifiche`} className="text-xs text-primary">Completa</Link>
+                  <Link href={`/${params.slug}/classifiche`} className="text-xs text-primary">Completa</Link>
                 </div>
                 <ul className="space-y-1">
                   {standings.slice(0, 5).map((row, i) => (
@@ -161,7 +151,7 @@ export default async function HomePage({ params }: { params: { slug: string } })
                           {row.team.name.slice(0, 2).toUpperCase()}
                         </span>
                       )}
-                      <Link href={`/${slug}/squadra/${row.team.id}`} className="truncate text-sm">
+                      <Link href={`/${params.slug}/squadra/${row.team.id}`} className="truncate text-sm">
                         {row.team.name}
                       </Link>
                       <span className="ml-auto tabular font-display text-sm font-bold">{row.points}</span>
@@ -177,13 +167,13 @@ export default async function HomePage({ params }: { params: { slug: string } })
                   <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                     Marcatori
                   </h2>
-                  <Link href={`/${slug}/classifiche#marcatori`} className="text-xs text-primary">Tutti</Link>
+                  <Link href={`/${params.slug}/classifiche#marcatori`} className="text-xs text-primary">Tutti</Link>
                 </div>
                 <ul className="space-y-1">
                   {topScorers.map((p, i) => (
                     <li key={p.id} className="flex items-baseline gap-2.5 py-1.5 text-sm">
                       <span className="w-3 text-[11px] text-muted">{i + 1}</span>
-                      <Link href={`/${slug}/giocatore/${p.id}`} className="truncate">
+                      <Link href={`/${params.slug}/giocatore/${p.id}`} className="truncate">
                         {p.first_name[0]}. {p.last_name}
                       </Link>
                       <span className="ml-auto tabular font-display font-bold text-gold">{p.goals_count}</span>

@@ -1,15 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
-import { getStandings, getTeams, getTournamentBySlug } from "@/lib/queries";
+import { getStandings, getTeams } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 import Hero from "@/components/Hero";
 
 export default async function SquadrePage({ params }: { params: { slug: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-  const slug = tournament.slug;
-
-  const [teams, standings] = await Promise.all([getTeams(tournament.id), getStandings(tournament.id)]);
+  const championship = await getChampionshipOrNotFound(params.slug);
+  const [teams, standings] = await Promise.all([getTeams(championship.id), getStandings(championship.id)]);
 
   // Posizione e punti presi dalla classifica quando esiste; in pre-stagione
   // (nessuna partita conclusa) la riga mostra solo il nome della squadra.
@@ -18,7 +15,7 @@ export default async function SquadrePage({ params }: { params: { slug: string }
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero tournamentId={tournament.id} />
+      <Hero championshipId={championship.id} />
       <div className="px-5 py-6 lg:px-8">
         <div className="mb-5 flex items-baseline justify-between">
           <h1 className="font-display text-2xl font-bold">Squadre</h1>
@@ -34,7 +31,7 @@ export default async function SquadrePage({ params }: { params: { slug: string }
               return (
                 <Link
                   key={t.id}
-                  href={`/${slug}/squadra/${t.id}`}
+                  href={`/${params.slug}/squadra/${t.id}`}
                   className="site-card flex items-center gap-4 border-b border-line py-4 transition active:scale-[0.99]"
                 >
                   {t.logo_url ? (

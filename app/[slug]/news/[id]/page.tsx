@@ -1,26 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getNewsPost, getTournamentBySlug } from "@/lib/queries";
+import { getNewsPost } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function NewsPostPage({ params }: { params: { slug: string; id: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-  const slug = tournament.slug;
-
-  const post = await getNewsPost(tournament.id, params.id);
+  const championship = await getChampionshipOrNotFound(params.slug);
+  const post = await getNewsPost(params.id);
 
   if (!post) {
     return (
       <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        <Hero tournamentId={tournament.id} />
+        <Hero championshipId={championship.id} />
         <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">
           Post non trovato.
           <div className="mt-4">
-            <Link href={`/${slug}/news`} className="text-primary">Torna all&apos;archivio News</Link>
+            <Link href={`/${params.slug}/news`} className="text-primary">Torna all&apos;archivio News</Link>
           </div>
         </div>
       </main>
@@ -29,7 +26,7 @@ export default async function NewsPostPage({ params }: { params: { slug: string;
 
   return (
     <main className="mx-auto w-full max-w-md pb-6 lg:max-w-3xl">
-      <Hero tournamentId={tournament.id} />
+      <Hero championshipId={championship.id} />
       {post.image_url && (
         <div className="detail-hero-image relative h-56 w-full lg:mt-6 lg:h-72 lg:rounded-3xl lg:overflow-hidden">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" priority />
@@ -38,10 +35,10 @@ export default async function NewsPostPage({ params }: { params: { slug: string;
 
       <div className="px-5 py-6">
         <div className="mb-4 flex items-center justify-between">
-          <Link href={`/${slug}/news`} className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
+          <Link href={`/${params.slug}/news`} className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-white">
             <ArrowLeft size={14} /> Archivio News
           </Link>
-          <ShareButton title={post.title} text={post.title} path={`/${slug}/news/${post.id}`} />
+          <ShareButton title={post.title} text={post.title} path={`/${params.slug}/news/${post.id}`} />
         </div>
 
         <p className="text-xs text-muted">

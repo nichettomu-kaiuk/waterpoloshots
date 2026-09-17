@@ -1,23 +1,16 @@
-import { notFound } from "next/navigation";
-import { Users, UserRound, MapPinned, Radio } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getTournamentBySlug } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
+import { Users, UserRound, MapPinned, Radio } from "lucide-react";
 
-export default async function AdminDashboard({ params }: { params: { slug: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-
+export default async function AdminChampionshipDashboard({ params }: { params: { slug: string } }) {
+  const championship = await getChampionshipOrNotFound(params.slug);
   const supabase = createClient();
 
   const [teams, players, venues, liveMatches] = await Promise.all([
-    supabase.from("teams").select("*", { count: "exact", head: true }).eq("tournament_id", tournament.id),
-    supabase.from("players").select("*", { count: "exact", head: true }).eq("tournament_id", tournament.id),
-    supabase.from("venues").select("*", { count: "exact", head: true }).eq("tournament_id", tournament.id),
-    supabase
-      .from("matches")
-      .select("*", { count: "exact", head: true })
-      .eq("tournament_id", tournament.id)
-      .eq("status", "live"),
+    supabase.from("teams").select("*", { count: "exact", head: true }).eq("championship_id", championship.id),
+    supabase.from("players").select("*, team:teams!inner(*)", { count: "exact", head: true }).eq("team.championship_id", championship.id),
+    supabase.from("venues").select("*", { count: "exact", head: true }).eq("championship_id", championship.id),
+    supabase.from("matches").select("*", { count: "exact", head: true }).eq("championship_id", championship.id).eq("status", "live"),
   ]);
 
   const stats = [
@@ -29,7 +22,7 @@ export default async function AdminDashboard({ params }: { params: { slug: strin
 
   return (
     <div>
-      <h2 className="mb-4 font-display text-lg font-bold">{tournament.name}</h2>
+      <h2 className="mb-4 font-display text-lg font-bold">Panoramica</h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon }) => (
           <div key={label} className="rounded-2xl border border-line bg-surface p-4">
@@ -41,7 +34,8 @@ export default async function AdminDashboard({ params }: { params: { slug: strin
       </div>
 
       <div className="mt-6 rounded-2xl border border-line bg-surface-raised p-4 text-sm text-muted">
-        Usa il menu qui sopra per gestire partite, squadre, giocatori, campi e il branding di questo campionato.
+        Usa il menu qui sopra per gestire partite, squadre, giocatori, campi e il branding di{" "}
+        <strong className="text-white">{championship.name}</strong>.
       </div>
     </div>
   );

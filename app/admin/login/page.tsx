@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-[80vh] flex-col justify-center px-6">
+    <main className="mx-auto flex min-h-[80vh] w-full max-w-sm flex-col justify-center px-6">
       <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary">
         <Lock size={22} />
       </div>

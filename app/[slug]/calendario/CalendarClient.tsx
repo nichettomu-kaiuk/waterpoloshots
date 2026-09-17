@@ -43,12 +43,10 @@ export default function CalendarClient({
   matches,
   girone,
   q,
-  slug,
 }: {
   matches: Match[];
   girone: string;
   q: string;
-  slug: string;
 }) {
   const [activeGirone, setActiveGirone] = useState(girone);
   const [activeStatus, setActiveStatus] = useState("");
@@ -172,7 +170,7 @@ export default function CalendarClient({
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {giornataMatches.map((m) => (
-                          <MatchCard key={m.id} match={m} slug={slug} />
+                          <MatchCard key={m.id} match={m} />
                         ))}
                       </div>
                     </div>

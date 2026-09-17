@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { Player, PlayerRole, Team } from "@/lib/supabase/types";
 
 const roles: PlayerRole[] = ["portiere", "difensore", "centroboa", "attaccante"];
 
 export default function AdminPlayersPage() {
   const supabase = createClient();
-  const tournament = useTournament();
+  const championship = useChampionship();
   const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<(Player & { team?: Team })[]>([]);
   const [form, setForm] = useState({
@@ -27,11 +27,11 @@ export default function AdminPlayersPage() {
 
   async function load() {
     const [{ data: teamsData }, { data: playersData }] = await Promise.all([
-      supabase.from("teams").select("*").eq("tournament_id", tournament.id).order("name"),
+      supabase.from("teams").select("*").eq("championship_id", championship.id).order("name"),
       supabase
         .from("players")
-        .select("*, team:teams(*)")
-        .eq("tournament_id", tournament.id)
+        .select("*, team:teams!inner(*)")
+        .eq("team.championship_id", championship.id)
         .order("last_name"),
     ]);
     setTeams(teamsData ?? []);
@@ -41,7 +41,7 @@ export default function AdminPlayersPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id]);
+  }, [championship.id]);
 
   function startEdit(player: Player) {
     setEditingId(player.id);
@@ -87,11 +87,9 @@ export default function AdminPlayersPage() {
           position: form.position,
           ...(photo_url !== undefined ? { photo_url } : {}),
         })
-        .eq("id", editingId)
-        .eq("tournament_id", tournament.id);
+        .eq("id", editingId);
     } else {
       await supabase.from("players").insert({
-        tournament_id: tournament.id,
         team_id: form.team_id,
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
@@ -109,7 +107,7 @@ export default function AdminPlayersPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questo giocatore?")) return;
-    await supabase.from("players").delete().eq("id", id).eq("tournament_id", tournament.id);
+    await supabase.from("players").delete().eq("id", id);
     if (editingId === id) cancelEdit();
     load();
   }

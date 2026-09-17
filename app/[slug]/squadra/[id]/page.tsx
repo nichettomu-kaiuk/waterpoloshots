@@ -1,22 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getTeamWithRoster, getTournamentBySlug } from "@/lib/queries";
+import { getTeamWithRoster } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function SquadraPage({ params }: { params: { slug: string; id: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-  const slug = tournament.slug;
-
-  const { team, players: roster } = await getTeamWithRoster(tournament.id, params.id);
+  const championship = await getChampionshipOrNotFound(params.slug);
+  const { team, players: roster } = await getTeamWithRoster(params.id);
   const players = [...roster].sort((a, b) => a.cap_number - b.cap_number);
 
   if (!team) {
     return (
       <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        <Hero tournamentId={tournament.id} />
+        <Hero championshipId={championship.id} />
         <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">Squadra non trovata.</div>
       </main>
     );
@@ -24,7 +21,7 @@ export default async function SquadraPage({ params }: { params: { slug: string; 
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero tournamentId={tournament.id} />
+      <Hero championshipId={championship.id} />
       <div className="px-5 py-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -50,7 +47,7 @@ export default async function SquadraPage({ params }: { params: { slug: string; 
               )}
             </div>
           </div>
-          <ShareButton title={team.name} path={`/${slug}/squadra/${team.id}`} iconOnly />
+          <ShareButton title={team.name} path={`/${params.slug}/squadra/${team.id}`} iconOnly />
         </div>
 
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">
@@ -66,7 +63,7 @@ export default async function SquadraPage({ params }: { params: { slug: string; 
           {players.map((p) => (
             <Link
               key={p.id}
-              href={`/${slug}/giocatore/${p.id}`}
+              href={`/${params.slug}/giocatore/${p.id}`}
               className="site-card grid grid-cols-[2rem_2.75rem_1fr_2rem] items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5"
             >
               <span className="w-8 text-center font-display text-xl font-bold text-gold">

@@ -5,8 +5,22 @@ create extension if not exists "pgcrypto";
 
 -- ── Tables ────────────────────────────────────────────────────────────────
 
+-- A championship ("campionato") is one full instance of the tournament
+-- template: its own teams, calendar, standings, news and branding. The
+-- public site's first page lists every row here so a visitor can pick one;
+-- the Admin panel can create and delete rows here to spin up or retire a
+-- whole championship without touching code.
+create table championships (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  name text not null,
+  subtitle text,
+  created_at timestamptz not null default now()
+);
+
 create table venues (
   id uuid primary key default gen_random_uuid(),
+  championship_id uuid not null references championships(id) on delete cascade,
   name text not null,
   location_tag text,
   address text
@@ -14,6 +28,7 @@ create table venues (
 
 create table teams (
   id uuid primary key default gen_random_uuid(),
+  championship_id uuid not null references championships(id) on delete cascade,
   name text not null,
   logo_url text,
   venue_id uuid references venues(id) on delete set null,
@@ -34,6 +49,7 @@ create table players (
 
 create table matches (
   id uuid primary key default gen_random_uuid(),
+  championship_id uuid not null references championships(id) on delete cascade,
   home_team_id uuid not null references teams(id) on delete cascade,
   away_team_id uuid not null references teams(id) on delete cascade,
   venue_id uuid references venues(id) on delete set null,
@@ -59,6 +75,7 @@ create table match_goals (
 
 create table settings (
   id uuid primary key default gen_random_uuid(),
+  championship_id uuid not null unique references championships(id) on delete cascade,
   tournament_title text not null default 'Serie B - Girone 3',
   tournament_subtitle text,
   logo_url text,
@@ -75,6 +92,7 @@ create table settings (
 
 create table news_posts (
   id uuid primary key default gen_random_uuid(),
+  championship_id uuid not null references championships(id) on delete cascade,
   title text not null,
   content text not null,
   image_url text,
@@ -89,11 +107,17 @@ create index players_team_id_idx on players(team_id);
 create index match_goals_match_id_idx on match_goals(match_id);
 create index news_posts_created_at_idx on news_posts(created_at desc);
 create index teams_venue_id_idx on teams(venue_id);
+create index teams_championship_id_idx on teams(championship_id);
+create index venues_championship_id_idx on venues(championship_id);
+create index matches_championship_id_idx on matches(championship_id);
+create index news_posts_championship_id_idx on news_posts(championship_id);
 
 -- ── Row Level Security ───────────────────────────────────────────────────
 -- Public (anon) role: read-only access to everything.
--- Authenticated role (the tournament Admin): full read/write access.
+-- Authenticated role (the tournament Admin): full read/write access,
+-- including creating and deleting whole championships from the Admin panel.
 
+alter table championships enable row level security;
 alter table teams enable row level security;
 alter table venues enable row level security;
 alter table players enable row level security;
@@ -102,6 +126,7 @@ alter table match_goals enable row level security;
 alter table settings enable row level security;
 alter table news_posts enable row level security;
 
+create policy "public read championships" on championships for select using (true);
 create policy "public read teams" on teams for select using (true);
 create policy "public read venues" on venues for select using (true);
 create policy "public read players" on players for select using (true);
@@ -110,6 +135,8 @@ create policy "public read match_goals" on match_goals for select using (true);
 create policy "public read settings" on settings for select using (true);
 create policy "public read news_posts" on news_posts for select using (true);
 
+create policy "admin write championships" on championships for all
+  using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "admin write teams" on teams for all
   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "admin write venues" on venues for all
@@ -144,9 +171,15 @@ create policy "admin update branding files" on storage.objects
 create policy "admin delete branding files" on storage.objects
   for delete to authenticated using (bucket_id = 'branding');
 
--- ── Seed row for settings (branding needs exactly one row) ─────────────────
-insert into settings (tournament_title, tournament_subtitle, active_round, info_text)
-values ('Serie B - Girone 3', 'Stagione 2026', 'Girone di andata', '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.');
+-- ── Seed row: one championship + its settings (a fresh install starts with
+-- a single championship so the template isn't empty; use Admin → Elenco
+-- campionati to add more) ───────────────────────────────────────────────
+insert into championships (slug, name, subtitle)
+values ('serie-b-girone-3', 'Serie B - Girone 3', 'Stagione 2026');
+
+insert into settings (championship_id, tournament_title, tournament_subtitle, active_round, info_text)
+select id, 'Serie B - Girone 3', 'Stagione 2026', 'Girone di andata', '(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.'
+from championships where slug = 'serie-b-girone-3';
 
 -- ── Realtime (optional but recommended for live scores) ────────────────────
 alter publication supabase_realtime add table matches;
@@ -211,3 +244,69 @@ alter table settings add constraint settings_theme_check
 -- Adds: match_goals.created_at, so the per-match goal log (Admin → Partite →
 -- modifica partita) can be listed in the order goals were actually added.
 alter table match_goals add column if not exists created_at timestamptz not null default now();
+
+-- ── Migrazione multi-campionato ─────────────────────────────────────────
+-- Turns the site into a reusable template: every team/match/venue/news/
+-- settings row now belongs to a `championships` row, so the Admin panel can
+-- create or delete whole championships and the public site opens on a
+-- selector page. Safe to re-run. On a project that already had data, this
+-- creates ONE championship from the existing `settings` row (so nothing is
+-- lost) and attaches every existing row to it.
+
+create table if not exists championships (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  name text not null,
+  subtitle text,
+  created_at timestamptz not null default now()
+);
+
+alter table championships enable row level security;
+drop policy if exists "public read championships" on championships;
+create policy "public read championships" on championships for select using (true);
+drop policy if exists "admin write championships" on championships;
+create policy "admin write championships" on championships for all
+  using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Seed one championship from the pre-existing settings row, if there is one
+-- and no championship exists yet (an already-migrated or brand-new project
+-- skips this).
+insert into championships (slug, name, subtitle)
+select 'serie-b-girone-3', coalesce(nullif(trim(s.tournament_title), ''), 'Serie B - Girone 3'), s.tournament_subtitle
+from settings s
+where not exists (select 1 from championships)
+limit 1;
+
+-- Fallback for a brand-new database that has neither a championship nor a
+-- settings row yet.
+insert into championships (slug, name, subtitle)
+select 'serie-b-girone-3', 'Serie B - Girone 3', 'Stagione 2026'
+where not exists (select 1 from championships);
+
+alter table venues add column if not exists championship_id uuid references championships(id) on delete cascade;
+alter table teams add column if not exists championship_id uuid references championships(id) on delete cascade;
+alter table matches add column if not exists championship_id uuid references championships(id) on delete cascade;
+alter table news_posts add column if not exists championship_id uuid references championships(id) on delete cascade;
+alter table settings add column if not exists championship_id uuid references championships(id) on delete cascade;
+
+-- Backfill: every pre-existing row goes to the first (oldest) championship —
+-- on a freshly-migrated project that's the one just seeded above.
+update venues set championship_id = (select id from championships order by created_at asc limit 1) where championship_id is null;
+update teams set championship_id = (select id from championships order by created_at asc limit 1) where championship_id is null;
+update matches set championship_id = (select id from championships order by created_at asc limit 1) where championship_id is null;
+update news_posts set championship_id = (select id from championships order by created_at asc limit 1) where championship_id is null;
+update settings set championship_id = (select id from championships order by created_at asc limit 1) where championship_id is null;
+
+alter table venues alter column championship_id set not null;
+alter table teams alter column championship_id set not null;
+alter table matches alter column championship_id set not null;
+alter table news_posts alter column championship_id set not null;
+alter table settings alter column championship_id set not null;
+
+alter table settings drop constraint if exists settings_championship_id_key;
+alter table settings add constraint settings_championship_id_key unique (championship_id);
+
+create index if not exists teams_championship_id_idx on teams(championship_id);
+create index if not exists venues_championship_id_idx on venues(championship_id);
+create index if not exists matches_championship_id_idx on matches(championship_id);
+create index if not exists news_posts_championship_id_idx on news_posts(championship_id);

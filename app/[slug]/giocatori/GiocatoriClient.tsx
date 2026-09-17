@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 import { Search } from "lucide-react";
 import type { Player, Team } from "@/lib/supabase/types";
 
 type PlayerWithTeam = Player & { team?: Team };
 
-export default function GiocatoriClient({ players, slug }: { players: PlayerWithTeam[]; slug: string }) {
+export default function GiocatoriClient({ players }: { players: PlayerWithTeam[] }) {
+  const { slug } = useParams<{ slug: string }>();
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {

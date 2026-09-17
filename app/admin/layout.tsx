@@ -1,44 +1,32 @@
-"use client";
+import type { Metadata } from "next";
+import { Oswald, Inter, JetBrains_Mono } from "next/font/google";
+import "../globals.css";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Shield, Users, UserRound, MapPinned, Palette, Newspaper } from "lucide-react";
+// Root layout for the whole /admin section (its own <html>/<body>, separate
+// from app/(site)/layout.tsx and app/[slug]/layout.tsx — see the comment in
+// the latter for why). The Admin panel always uses the Classico look,
+// regardless of any championship's chosen theme, for readability of the
+// management tool — so unlike app/[slug]/layout.tsx it never applies a
+// theme class or brand color overrides here.
+const display = Oswald({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+});
+const body = Inter({ subsets: ["latin"], variable: "--font-body" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
-const links = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/matches", label: "Partite", icon: Shield },
-  { href: "/admin/teams", label: "Squadre", icon: Users },
-  { href: "/admin/players", label: "Giocatori", icon: UserRound },
-  { href: "/admin/venues", label: "Piscine", icon: MapPinned },
-  { href: "/admin/news", label: "News", icon: Newspaper },
-  { href: "/admin/settings", label: "Impostazioni", icon: Palette },
-];
+export const metadata: Metadata = {
+  title: "Admin",
+  description: "Pannello di amministrazione.",
+};
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  if (pathname === "/admin/login") return <div className="mx-auto w-full max-w-sm">{children}</div>;
-
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <header className="border-b border-line px-5 py-4 lg:px-8">
-        <p className="text-[11px] uppercase tracking-widest text-gold">Pannello di controllo</p>
-        <h1 className="font-display text-xl font-bold">Admin</h1>
-      </header>
-
-      <nav className="scrollbar-none flex gap-2 overflow-x-auto border-b border-line px-5 py-3 lg:px-8">
-        {links.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-medium text-muted transition hover:border-primary hover:text-white"
-          >
-            <Icon size={13} />
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="px-5 py-5 lg:px-8">{children}</div>
-    </div>
+    <html lang="it" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+      <body className="font-body min-h-screen antialiased">
+        <div className="min-h-screen px-4 py-6">{children}</div>
+      </body>
+    </html>
   );
 }

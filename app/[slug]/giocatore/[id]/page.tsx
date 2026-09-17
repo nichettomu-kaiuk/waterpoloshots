@@ -1,25 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getPlayer, getSettings, getTeamWithRoster, getTournamentBySlug } from "@/lib/queries";
+import { getPlayer, getSettings, getTeamWithRoster } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function GiocatorePage({ params }: { params: { slug: string; id: string } }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-  const slug = tournament.slug;
-
+  const championship = await getChampionshipOrNotFound(params.slug);
   const [{ player, team }, settings] = await Promise.all([
-    getPlayer(tournament.id, params.id),
-    getSettings(tournament.id),
+    getPlayer(params.id),
+    getSettings(championship.id),
   ]);
 
   if (!player) {
     return (
       <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        <Hero tournamentId={tournament.id} />
+        <Hero championshipId={championship.id} />
         <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">Giocatore non trovato.</div>
       </main>
     );
@@ -29,7 +26,7 @@ export default async function GiocatorePage({ params }: { params: { slug: string
 
   // Prev/next within the same team's roster (ordered by cap number), so the
   // arrows let you flip through all teammates. Wraps around at the ends.
-  const roster = team ? (await getTeamWithRoster(tournament.id, team.id)).players : [];
+  const roster = team ? (await getTeamWithRoster(team.id)).players : [];
   const rosterIndex = roster.findIndex((p) => p.id === player.id);
   const hasSiblings = roster.length > 1 && rosterIndex !== -1;
   const prevPlayer = hasSiblings ? roster[(rosterIndex - 1 + roster.length) % roster.length] : null;
@@ -41,14 +38,14 @@ export default async function GiocatorePage({ params }: { params: { slug: string
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero tournamentId={tournament.id} />
+      <Hero championshipId={championship.id} />
       <div className="px-5 py-6 lg:px-8">
         <p className="mb-3 text-xs text-muted">
-          <Link href={`/${slug}/giocatori`} className="hover:text-primary">Giocatori</Link>
+          <Link href={`/${params.slug}/giocatori`} className="hover:text-primary">Giocatori</Link>
           {team && (
             <>
               {" / "}
-              <Link href={`/${slug}/squadra/${team.id}`} className="hover:text-primary">{team.name}</Link>
+              <Link href={`/${params.slug}/squadra/${team.id}`} className="hover:text-primary">{team.name}</Link>
             </>
           )}
           {" / "}
@@ -157,7 +154,7 @@ export default async function GiocatorePage({ params }: { params: { slug: string
           <div className="mt-4 flex items-center justify-center gap-4">
             {prevPlayer ? (
               <Link
-                href={`/${slug}/giocatore/${prevPlayer.id}`}
+                href={`/${params.slug}/giocatore/${prevPlayer.id}`}
                 aria-label="Giocatore precedente"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-gold hover:text-gold"
               >
@@ -168,7 +165,7 @@ export default async function GiocatorePage({ params }: { params: { slug: string
             )}
             {nextPlayer ? (
               <Link
-                href={`/${slug}/giocatore/${nextPlayer.id}`}
+                href={`/${params.slug}/giocatore/${nextPlayer.id}`}
                 aria-label="Giocatore successivo"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-gold hover:text-gold"
               >
@@ -182,13 +179,13 @@ export default async function GiocatorePage({ params }: { params: { slug: string
 
         <div className="mt-4 flex items-center justify-between">
           {team ? (
-            <Link href={`/${slug}/squadra/${team.id}`} className="text-sm text-primary">
+            <Link href={`/${params.slug}/squadra/${team.id}`} className="text-sm text-primary">
               Vai alla scheda squadra
             </Link>
           ) : (
             <span />
           )}
-          <ShareButton title={`${player.first_name} ${player.last_name}`} path={`/${slug}/giocatore/${player.id}`} />
+          <ShareButton title={`${player.first_name} ${player.last_name}`} path={`/${params.slug}/giocatore/${player.id}`} />
         </div>
       </div>
     </main>

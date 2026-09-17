@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Trash2, Upload, Pencil, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { NewsPost } from "@/lib/supabase/types";
 
 const emptyForm = { title: "", content: "" };
 
 export default function AdminNewsPage() {
   const supabase = createClient();
-  const tournament = useTournament();
+  const championship = useChampionship();
   const [posts, setPosts] = useState<NewsPost[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -29,7 +29,7 @@ export default function AdminNewsPage() {
     const { data, error } = await supabase
       .from("news_posts")
       .select("*")
-      .eq("tournament_id", tournament.id)
+      .eq("championship_id", championship.id)
       .order("created_at", { ascending: false });
     if (error) {
       setError(`Impossibile caricare le news: ${error.message}`);
@@ -43,7 +43,7 @@ export default function AdminNewsPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id]);
+  }, [championship.id]);
 
   function startEdit(post: NewsPost) {
     setEditingId(post.id);
@@ -85,8 +85,7 @@ export default function AdminNewsPage() {
           content: form.content.trim(),
           ...(image_url !== undefined ? { image_url } : {}),
         })
-        .eq("id", editingId)
-        .eq("tournament_id", tournament.id);
+        .eq("id", editingId);
       if (updateError) {
         setError(`Salvataggio fallito: ${updateError.message}`);
         setSaving(false);
@@ -94,7 +93,7 @@ export default function AdminNewsPage() {
       }
     } else {
       const { error: insertError } = await supabase.from("news_posts").insert({
-        tournament_id: tournament.id,
+        championship_id: championship.id,
         title: form.title.trim(),
         content: form.content.trim(),
         image_url: image_url ?? null,
@@ -117,7 +116,7 @@ export default function AdminNewsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questo post?")) return;
-    const { error: deleteError } = await supabase.from("news_posts").delete().eq("id", id).eq("tournament_id", tournament.id);
+    const { error: deleteError } = await supabase.from("news_posts").delete().eq("id", id);
     if (deleteError) {
       setError(`Eliminazione fallita: ${deleteError.message}`);
       return;

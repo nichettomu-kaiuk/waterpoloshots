@@ -1,19 +1,39 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getSettings, getTournamentBySlug } from "@/lib/queries";
+import { Oswald, Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import "../globals.css";
 import BottomNav from "@/components/BottomNav";
 import TopRightControls from "@/components/TopRightControls";
+import { getSettings } from "@/lib/queries";
+import { getChampionshipOrNotFound } from "@/lib/championship";
 
-// Everything tournament-specific lives here: resolving the campionato from
-// the URL slug (404 if it doesn't exist or was deleted), branding/theme,
-// the bottom nav and the admin/campionati corner shortcuts. The root layout
-// (app/layout.tsx) only registers fonts — it also wraps the campionati
-// selector at app/page.tsx, which has no tournament to theme itself around.
+// Root layout for every public championship page (app/[slug]/...). This is
+// its own Next.js "root layout" (its own <html>/<body>), separate from
+// app/(site)/layout.tsx (the selector) and app/admin/layout.tsx — see the
+// "multiple root layouts" pattern in Next.js docs. It's what was previously
+// the single app/layout.tsx, now resolving the championship from the [slug]
+// segment instead of reading one global settings row.
+const display = Oswald({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+});
+const body = Inter({ subsets: ["latin"], variable: "--font-body" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+// Display face used only by the "Magazine" theme, which remaps
+// --font-display to --font-magazine in globals.css.
+const magazine = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-magazine",
+});
+
+// Dynamic so the browser tab title and favicon follow whatever is set in
+// Admin → Impostazioni (tournament title + logo) for THIS championship,
+// falling back to its name when nothing is configured yet.
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) return {};
-  const settings = await getSettings(tournament.id);
-  const title = settings?.tournament_title || tournament.name;
+  const championship = await getChampionshipOrNotFound(params.slug);
+  const settings = await getSettings(championship.id);
+  const title = settings?.tournament_title || championship.name;
 
   return {
     title,
@@ -22,17 +42,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function TournamentLayout({
+export default async function ChampionshipLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
   params: { slug: string };
 }) {
-  const tournament = await getTournamentBySlug(params.slug);
-  if (!tournament) notFound();
-
-  const settings = await getSettings(tournament.id);
+  const championship = await getChampionshipOrNotFound(params.slug);
+  const settings = await getSettings(championship.id);
 
   const brandVars: React.CSSProperties = {
     ["--color-primary" as any]: settings?.primary_color ?? "#e10f21",
@@ -47,10 +65,7 @@ export default async function TournamentLayout({
   // / theme-impact / theme-broadcast / theme-poster / theme-tabellone /
   // theme-magazine / none for classic) and, if it's a light variant,
   // `theme-light` — which just swaps the background/text color tokens and
-  // leaves every shape rule (clip-paths, borders, etc.) untouched. Applied
-  // on this wrapper div (rather than <html>, which app/layout.tsx already
-  // owns for every campionato) since every themed CSS hook in globals.css
-  // targets a `.theme-*` ancestor, not specifically the <html> element.
+  // leaves every shape rule (clip-paths, borders, etc.) untouched.
   const theme = settings?.theme ?? "classic";
   const isLight = theme.endsWith("-light");
   const baseTheme = isLight ? theme.replace("-light", "") : theme;
@@ -67,10 +82,15 @@ export default async function TournamentLayout({
   const themeClass = [structuralClass, isLight ? "theme-light" : ""].filter(Boolean).join(" ");
 
   return (
-    <div className={`${themeClass} flex min-h-screen flex-col pb-24`} style={brandVars}>
-      {children}
-      <TopRightControls settings={settings} slug={tournament.slug} />
-      <BottomNav slug={tournament.slug} />
-    </div>
+    <html
+      lang="it"
+      className={`${display.variable} ${body.variable} ${mono.variable} ${magazine.variable} ${themeClass}`}
+    >
+      <body className="font-body min-h-screen antialiased" style={brandVars}>
+        <div className="flex min-h-screen flex-col pb-24">{children}</div>
+        <TopRightControls settings={settings} slug={params.slug} />
+        <BottomNav />
+      </body>
+    </html>
   );
 }

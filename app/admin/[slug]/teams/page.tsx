@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTournament } from "@/lib/tournament-context";
+import { useChampionship } from "@/lib/admin-championship-context";
 import type { Team, Venue } from "@/lib/supabase/types";
 
 export default function AdminTeamsPage() {
   const supabase = createClient();
-  const tournament = useTournament();
+  const championship = useChampionship();
   const [teams, setTeams] = useState<(Team & { venue?: Venue })[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [name, setName] = useState("");
@@ -21,8 +21,8 @@ export default function AdminTeamsPage() {
 
   async function load() {
     const [{ data: t }, { data: v }] = await Promise.all([
-      supabase.from("teams").select("*, venue:venues(*)").eq("tournament_id", tournament.id).order("name"),
-      supabase.from("venues").select("*").eq("tournament_id", tournament.id).order("name"),
+      supabase.from("teams").select("*, venue:venues(*)").eq("championship_id", championship.id).order("name"),
+      supabase.from("venues").select("*").eq("championship_id", championship.id).order("name"),
     ]);
     setTeams((t as any) ?? []);
     setVenues(v ?? []);
@@ -31,7 +31,7 @@ export default function AdminTeamsPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id]);
+  }, [championship.id]);
 
   function startEdit(team: Team) {
     setEditingId(team.id);
@@ -73,11 +73,10 @@ export default function AdminTeamsPage() {
           venue_id: venueId || null,
           ...(logo_url !== undefined ? { logo_url } : {}),
         })
-        .eq("id", editingId)
-        .eq("tournament_id", tournament.id);
+        .eq("id", editingId);
     } else {
       await supabase.from("teams").insert({
-        tournament_id: tournament.id,
+        championship_id: championship.id,
         name: name.trim(),
         coach_name: coachName.trim() || null,
         venue_id: venueId || null,
@@ -92,7 +91,7 @@ export default function AdminTeamsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questa squadra e tutti i giocatori collegati?")) return;
-    await supabase.from("teams").delete().eq("id", id).eq("tournament_id", tournament.id);
+    await supabase.from("teams").delete().eq("id", id);
     if (editingId === id) cancelEdit();
     load();
   }

@@ -1,19 +1,31 @@
-# Torneo di Pallanuoto — Web App
+# Torneo di Pallanuoto — Web App (template multi-campionato)
 
-App per la gestione di tornei di pallanuoto: calendario, classifiche in tempo
-reale, schede squadre/giocatori e un pannello Admin protetto per gestire
-partite, risultati, gol e branding. Costruita con Next.js (App Router) +
-Tailwind CSS, dati e auth su Supabase, pronta per il deploy su Vercel.
+App/template per la gestione di **più campionati di pallanuoto** in
+parallelo: ogni campionato ha il proprio calendario, classifiche in tempo
+reale, schede squadre/giocatori e branding — tutti gestiti da un unico
+pannello Admin protetto, che può creare o eliminare campionati in qualsiasi
+momento. Costruita con Next.js (App Router) + Tailwind CSS, dati e auth su
+Supabase, pronta per il deploy su Vercel.
+
+La prima pagina del sito pubblico (`/`) mostra l'elenco dei campionati
+pubblicati; scegliendone uno si entra nel sito di quel campionato
+(`/<slug-campionato>/...`).
 
 ## 1. Crea il progetto Supabase
 
 1. Vai su [supabase.com](https://supabase.com) → **New project**.
 2. Apri **SQL Editor** e incolla il contenuto di `supabase/schema.sql`, poi
-   esegui. Questo crea tabelle, RLS, lo storage bucket `branding` e una riga
-   iniziale in `settings`.
+   esegui. Questo crea tabelle, RLS, lo storage bucket `branding`, la tabella
+   `championships` e un primo campionato ("Serie B - Girone 3") con la sua
+   riga `settings`. Se il progetto Supabase esisteva già da prima
+   dell'introduzione dei campionati, lo stesso script include in fondo la
+   migrazione idempotente che crea `championships` e sposta lì tutti i dati
+   esistenti (squadre, partite, giocatori, news, impostazioni) come primo
+   campionato — nessun dato viene perso.
 3. Vai su **Authentication → Users → Add user** e crea l'account admin
-   (email + password). Non è previsto un flusso di registrazione pubblica:
-   solo questo account potrà accedere a `/admin`.
+   (email + password). Non è previsto un flusso di registrazione pubblica né
+   un account per campionato: un solo account amministra tutti i campionati
+   da `/admin`.
 
 ## 2. Configura le variabili d'ambiente
 
@@ -33,8 +45,10 @@ npm install
 npm run dev
 ```
 
-Apri `http://localhost:3000`. Il pannello admin è su `/admin` (redirect
-automatico a `/admin/login` se non autenticato).
+Apri `http://localhost:3000`: mostra l'elenco campionati. Il pannello admin è
+su `/admin` (redirect automatico a `/admin/login` se non autenticato) — da lì
+si crea/elimina un campionato e si entra nella sua gestione dedicata
+(`/admin/<slug>/...`).
 
 ## 4. Deploy su Vercel
 
@@ -48,33 +62,50 @@ automatico a `/admin/login` se non autenticato).
 
 ```
 app/
-  page.tsx                  Home (hero, bento grid, live/upcoming/results)
-  calendario/                Calendario partite (filtri girone + ricerca)
-  classifiche/                Classifica squadre + podio marcatori
-  squadra/[id]/                Scheda squadra (rosa giocatori)
-  giocatore/[id]/               Scheda giocatore
+  (site)/page.tsx            Home pubblica: elenco campionati, sceglierne uno
+                              porta a /<slug>
+  [slug]/                     Sito pubblico di UN campionato (risolto dallo slug)
+    page.tsx                    Home campionato (hero, live/upcoming/results)
+    calendario/                  Calendario partite (filtri girone + ricerca)
+    classifiche/                  Classifica squadre + podio marcatori
+    squadra/[id]/                  Scheda squadra (rosa giocatori)
+    giocatore/[id]/                 Scheda giocatore
   admin/
-    login/                      Login Supabase Auth
-    page.tsx                    Dashboard (metriche)
-    matches/                    Calendario + inserimento risultati/gol
-    teams/                       CRUD squadre (+ upload logo)
-    players/                     CRUD giocatori (+ upload foto)
-    venues/                      CRUD campi/piscine
-    settings/                    Branding: titolo, colori, immagini
+    login/                      Login Supabase Auth (globale, non per campionato)
+    page.tsx                    Elenco campionati: crea/elimina, apri gestione
+    [slug]/                     Gestione di UN campionato
+      page.tsx                    Dashboard (metriche)
+      matches/                     Calendario + inserimento risultati/gol
+      teams/                        CRUD squadre (+ upload logo)
+      players/                      CRUD giocatori (+ upload foto)
+      venues/                       CRUD campi/piscine
+      settings/                     Branding: titolo, colori, immagini, tema
 components/                  MatchCard, MatchDetailModal, BottomNav, Podium...
 lib/
   supabase/                  Client browser/server + middleware auth
-  queries.ts                  Query lato server (classifiche calcolate live)
-supabase/schema.sql          Schema completo + RLS + storage bucket
+  queries.ts                  Query lato server, tutte scoped a un championship_id
+  championship.ts              Risolve lo slug in un campionato (o 404)
+  admin-championship-context.tsx  Contesto React col campionato corrente in Admin
+supabase/schema.sql          Schema completo + RLS + storage bucket + migrazione
+                              idempotente per progetti pre-esistenti
 ```
+
+Ogni pagina pubblica vive sotto `app/[slug]/...`, quindi ha il proprio "root
+layout" Next.js (`app/[slug]/layout.tsx`) — separato da quello della Home
+selettore (`app/(site)/layout.tsx`) e da quello dell'Admin
+(`app/admin/layout.tsx`). È il pattern "multiple root layouts" di Next.js:
+serve perché ogni sezione ha bisogno di classi diverse su `<html>` (il tema
+grafico del campionato, sempre Classico in Admin, nessun tema nella Home
+selettore).
 
 ## Note di design
 
 Design system "Championship Dark": sfondo nero (`--color-ink`), rosso vivido
 per le azioni (`--color-primary`), oro per podi e risultati top
 (`--color-gold`). Tutte le variabili sono CSS custom properties iniettate in
-`app/layout.tsx` a partire dalla riga `settings` di Supabase, quindi l'Admin
-può ricolorare l'app da `/admin/settings` senza toccare il codice.
+`app/[slug]/layout.tsx` a partire dalla riga `settings` del campionato
+corrente, quindi l'Admin può ricolorare ogni campionato da
+`/admin/<slug>/settings` senza toccare il codice.
 
 ## Personalizzazione classifica
 
