@@ -10,14 +10,24 @@ import LiveBadge from "./LiveBadge";
 // double-querying, since it needs the same data for its own sections).
 // championshipId is required so Hero knows which championship to fetch for
 // when the caller doesn't already have settings/live in hand.
+// showTitle/showSubtitle/showActiveRound default to true (every [slug] page
+// wants the full hero); the selector page (app/(site)/page.tsx) turns them
+// off when it previews a championship's branding without repeating its
+// name/text, since the page already has its own heading below.
 export default async function Hero({
   championshipId,
   settings: settingsProp,
   live: liveProp,
+  showTitle = true,
+  showSubtitle = true,
+  showActiveRound = true,
 }: {
   championshipId: string;
   settings?: Settings | null;
   live?: Match[];
+  showTitle?: boolean;
+  showSubtitle?: boolean;
+  showActiveRound?: boolean;
 }) {
   const settings = settingsProp !== undefined ? settingsProp : await getSettings(championshipId);
   const live = liveProp !== undefined ? liveProp : await getLiveMatches(championshipId);
@@ -46,9 +56,11 @@ export default async function Hero({
         </>
       )}
       <div className="relative">
-        <p className="hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold">
-          {settings?.active_round ?? "Girone di andata"}
-        </p>
+        {showActiveRound && (
+          <p className="hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold">
+            {settings?.active_round ?? "Girone di andata"}
+          </p>
+        )}
 
         {live.length > 0 && (
           <div className="mt-2">
@@ -71,11 +83,13 @@ export default async function Hero({
                 titolo quando l'hero ha uno sfondo mosso (foto caricata,
                 wash diagonali di alcuni temi, texture) — quasi invisibile
                 su sfondi piatti, dove non serve. */}
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">
-              {settings?.tournament_title ?? "Serie B - Girone 3"}
-            </h1>
+            {showTitle && (
+              <h1 className="font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">
+                {settings?.tournament_title ?? "Serie B - Girone 3"}
+              </h1>
+            )}
             <div className="mt-1 flex items-center justify-between gap-3">
-              {settings?.tournament_subtitle ? (
+              {showSubtitle && settings?.tournament_subtitle ? (
                 <p className="text-sm text-muted">{settings.tournament_subtitle}</p>
               ) : (
                 <span />
