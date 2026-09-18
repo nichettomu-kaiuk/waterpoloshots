@@ -14,6 +14,15 @@ import { getThemeVars } from "@/lib/theme";
 // "multiple root layouts" pattern in Next.js docs. It's what was previously
 // the single app/layout.tsx, now resolving the championship from the [slug]
 // segment instead of reading one global settings row.
+//
+// Cached and re-generated at most every 15s (ISR) — this sets the floor for
+// every page nested under it (home, classifiche, squadre, giocatori, news,
+// ecc.), so none of them re-queries Supabase on every single request. Only
+// calendario/page.tsx opts back into per-request rendering on its own,
+// because it reads searchParams (its filters). See app/(site)/page.tsx for
+// why this only works with queries that go through the cookie-free client
+// (lib/supabase/public.ts).
+export const revalidate = 15;
 const display = Oswald({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
