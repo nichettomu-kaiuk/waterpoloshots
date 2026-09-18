@@ -310,3 +310,8 @@ create index if not exists teams_championship_id_idx on teams(championship_id);
 create index if not exists venues_championship_id_idx on venues(championship_id);
 create index if not exists matches_championship_id_idx on matches(championship_id);
 create index if not exists news_posts_championship_id_idx on news_posts(championship_id);
+
+-- Colonna mai usata da nessuna pagina/componente (non è nemmeno nel tipo
+-- Settings di lib/supabase/types.ts): residuo di una feature abbandonata,
+-- rimossa qui per pulizia. Idempotente, sicura da rieseguire.
+alter table settings drop column if exists marcatori_bg_url;
