@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Plus, Trash2, Upload, Pencil, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useChampionship } from "@/lib/admin-championship-context";
+import { compressImage } from "@/lib/compressImage";
 import type { NewsPost } from "@/lib/supabase/types";
 
 const emptyForm = { title: "", content: "" };
@@ -67,8 +68,9 @@ export default function AdminNewsPage() {
 
     let image_url: string | null | undefined = undefined;
     if (imageFile) {
-      const path = `news/${Date.now()}-${imageFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, imageFile);
+      const compressed = await compressImage(imageFile, { maxDimension: 1600 });
+      const path = `news/${Date.now()}-${compressed.name}`;
+      const { error: uploadError } = await supabase.storage.from("branding").upload(path, compressed);
       if (uploadError) {
         setError(`Caricamento immagine fallito: ${uploadError.message}`);
         setSaving(false);
