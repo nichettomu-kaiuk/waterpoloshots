@@ -68,11 +68,67 @@ Implicazioni strutturali da conoscere per continuare il progetto:
   resta idempotente e serve ai progetti Supabase già esistenti: crea
   `championships`, semina un campionato dalla riga `settings` preesistente
   (se c'è), e sposta lì `championship_id` su tutte le righe esistenti.
-  **Ricordare sempre all'utente di rieseguire `supabase/schema.sql` per
-  intero** (non solo la parte nuova) sul suo progetto Supabase live
-  (`vjcvmlapgmlvuqldwzyy`) dopo aver consegnato questo refactor — senza,
-  l'app non funziona più (le query filtrano per `championship_id`, che sul
-  DB live non esiste ancora finché la migrazione non gira).
+  **Su un progetto Supabase già esistente (`vjcvmlapgmlvuqldwzyy`) va
+  eseguita SOLO questa migrazione in fondo al file, mai lo script per
+  intero**: la parte iniziale del file sono `create table` non idempotenti
+  che fanno fallire l'esecuzione con "relation already exists" se le
+  tabelle ci sono già (è successo davvero — vedi commit del 2026-09-17).
+  Lo script intero va eseguito solo su un progetto Supabase nuovo, vuoto.
+
+## Ottimizzazione performance (2026-09-17)
+
+Prima di questo intervento, ogni pagina pubblica (Home selettore, sito di
+ogni campionato) veniva **ri-renderizzata e ri-interrogata su Supabase ad
+ogni singola richiesta**, senza alcuna cache: il colpevole era
+`lib/supabase/server.ts`, usato da `lib/queries.ts` per ogni lettura — chiama
+`cookies()`, che in Next.js è una "Dynamic API" e disattiva da sola qualsiasi
+cache/rendering statico per l'intera route che la usa, anche se i dati letti
+(tabelle con RLS `for select using (true)`) sono identici per chiunque.
+
+Cambiamenti fatti:
+- **`lib/supabase/public.ts`** (nuovo): client Supabase "pulito", senza
+  cookie, per le sole letture pubbliche. `lib/queries.ts` ora importa da qui
+  invece che da `server.ts`.
+- **`export const revalidate = 15`** su `app/(site)/page.tsx` e
+  `app/[slug]/layout.tsx` (quest'ultimo fa da "soglia" per tutte le pagine
+  sotto, tranne `calendario/page.tsx` che resta dinamica di suo perché legge
+  `searchParams`): le pagine pubbliche ora vengono servite dalla cache e
+  ri-generate al massimo ogni 15 secondi, invece di interrogare Supabase ad
+  ogni visita. 15s (non un valore più comodo tipo 60) per non allontanare
+  troppo lo stato "LIVE" dalla realtà.
+- **`export const dynamic = "force-dynamic"`** su `app/admin/layout.tsx`: di
+  proposito, così l'Admin resta sempre fresco (mai in cache) nonostante il
+  cambio sopra — si applica a tutto l'albero `/admin/**`.
+- **`lib/optimizedImage.ts`** (nuovo) + uso in `components/Hero.tsx` e
+  `app/[slug]/page.tsx`: le immagini di sfondo caricate dall'Admin
+  (`home_bg_url`, `header_bg_url`) sono impostate via CSS `background-image`
+  (necessario per il mask/responsive di `.hero-bg`), quindi bypassavano del
+  tutto l'ottimizzatore immagini di Next — ora passano per
+  `/_next/image?url=...&w=...&q=...`, stesso meccanismo che usa `<Image>`
+  (resize, WebP/AVIF, cache edge Vercel), senza toccare il CSS esistente.
+- **`lib/queries.ts`**: `getStandings` interrogava squadre e partite in
+  sequenza (due round-trip) → ora in parallelo con `Promise.all`.
+  `getPlayer` faceva due query separate (giocatore, poi la sua squadra) →
+  ora un'unica query con join.
+
+Cose notate ma NON toccate, da valutare in futuro:
+- Gli upload immagine in Admin (logo, sfondi, foto giocatori/squadre, news)
+  non vengono ridimensionati/compressi lato client prima del caricamento su
+  Supabase Storage — una foto da smartphone può pesare diversi MB. Next
+  ottimizza comunque l'immagine quando viene *servita*, ma l'originale
+  pesante resta la sorgente; comprimerla prima dell'upload (es. via
+  `<canvas>` nel browser) ridurrebbe sia lo storage usato sia il tempo del
+  primo caricamento non ancora in cache.
+- La colonna `settings.marcatori_bg_url` esiste sul DB live ma non è nel
+  tipo `Settings` (`lib/supabase/types.ts`) né referenziata da nessun
+  componente: sembra un residuo di una feature mai completata o rimossa.
+  Non tocca le performance, ma vale la pena chiedere all'utente se va
+  ripulita dallo schema.
+- `app/globals.css` è ~1100 righe (8 temi × variante chiara/scura, tutti
+  scritti a mano, non classi Tailwind generate): viene scaricata per intero
+  su ogni visita indipendentemente dal tema attivo di quel campionato. Il
+  file è piccolo a sufficienza da non essere una priorità, ma se i temi
+  continuano a crescere si potrebbe valutare di scinderlo per tema.
 
 ## ⚠️ Limite importante di questo ambiente (aggiornato)
 
