@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,7 +9,6 @@ import { createClient } from "@/lib/supabase/client";
 // Hero (which needs to run server-side to fetch a championship's branding)
 // above it.
 export default function AdminLoginForm() {
-  const router = useRouter();
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,8 +25,12 @@ export default function AdminLoginForm() {
       setError("Credenziali non valide. Riprova.");
       return;
     }
-    router.push("/admin");
-    router.refresh();
+    // Hard navigation (not router.push + router.refresh): a client-side
+    // soft navigation right here can reach the /admin middleware check
+    // before the just-set auth cookie is visible to it, which bounced back
+    // to this very login page — a full page load always sees the
+    // up-to-date cookie.
+    window.location.href = "/admin";
   }
 
   return (
