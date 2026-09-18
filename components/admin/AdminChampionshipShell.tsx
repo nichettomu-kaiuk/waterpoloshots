@@ -10,22 +10,14 @@ import type { Championship } from "@/lib/supabase/types";
 export default function AdminChampionshipShell({
   championship,
   hero,
-  heroFull,
   children,
 }: {
   championship: Championship;
   hero?: React.ReactNode;
-  heroFull?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const base = `/admin/${championship.slug}`;
-  // Settings is the one admin page where the hero is shown exactly as
-  // visitors see it (title/subtitle/active round included) — it's what the
-  // admin is actively editing there, so a live, faithful preview is more
-  // useful than the stripped-down banner every other admin page gets.
-  const isSettings = pathname === `${base}/settings`;
-  const activeHero = isSettings ? heroFull : hero;
   const links = [
     { href: base, label: "Dashboard", icon: LayoutDashboard },
     { href: `${base}/matches`, label: "Partite", icon: Shield },
@@ -39,7 +31,7 @@ export default function AdminChampionshipShell({
   return (
     <ChampionshipProvider championship={championship}>
       <div className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        {activeHero}
+        {hero}
 
         <header className="border-b border-line px-5 py-4 lg:px-8">
           <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-[11px] text-muted hover:text-white">
