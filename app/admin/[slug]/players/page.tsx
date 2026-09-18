@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useChampionship } from "@/lib/admin-championship-context";
+import { compressImage } from "@/lib/compressImage";
 import type { Player, PlayerRole, Team } from "@/lib/supabase/types";
 
 const roles: PlayerRole[] = ["portiere", "difensore", "centroboa", "attaccante"];
@@ -69,8 +70,9 @@ export default function AdminPlayersPage() {
 
     let photo_url: string | null | undefined = undefined;
     if (photoFile) {
-      const path = `players/${Date.now()}-${photoFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, photoFile);
+      const compressed = await compressImage(photoFile, { maxDimension: 800 });
+      const path = `players/${Date.now()}-${compressed.name}`;
+      const { error: uploadError } = await supabase.storage.from("branding").upload(path, compressed);
       if (!uploadError) {
         photo_url = supabase.storage.from("branding").getPublicUrl(path).data.publicUrl;
       }
