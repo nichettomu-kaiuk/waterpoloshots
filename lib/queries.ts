@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/public";
 import type { Championship, Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
 
 // Every function degrades gracefully to `null`/`[]` if Supabase env vars are
@@ -8,6 +8,10 @@ import type { Championship, Match, NewsPost, Player, Settings, StandingRow, Team
 // the single-row look-ups by their own unique id) is scoped to one
 // `championshipId` — this is what lets the same codebase serve many
 // independent championships side by side.
+//
+// Reads through the cookie-free public client (see
+// lib/supabase/public.ts) — it's what lets the public pages that call these
+// be cached/revalidated instead of re-querying Supabase on every request.
 
 export async function getChampionships(): Promise<Championship[]> {
   try {
@@ -181,10 +185,16 @@ export async function getTeamWithRoster(teamId: string): Promise<{ team: Team | 
 export async function getPlayer(playerId: string): Promise<{ player: Player | null; team: Team | null }> {
   try {
     const supabase = createClient();
-    const { data: player } = await supabase.from("players").select("*").eq("id", playerId).maybeSingle();
-    if (!player) return { player: null, team: null };
-    const { data: team } = await supabase.from("teams").select("*").eq("id", player.team_id).maybeSingle();
-    return { player, team: team ?? null };
+    // Un'unica query con join invece di due round-trip in sequenza (giocatore,
+    // poi la sua squadra): stesso risultato, metà della latenza di rete.
+    const { data } = await supabase
+      .from("players")
+      .select("*, team:teams(*)")
+      .eq("id", playerId)
+      .maybeSingle();
+    if (!data) return { player: null, team: null };
+    const { team, ...player } = data as Player & { team: Team | null };
+    return { player: player as Player, team: team ?? null };
   } catch {
     return { player: null, team: null };
   }
@@ -238,14 +248,19 @@ export async function getTopScorers(championshipId: string, limit = 10): Promise
 export async function getStandings(championshipId: string, roundType?: string): Promise<StandingRow[]> {
   try {
     const supabase = createClient();
-    const teamsRes = await supabase.from("teams").select("*").eq("championship_id", championshipId);
     let matchQuery = supabase
       .from("matches")
       .select("*")
       .eq("championship_id", championshipId)
       .eq("status", "completed");
     if (roundType) matchQuery = matchQuery.eq("round_type", roundType);
-    const matchesRes = await matchQuery;
+
+    // Le due query sono indipendenti: eseguirle in parallelo invece che in
+    // sequenza dimezza il tempo di attesa di rete verso Supabase.
+    const [teamsRes, matchesRes] = await Promise.all([
+      supabase.from("teams").select("*").eq("championship_id", championshipId),
+      matchQuery,
+    ]);
 
     const teams = teamsRes.data ?? [];
     const matches = matchesRes.data ?? [];
