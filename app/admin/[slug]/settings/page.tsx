@@ -175,8 +175,11 @@ export default function AdminSettingsPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    router.push("/admin/login");
-    router.refresh();
+    // Hard navigation (not router.push + router.refresh): a client-side
+    // soft navigation right after signOut() can reach the /admin/login
+    // middleware check before the cleared auth cookie is visible to it — a
+    // full page load always sees the up-to-date cookie.
+    window.location.href = "/admin/login";
   }
 
   const imageFields: { field: ImageField; label: string; hint: string }[] = [
