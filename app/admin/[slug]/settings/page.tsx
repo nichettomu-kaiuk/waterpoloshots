@@ -6,9 +6,23 @@ import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useChampionship } from "@/lib/admin-championship-context";
+import { slugify } from "@/lib/slug";
+import { compressImage } from "@/lib/compressImage";
 import type { AppTheme, Settings } from "@/lib/supabase/types";
 
 const BUCKET = "branding";
+
+// Dimensione massima (lato più lungo, in px) per ciascun campo immagine,
+// passata a compressImage prima dell'upload — vedi lib/compressImage.ts.
+// Gli sfondi restano più grandi perché occupano tutta la larghezza pagina;
+// logo e immagine Info sono mostrati piccoli, quindi possono essere più
+// compatti.
+const IMAGE_LIMITS: Record<ImageField, number> = {
+  logo_url: 600,
+  home_bg_url: 1920,
+  header_bg_url: 1920,
+  info_image_url: 1000,
+};
 
 const emptySettings: Omit<Settings, "id" | "championship_id"> = {
   tournament_title: "Serie B - Girone 3",
@@ -64,8 +78,11 @@ export default function AdminSettingsPage() {
   }, [championship.id]);
 
   async function uploadImage(file: File, folder: string) {
-    const path = `${folder}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file);
+    const compressed = await compressImage(file, {
+      maxDimension: IMAGE_LIMITS[folder as ImageField] ?? 1600,
+    });
+    const path = `${folder}/${Date.now()}-${compressed.name}`;
+    const { error } = await supabase.storage.from(BUCKET).upload(path, compressed);
     if (error) return null;
     return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
   }
@@ -112,10 +129,48 @@ export default function AdminSettingsPage() {
         .single();
       if (data) setSettingsId(data.id);
     }
+
+    // Lo slug pubblico (e il nome mostrato in Admin → Campionati) seguono il
+    // titolo del torneo: se è cambiato rispetto a quello attuale, rigeneriamo
+    // lo slug (aggiungendo -2, -3... in caso di collisione con un altro
+    // campionato) e aggiorniamo anche il nome. I link già condivisi con lo
+    // slug precedente smettono di funzionare — comportamento scelto
+    // esplicitamente per tenere slug e titolo sempre allineati.
+    const trimmedTitle = form.tournament_title.trim();
+    let newSlug = championship.slug;
+    if (trimmedTitle && trimmedTitle !== championship.name) {
+      const baseSlug = slugify(trimmedTitle);
+      let candidate = baseSlug || championship.slug;
+      let suffix = 2;
+      while (suffix <= 50) {
+        const { data: clash } = await supabase
+          .from("championships")
+          .select("id")
+          .eq("slug", candidate)
+          .neq("id", championship.id)
+          .maybeSingle();
+        if (!clash) break;
+        candidate = `${baseSlug}-${suffix}`;
+        suffix += 1;
+      }
+      newSlug = candidate;
+      await supabase
+        .from("championships")
+        .update({ name: trimmedTitle, slug: newSlug })
+        .eq("id", championship.id);
+    }
+
     setSaving(false);
     setSavedMsg(true);
     setTimeout(() => setSavedMsg(false), 1800);
-    router.refresh();
+
+    if (newSlug !== championship.slug) {
+      // Lo slug nell'URL corrente non esiste più: passiamo a quello nuovo
+      // invece di un refresh, che darebbe 404 sulla pagina attuale.
+      router.push(`/admin/${newSlug}/settings`);
+    } else {
+      router.refresh();
+    }
   }
 
   async function handleSignOut() {
