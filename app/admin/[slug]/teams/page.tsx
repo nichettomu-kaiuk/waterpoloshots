@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useChampionship } from "@/lib/admin-championship-context";
+import { compressImage } from "@/lib/compressImage";
 import type { Team, Venue } from "@/lib/supabase/types";
 
 export default function AdminTeamsPage() {
@@ -57,8 +58,9 @@ export default function AdminTeamsPage() {
 
     let logo_url: string | null | undefined = undefined;
     if (logoFile) {
-      const path = `teams/${Date.now()}-${logoFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, logoFile);
+      const compressed = await compressImage(logoFile, { maxDimension: 600 });
+      const path = `teams/${Date.now()}-${compressed.name}`;
+      const { error: uploadError } = await supabase.storage.from("branding").upload(path, compressed);
       if (!uploadError) {
         logo_url = supabase.storage.from("branding").getPublicUrl(path).data.publicUrl;
       }
