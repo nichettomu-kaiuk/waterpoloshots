@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import Link from "next/link";
+import { Lock, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 // Just the interactive part of the login page (form state + submit) — split
@@ -73,6 +74,18 @@ export default function AdminLoginForm() {
           {loading ? "Accesso in corso..." : "Accedi"}
         </button>
       </form>
+
+      {/* Same wrapper (max-w-sm + px-6) as the form above, and the exact
+          same button shape/size (rounded-xl, w-full, py-2.5, text-sm
+          font-semibold) — so this ends up pixel-identical in width/height
+          to "Accedi", just with a secondary (outline) color instead of the
+          primary fill. */}
+      <Link
+        href="/"
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-line bg-surface py-2.5 text-sm font-semibold text-white transition active:scale-[0.99] hover:border-primary hover:bg-surface-raised"
+      >
+        <ArrowLeft size={14} /> Torna al sito
+      </Link>
     </div>
   );
 }
