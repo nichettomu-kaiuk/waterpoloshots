@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Youtube } from "lucide-react";
 import { getSettings, getLiveMatches } from "@/lib/queries";
+import { optimizedBg } from "@/lib/optimizedImage";
 import type { Match, Settings } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 
@@ -45,7 +46,7 @@ export default async function Hero({
           <div
             className="absolute inset-0 hero-bg"
             style={{
-              backgroundImage: `url(${settings.home_bg_url})`,
+              backgroundImage: `url(${optimizedBg(settings.home_bg_url)})`,
             }}
           />
           <div className="absolute inset-0 bg-ink/45" />
