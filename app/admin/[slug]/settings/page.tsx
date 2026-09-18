@@ -6,7 +6,7 @@ import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useChampionship } from "@/lib/admin-championship-context";
-import { slugify } from "@/lib/slug";
+import { championshipSlug } from "@/lib/slug";
 import { compressImage } from "@/lib/compressImage";
 import type { AppTheme, Settings } from "@/lib/supabase/types";
 
@@ -58,6 +58,10 @@ export default function AdminSettingsPage() {
   const router = useRouter();
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [form, setForm] = useState(emptySettings);
+  // Sottotitolo così come caricato dal DB, per capire al salvataggio se
+  // l'admin l'ha cambiato (lo slug dipende anche da questo, non solo dal
+  // titolo — vedi handleSave).
+  const [originalSubtitle, setOriginalSubtitle] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
   const [busyField, setBusyField] = useState<ImageField | null>(null);
@@ -72,6 +76,7 @@ export default function AdminSettingsPage() {
       if (data) {
         setSettingsId(data.id);
         setForm(data);
+        setOriginalSubtitle(data.tournament_subtitle ?? null);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,16 +135,20 @@ export default function AdminSettingsPage() {
       if (data) setSettingsId(data.id);
     }
 
-    // Lo slug pubblico (e il nome mostrato in Admin → Campionati) seguono il
-    // titolo del torneo: se è cambiato rispetto a quello attuale, rigeneriamo
-    // lo slug (aggiungendo -2, -3... in caso di collisione con un altro
-    // campionato) e aggiorniamo anche il nome. I link già condivisi con lo
-    // slug precedente smettono di funzionare — comportamento scelto
-    // esplicitamente per tenere slug e titolo sempre allineati.
+    // Lo slug pubblico (e il nome mostrato in Admin → Campionati) seguono
+    // titolo + sottotitolo del torneo: se uno dei due è cambiato rispetto a
+    // quello attuale, rigeneriamo lo slug (aggiungendo -2, -3... in caso di
+    // collisione con un altro campionato) e aggiorniamo anche nome e
+    // sottotitolo salvati sul campionato. I link già condivisi con lo slug
+    // precedente smettono di funzionare — comportamento scelto
+    // esplicitamente per tenere slug, titolo e sottotitolo sempre allineati.
     const trimmedTitle = form.tournament_title.trim();
+    const trimmedSubtitle = (form.tournament_subtitle ?? "").trim();
+    const titleChanged = trimmedTitle !== championship.name;
+    const subtitleChanged = trimmedSubtitle !== (originalSubtitle ?? "").trim();
     let newSlug = championship.slug;
-    if (trimmedTitle && trimmedTitle !== championship.name) {
-      const baseSlug = slugify(trimmedTitle);
+    if (trimmedTitle && (titleChanged || subtitleChanged)) {
+      const baseSlug = championshipSlug(trimmedTitle, trimmedSubtitle);
       let candidate = baseSlug || championship.slug;
       let suffix = 2;
       while (suffix <= 50) {
@@ -156,8 +165,9 @@ export default function AdminSettingsPage() {
       newSlug = candidate;
       await supabase
         .from("championships")
-        .update({ name: trimmedTitle, slug: newSlug })
+        .update({ name: trimmedTitle, subtitle: trimmedSubtitle || null, slug: newSlug })
         .eq("id", championship.id);
+      setOriginalSubtitle(trimmedSubtitle || null);
     }
 
     setSaving(false);
