@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSettings, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts, getStandings, getTopScorers } from "@/lib/queries";
 import { getChampionshipOrNotFound } from "@/lib/championship";
+import { optimizedBg } from "@/lib/optimizedImage";
 import MatchCard from "@/components/MatchCard";
 import Hero from "@/components/Hero";
 import NewsCard from "@/components/NewsCard";
@@ -40,7 +41,7 @@ export default async function HomePage({ params }: { params: { slug: string } })
         style={
           settings?.header_bg_url
             ? {
-                backgroundImage: `url(${settings.header_bg_url})`,
+                backgroundImage: `url(${optimizedBg(settings.header_bg_url)})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }
