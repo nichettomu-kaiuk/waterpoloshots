@@ -10,6 +10,15 @@ import Hero from "@/components/Hero";
 // app/[slug]/layout.tsx. Admin → Campionati is what adds/removes the cards
 // shown here. With exactly one championship published, this selection step
 // is skipped entirely and the visitor lands straight on it.
+//
+// Cached and re-generated at most every 15s (ISR) instead of hitting
+// Supabase on every single visit — the championship list and the featured
+// hero's branding barely change; 15s keeps its "LIVE" badge close enough to
+// real time. Requires the queries this page calls to go through the
+// cookie-free client (lib/supabase/public.ts) — cookies() is a Next.js
+// "Dynamic API" that would force this page to skip caching entirely.
+export const revalidate = 15;
+
 export default async function ChampionshipSelectorPage() {
   const championships = await getChampionships();
 
