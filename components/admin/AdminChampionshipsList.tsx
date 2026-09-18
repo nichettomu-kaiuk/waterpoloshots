@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, Trash2, Trophy, LogOut, ChevronRight, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Championship } from "@/lib/supabase/types";
-import { slugify } from "@/lib/slug";
+import { slugify, championshipSlug } from "@/lib/slug";
 
 // Just the interactive "Campionati" list (state, CRUD, sign-out) — split out
 // so app/admin/page.tsx can be a Server Component and render the Hero above
@@ -32,12 +32,19 @@ export default function AdminChampionshipsList() {
     load();
   }, []);
 
-  // Lo slug del campionato viene generato dal titolo del torneo, non da un
+  // Lo slug del campionato viene generato da titolo + sottotitolo, non da un
   // nome a parte: finché l'utente non tocca manualmente il campo slug, resta
-  // agganciato a quello che digita qui.
+  // agganciato a quello che digita in questi due campi (utile quando più
+  // campionati condividono lo stesso titolo e si distinguono solo per
+  // stagione/girone nel sottotitolo).
   function handleTitleChange(value: string) {
     setTitle(value);
-    if (!slugTouched) setSlug(slugify(value));
+    if (!slugTouched) setSlug(championshipSlug(value, subtitle));
+  }
+
+  function handleSubtitleChange(value: string) {
+    setSubtitle(value);
+    if (!slugTouched) setSlug(championshipSlug(title, value));
   }
 
   function resetForm() {
@@ -52,7 +59,7 @@ export default function AdminChampionshipsList() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     const trimmedTitle = title.trim();
-    const baseSlug = slugify(slug || trimmedTitle);
+    const baseSlug = slugify(slug || championshipSlug(trimmedTitle, subtitle));
     if (!trimmedTitle || !baseSlug) {
       setError("Inserisci un titolo valido.");
       return;
@@ -173,7 +180,7 @@ export default function AdminChampionshipsList() {
             </div>
             <input
               value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
+              onChange={(e) => handleSubtitleChange(e.target.value)}
               placeholder="Sottotitolo / stagione (opzionale)"
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
