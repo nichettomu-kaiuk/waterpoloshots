@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, LayoutDashboard, Shield, Users, UserRound, MapPinned, Palette, Newspaper } from "lucide-react";
 import { ChampionshipProvider } from "@/lib/admin-championship-context";
+import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import type { Championship } from "@/lib/supabase/types";
 
 export default function AdminChampionshipShell({
@@ -53,8 +54,10 @@ export default function AdminChampionshipShell({
           ))}
         </nav>
 
-        <div className="px-5 py-5 lg:px-8">{children}</div>
+        <div className="px-5 pb-24 pt-5 lg:px-8">{children}</div>
       </div>
+
+      <AdminBottomNav base={base} />
     </ChampionshipProvider>
   );
 }
