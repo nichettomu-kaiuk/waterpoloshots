@@ -9,9 +9,11 @@ import type { Championship } from "@/lib/supabase/types";
 
 export default function AdminChampionshipShell({
   championship,
+  hero,
   children,
 }: {
   championship: Championship;
+  hero?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -29,6 +31,8 @@ export default function AdminChampionshipShell({
   return (
     <ChampionshipProvider championship={championship}>
       <div className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
+        {hero}
+
         <header className="border-b border-line px-5 py-4 lg:px-8">
           <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-[11px] text-muted hover:text-white">
             <ArrowLeft size={12} /> Tutti i campionati
