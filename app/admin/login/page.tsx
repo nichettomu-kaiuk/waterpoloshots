@@ -9,8 +9,12 @@ import AdminLoginForm from "@/components/admin/AdminLoginForm";
 // but otherwise plain client pages): it needs to fetch a championship's
 // branding server-side to render the same Hero used everywhere else, the
 // same way app/(site)/page.tsx previews it. With 0 or 2+ championships this
-// picks the first one (oldest — see getChampionships), same tie-break as the
-// selector page; with exactly one, it's that one.
+// picks the first one (oldest — see getChampionships); with exactly one,
+// it's that one.
+//
+// Same "max-w-md lg:max-w-5xl xl:max-w-6xl" container as
+// AdminChampionshipShell and the public pages, so the Hero renders at the
+// same size everywhere instead of being capped narrower here.
 export default async function AdminLoginPage() {
   const championships = await getChampionships();
   const featured = championships[0] ?? null;
@@ -21,14 +25,7 @@ export default async function AdminLoginPage() {
   const { brandVars, themeClass } = getThemeVars(featuredSettings);
 
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-2xl flex-col pb-12">
-      <Link
-        href="/"
-        className="mb-2 inline-flex items-center gap-1 px-5 pt-4 text-[11px] text-muted hover:text-white"
-      >
-        <ArrowLeft size={12} /> Torna al sito
-      </Link>
-
+    <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col pb-12 lg:max-w-5xl xl:max-w-6xl">
       {featured && (
         <div className={themeClass} style={brandVars}>
           <Hero
@@ -44,6 +41,13 @@ export default async function AdminLoginPage() {
 
       <div className="flex flex-1 flex-col justify-center pt-8">
         <AdminLoginForm />
+
+        <Link
+          href="/"
+          className="mx-auto mt-3 flex w-full max-w-sm items-center justify-center gap-1.5 rounded-xl border border-line bg-surface py-2.5 text-sm font-semibold text-white transition active:scale-[0.99] hover:border-primary hover:bg-surface-raised"
+        >
+          <ArrowLeft size={14} /> Torna al sito
+        </Link>
       </div>
     </main>
   );
