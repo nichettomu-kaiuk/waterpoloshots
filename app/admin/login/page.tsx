@@ -1,72 +1,50 @@
-"use client";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { getChampionships, getSettings, getLiveMatches } from "@/lib/queries";
+import { getThemeVars } from "@/lib/theme";
+import Hero from "@/components/Hero";
+import AdminLoginForm from "@/components/admin/AdminLoginForm";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Lock } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+// Server Component (unlike the rest of app/admin/**, which is force-dynamic
+// but otherwise plain client pages): it needs to fetch a championship's
+// branding server-side to render the same Hero used everywhere else, the
+// same way app/(site)/page.tsx previews it. With 0 or 2+ championships this
+// picks the first one (oldest — see getChampionships), same tie-break as the
+// selector page; with exactly one, it's that one.
+export default async function AdminLoginPage() {
+  const championships = await getChampionships();
+  const featured = championships[0] ?? null;
+  const [featuredSettings, featuredLive] = featured
+    ? await Promise.all([getSettings(featured.id), getLiveMatches(featured.id)])
+    : [null, []];
 
-export default function AdminLoginPage() {
-  const router = useRouter();
-  const supabase = createClient();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      setError("Credenziali non valide. Riprova.");
-      return;
-    }
-    router.push("/admin");
-    router.refresh();
-  }
+  const { brandVars, themeClass } = getThemeVars(featuredSettings);
 
   return (
-    <main className="mx-auto flex min-h-[80vh] w-full max-w-sm flex-col justify-center px-6">
-      <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary">
-        <Lock size={22} />
-      </div>
-      <h1 className="mb-1 text-center font-display text-2xl font-bold">Accesso Admin</h1>
-      <p className="mb-8 text-center text-sm text-muted">Gestisci il torneo con le tue credenziali.</p>
+    <main className="relative mx-auto flex min-h-screen w-full max-w-2xl flex-col pb-12">
+      <Link
+        href="/"
+        className="mb-2 inline-flex items-center gap-1 px-5 pt-4 text-[11px] text-muted hover:text-white"
+      >
+        <ArrowLeft size={12} /> Torna al sito
+      </Link>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div>
-          <label className="mb-1 block text-xs text-muted">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm outline-none focus:border-primary"
-            placeholder="admin@torneo.it"
+      {featured && (
+        <div className={themeClass} style={brandVars}>
+          <Hero
+            championshipId={featured.id}
+            settings={featuredSettings}
+            live={featuredLive}
+            showTitle={false}
+            showSubtitle={false}
+            showActiveRound={false}
           />
         </div>
-        <div>
-          <label className="mb-1 block text-xs text-muted">Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm outline-none focus:border-primary"
-            placeholder="••••••••"
-          />
-        </div>
-        {error && <p className="text-xs text-primary">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold tracking-wide text-white transition active:scale-[0.99] disabled:opacity-60"
-        >
-          {loading ? "Accesso in corso..." : "Accedi"}
-        </button>
-      </form>
+      )}
+
+      <div className="flex flex-1 flex-col justify-center pt-8">
+        <AdminLoginForm />
+      </div>
     </main>
   );
 }
