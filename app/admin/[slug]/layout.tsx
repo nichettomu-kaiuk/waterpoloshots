@@ -9,12 +9,17 @@ import AdminChampionshipShell from "@/components/admin/AdminChampionshipShell";
 // which also puts it in context for every nested "use client" admin page
 // (teams, players, matches, venues, news, settings) via useChampionship().
 //
-// Also builds the same Hero used everywhere else on the site (public pages,
-// the selector home, the login page) and passes it down as a prop — Hero is
-// an async Server Component, so it has to be rendered here rather than
-// inside AdminChampionshipShell itself ("use client"), same reasoning as
-// app/admin/login/page.tsx. Title/subtitle/active round stay off: the shell
-// already shows the championship's name as its own heading right below.
+// Also builds the same Hero used everywhere else on the site — Hero is an
+// async Server Component, so it has to be rendered here rather than inside
+// AdminChampionshipShell itself ("use client"), same reasoning as
+// app/admin/login/page.tsx. Two variants, from the same fetched data:
+// - `hero`: title/subtitle/active round off, since every other admin page's
+//   own heading already repeats the championship's name right below it.
+// - `heroFull`: identical to the public site's hero (all three on) — used
+//   only on the Settings page, where the admin is actively editing that
+//   title/subtitle/logo/backgrounds and wants to see exactly what a visitor
+//   would see, not a stripped-down preview.
+// AdminChampionshipShell (which has the current pathname) picks between them.
 export default async function AdminChampionshipLayout({
   children,
   params,
@@ -39,8 +44,14 @@ export default async function AdminChampionshipLayout({
     </div>
   );
 
+  const heroFull = (
+    <div className={themeClass} style={brandVars}>
+      <Hero championshipId={championship.id} settings={settings} live={live} />
+    </div>
+  );
+
   return (
-    <AdminChampionshipShell championship={championship} hero={hero}>
+    <AdminChampionshipShell championship={championship} hero={hero} heroFull={heroFull}>
       {children}
     </AdminChampionshipShell>
   );
