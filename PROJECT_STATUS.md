@@ -111,19 +111,21 @@ Cambiamenti fatti:
   `getPlayer` faceva due query separate (giocatore, poi la sua squadra) →
   ora un'unica query con join.
 
+Aggiornamento 2026-09-17 — i due punti sotto (in origine "notati ma non
+toccati") sono stati implementati:
+- **`lib/compressImage.ts`** (nuovo): ridimensiona/ricomprime lato client
+  (via `createImageBitmap` + `<canvas>`) ogni immagine caricata dall'Admin
+  prima dell'upload su Supabase Storage — PNG restano PNG (trasparenza dei
+  loghi), tutto il resto diventa JPEG. Collegato ai 4 punti di upload:
+  `app/admin/[slug]/settings/page.tsx` (logo 600px, sfondi 1920px, immagine
+  info 1000px), `teams/page.tsx` (loghi squadra, 600px), `players/page.tsx`
+  (foto giocatore, 800px), `news/page.tsx` (immagine news, 1600px). File già
+  piccoli (<400KB e già entro le dimensioni target) non vengono ritoccati.
+- La colonna `settings.marcatori_bg_url`, residuo inutilizzato, è stata
+  rimossa sia dal DB live sia da `supabase/schema.sql` (`alter table
+  settings drop column if exists marcatori_bg_url;`, idempotente).
+
 Cose notate ma NON toccate, da valutare in futuro:
-- Gli upload immagine in Admin (logo, sfondi, foto giocatori/squadre, news)
-  non vengono ridimensionati/compressi lato client prima del caricamento su
-  Supabase Storage — una foto da smartphone può pesare diversi MB. Next
-  ottimizza comunque l'immagine quando viene *servita*, ma l'originale
-  pesante resta la sorgente; comprimerla prima dell'upload (es. via
-  `<canvas>` nel browser) ridurrebbe sia lo storage usato sia il tempo del
-  primo caricamento non ancora in cache.
-- La colonna `settings.marcatori_bg_url` esiste sul DB live ma non è nel
-  tipo `Settings` (`lib/supabase/types.ts`) né referenziata da nessun
-  componente: sembra un residuo di una feature mai completata o rimossa.
-  Non tocca le performance, ma vale la pena chiedere all'utente se va
-  ripulita dallo schema.
 - `app/globals.css` è ~1100 righe (8 temi × variante chiara/scura, tutti
   scritti a mano, non classi Tailwind generate): viene scaricata per intero
   su ogni visita indipendentemente dal tema attivo di quel campionato. Il
