@@ -8,6 +8,14 @@ import "../globals.css";
 // regardless of any championship's chosen theme, for readability of the
 // management tool — so unlike app/[slug]/layout.tsx it never applies a
 // theme class or brand color overrides here.
+//
+// Forced fully dynamic (never cached): applies to every page under /admin,
+// since a Next.js dynamic/cache setting on a layout covers its whole
+// subtree. This is what keeps Admin always showing fresh data after the
+// public site's queries (lib/queries.ts) moved to a cookie-free client to
+// make ISR possible there — without this, /admin/[slug]/... could otherwise
+// get cached the same way and show stale data right after an edit.
+export const dynamic = "force-dynamic";
 const display = Oswald({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
