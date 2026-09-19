@@ -159,7 +159,7 @@ export default function AdminChampionshipsList() {
             <input
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
-              placeholder="Titolo del torneo (es. Serie A1 - Girone 1)"
+              placeholder="Nome campionato (es. Serie A1 - Girone 1)"
               autoFocus
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
@@ -181,7 +181,7 @@ export default function AdminChampionshipsList() {
             <input
               value={subtitle}
               onChange={(e) => handleSubtitleChange(e.target.value)}
-              placeholder="Sottotitolo / stagione (opzionale)"
+              placeholder="Stagione (opzionale)"
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
             {error && <p className="text-xs text-primary">{error}</p>}
