@@ -6,8 +6,12 @@ import AdminChampionshipsList from "@/components/admin/AdminChampionshipsList";
 // Server Component wrapper (same reasoning as app/admin/login/page.tsx): the
 // "Campionati" list doesn't belong to one specific championship, so — like
 // the login page — it shows the first one's (oldest) branding as its Hero,
-// title/subtitle/active round off (only Settings shows those, since that's
-// the one page actively editing them).
+// with title/subtitle/active round blanked (only Settings shows those,
+// since that's the one page actively editing them). blankIdentity (not
+// showTitle/showSubtitle/showActiveRound = false) keeps those elements in
+// the layout with invisible text, so the hero still takes up exactly the
+// same height as every other admin page's hero instead of coming out
+// shorter.
 //
 // The container is now "max-w-md lg:max-w-5xl xl:max-w-6xl", matching
 // AdminChampionshipShell and the login page: this page used to be its own
@@ -30,9 +34,7 @@ export default async function AdminPage() {
             championshipId={featured.id}
             settings={featuredSettings}
             live={featuredLive}
-            showTitle={false}
-            showSubtitle={false}
-            showActiveRound={false}
+            blankIdentity
           />
         </div>
       )}
