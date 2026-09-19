@@ -193,7 +193,7 @@ export default function AdminSettingsPage() {
   }
 
   const imageFields: { field: ImageField; label: string; hint: string }[] = [
-    { field: "logo_url", label: "Logo torneo", hint: "Consigliato: quadrato, sfondo trasparente" },
+    { field: "logo_url", label: "Logo campionato", hint: "Consigliato: quadrato, sfondo trasparente" },
     { field: "home_bg_url", label: "Sfondo Home", hint: "Sfondo dell'header/hero in cima alla home" },
     { field: "header_bg_url", label: "Bg home", hint: "Sfondo del corpo della home page, sotto l'header" },
     { field: "info_image_url", label: "Immagine Info", hint: "Mostrata nella finestra Informazioni (icona \"i\")" },
@@ -206,7 +206,7 @@ export default function AdminSettingsPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="space-y-5">
           <div className="space-y-2 rounded-2xl border border-line bg-surface p-4">
-            <p className="mb-1 text-xs uppercase tracking-widest text-muted">Informazioni torneo</p>
+            <p className="mb-1 text-xs uppercase tracking-widest text-muted">Informazioni campionato</p>
             <label className="block text-xs text-muted">Nome campionato</label>
             <input
               value={form.tournament_title}
