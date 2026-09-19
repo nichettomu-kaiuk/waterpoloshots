@@ -12,9 +12,20 @@ import LiveBadge from "./LiveBadge";
 // championshipId is required so Hero knows which championship to fetch for
 // when the caller doesn't already have settings/live in hand.
 // showTitle/showSubtitle/showActiveRound default to true (every [slug] page
-// wants the full hero); the selector page (app/(site)/page.tsx) turns them
-// off when it previews a championship's branding without repeating its
-// name/text, since the page already has its own heading below.
+// wants the full hero); the selector page (app/(site)/page.tsx) and
+// app/admin/page.tsx turn them off (element not rendered at all, hero comes
+// out shorter) when they preview a championship's branding without
+// repeating its name/text, since those pages already have their own heading
+// below.
+//
+// blankIdentity is different: it keeps showTitle/showSubtitle/showActiveRound
+// on (so the same elements are rendered, at the same size, taking up the
+// same vertical space) but makes their text invisible. Used by
+// app/admin/login/page.tsx, which isn't scoped to one specific championship
+// — the "featured" one shown there is just a branding stand-in, so its
+// name/subtitle/matchday would be misleading before login — but still wants
+// the hero to occupy exactly the same height as every other admin page's
+// hero, not a shorter one.
 export default async function Hero({
   championshipId,
   settings: settingsProp,
@@ -22,6 +33,7 @@ export default async function Hero({
   showTitle = true,
   showSubtitle = true,
   showActiveRound = true,
+  blankIdentity = false,
 }: {
   championshipId: string;
   settings?: Settings | null;
@@ -29,9 +41,13 @@ export default async function Hero({
   showTitle?: boolean;
   showSubtitle?: boolean;
   showActiveRound?: boolean;
+  blankIdentity?: boolean;
 }) {
   const settings = settingsProp !== undefined ? settingsProp : await getSettings(championshipId);
   const live = liveProp !== undefined ? liveProp : await getLiveMatches(championshipId);
+  // "invisible" (not "hidden"/no render): keeps the element's box in the
+  // layout so the hero's height doesn't change, just its text disappears.
+  const identityClass = blankIdentity ? "invisible" : "";
 
   return (
     <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">
@@ -58,7 +74,7 @@ export default async function Hero({
       )}
       <div className="relative">
         {showActiveRound && (
-          <p className="hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold">
+          <p className={`hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold ${identityClass}`}>
             {settings?.active_round ?? "Girone di andata"}
           </p>
         )}
@@ -85,13 +101,15 @@ export default async function Hero({
                 wash diagonali di alcuni temi, texture) — quasi invisibile
                 su sfondi piatti, dove non serve. */}
             {showTitle && (
-              <h1 className="font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">
+              <h1
+                className={`font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)] ${identityClass}`}
+              >
                 {settings?.tournament_title ?? "Serie B - Girone 3"}
               </h1>
             )}
             <div className="mt-1 flex items-center justify-between gap-3">
               {showSubtitle && settings?.tournament_subtitle ? (
-                <p className="text-sm text-muted">{settings.tournament_subtitle}</p>
+                <p className={`text-sm text-muted ${identityClass}`}>{settings.tournament_subtitle}</p>
               ) : (
                 <span />
               )}
