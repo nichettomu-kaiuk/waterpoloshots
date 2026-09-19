@@ -89,7 +89,7 @@ export default async function Hero({
           {settings?.logo_url && (
             <Image
               src={settings.logo_url}
-              alt={settings.tournament_title ?? "Logo torneo"}
+              alt={settings.tournament_title ?? "Logo campionato"}
               width={60}
               height={60}
               className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
