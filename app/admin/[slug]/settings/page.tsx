@@ -207,19 +207,19 @@ export default function AdminSettingsPage() {
         <div className="space-y-5">
           <div className="space-y-2 rounded-2xl border border-line bg-surface p-4">
             <p className="mb-1 text-xs uppercase tracking-widest text-muted">Informazioni torneo</p>
-            <label className="block text-xs text-muted">Titolo torneo</label>
+            <label className="block text-xs text-muted">Nome campionato</label>
             <input
               value={form.tournament_title}
               onChange={(e) => setForm({ ...form, tournament_title: e.target.value })}
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
-            <label className="block text-xs text-muted">Sottotitolo</label>
+            <label className="block text-xs text-muted">Stagione</label>
             <input
               value={form.tournament_subtitle ?? ""}
               onChange={(e) => setForm({ ...form, tournament_subtitle: e.target.value })}
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
-            <label className="block text-xs text-muted">Giornata attiva</label>
+            <label className="block text-xs text-muted">Altre info</label>
             <input
               value={form.active_round ?? ""}
               onChange={(e) => setForm({ ...form, active_round: e.target.value })}
