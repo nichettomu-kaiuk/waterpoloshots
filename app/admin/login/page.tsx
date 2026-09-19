@@ -10,12 +10,15 @@ import AdminLoginForm from "@/components/admin/AdminLoginForm";
 // 0 or 2+ championships this picks the first one (oldest — see
 // getChampionships); with exactly one, it's that one.
 //
-// Title and active round stay off here specifically (unlike every other
-// admin page, where both show): this is the one admin page not scoped to a
-// single championship — the "featured" one shown here is really just a
-// stand-in for branding/theme, so naming it and showing "its" matchday
-// would be misleading before the admin has even logged in. Subtitle stays
-// on, same as everywhere else.
+// Title, subtitle and active round are all blanked here specifically
+// (unlike every other admin page, where all three show): this is the one
+// admin page not scoped to a single championship — the "featured" one shown
+// here is really just a stand-in for branding/theme, so naming it and
+// showing "its" subtitle/matchday would be misleading before the admin has
+// even logged in. blankIdentity (not showTitle/showSubtitle/showActiveRound
+// = false) keeps those elements in the layout with invisible text, so the
+// hero still takes up exactly the same height as everywhere else instead of
+// coming out shorter.
 //
 // Same "max-w-md lg:max-w-5xl xl:max-w-6xl" container as
 // AdminChampionshipShell, so the Hero renders at the same size everywhere
@@ -37,8 +40,7 @@ export default async function AdminLoginPage() {
             championshipId={featured.id}
             settings={featuredSettings}
             live={featuredLive}
-            showTitle={false}
-            showActiveRound={false}
+            blankIdentity
           />
         </div>
       )}
