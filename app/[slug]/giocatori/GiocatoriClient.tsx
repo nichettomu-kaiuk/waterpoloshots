@@ -62,7 +62,7 @@ export default function GiocatoriClient({ players }: { players: PlayerWithTeam[]
                 {p.cap_number}
               </span>
               {p.photo_url ? (
-                <span className="cap-badge relative inline-block h-10 w-10 shrink-0">
+                <span className="cap-badge cap-badge-plain relative inline-block h-10 w-10 shrink-0">
                   <Image
                     src={p.photo_url}
                     alt={`${p.first_name} ${p.last_name}`}
@@ -72,7 +72,7 @@ export default function GiocatoriClient({ players }: { players: PlayerWithTeam[]
                   />
                 </span>
               ) : (
-                <span className="cap-badge relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-raised font-display text-xs text-muted">
+                <span className="cap-badge cap-badge-plain relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-raised font-display text-xs text-muted">
                   {p.first_name[0]}{p.last_name[0]}
                 </span>
               )}
