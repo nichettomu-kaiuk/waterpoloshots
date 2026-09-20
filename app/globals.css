@@ -530,6 +530,14 @@ body {
   font-weight: 700;
 }
 
+/* Pagina Squadre: lo stesso spazio già presente tra logo e nome (gap-4,
+   1rem, nel markup) aggiunto anche a sinistra del logo, su richiesta
+   esplicita — stesso trattamento già fatto per Poster Arena e Corsia.
+   .team-row è la classe dedicata aggiunta in app/[slug]/squadre/page.tsx. */
+.theme-impact .team-row {
+  padding-left: 1rem;
+}
+
 .theme-impact .podium-pedestal {
   clip-path: polygon(0 10px, 100% 0, 100% 100%, 0 100%);
   border-top: 2px solid var(--color-gold);
@@ -641,20 +649,24 @@ body {
   border-color: var(--color-gold) !important;
 }
 
-/* Tre punti dove il badge dorato non è voluto: il logo squadra in
-   Classifica (unica tabella del sito con un .cap-badge dentro, da qui la
-   selezione strutturale "table .cap-badge"), il logo squadra in Squadre e
-   la foto giocatore in Giocatori (qui serve una classe dedicata,
-   .cap-badge-plain, perché entrambe le pagine riusano lo stesso
-   .site-card/.cap-badge di altri punti del sito — es. mini-classifica in
-   home, rosa nel dettaglio squadra, marcatori — che devono mantenere la
-   cornice dorata). Azzerare interamente il bordo (non solo il colore)
-   perché la richiesta è "nessuna cornice", non "una cornice più discreta".
+/* Punti dove il badge dorato non è voluto: il logo squadra in Classifica
+   (unica tabella del sito con un .cap-badge dentro, da qui la selezione
+   strutturale "table .cap-badge"), il logo squadra in Squadre, la foto
+   giocatore in Giocatori (qui serve una classe dedicata, .cap-badge-plain,
+   perché entrambe le pagine riusano lo stesso .site-card/.cap-badge di altri
+   punti del sito — es. rosa nel dettaglio squadra, marcatori — che devono
+   mantenere la cornice dorata) e il logo squadra nella mini-classifica in
+   home (.rank-box .cap-badge, selezione strutturale: è l'unico posto dove
+   un .cap-badge sta dentro un .rank-box). Azzerare interamente il bordo
+   (non solo il colore) perché la richiesta è "nessuna cornice", non "una
+   cornice più discreta".
 */
 .theme-broadcast table .cap-badge,
 .theme-broadcast table .cap-badge img,
 .theme-broadcast .cap-badge-plain,
-.theme-broadcast .cap-badge-plain img {
+.theme-broadcast .cap-badge-plain img,
+.theme-broadcast .rank-box .cap-badge,
+.theme-broadcast .rank-box .cap-badge img {
   border-width: 0 !important;
   border-color: transparent !important;
 }
@@ -669,6 +681,17 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent);
   color: var(--color-gold);
 }
+/* Il punteggio nella mini-classifica in home non deve avere cornice, su
+   richiesta esplicita: la riga (li.rank-box, app/[slug]/page.tsx) contiene
+   più span (numero posizione, logo, punteggio), tutti colpiti dalla regola
+   sopra pensata solo per il numero — mentre nella pagina Classifiche
+   .rank-box è invece l'unico span nella sua cella (lì la cornice va
+   mantenuta). ":not(:only-child)" distingue i due casi senza toccare la
+   pagina Classifiche: il punteggio è l'ultimo span della riga ma, a
+   differenza del numero di posizione nella tabella, non è figlio unico. */
+.theme-broadcast .rank-box span:last-child:not(:only-child) {
+  border: none;
+}
 
 .theme-broadcast .podium-pedestal {
   border-top: 2px solid var(--color-gold);
@@ -678,6 +701,15 @@ body {
 
 .theme-broadcast .detail-hero-image {
   border-top: 2px solid var(--color-gold);
+}
+
+/* Pagina Squadre: lo stesso spazio già presente tra logo e nome (gap-4,
+   1rem, nel markup) aggiunto anche a sinistra del logo, su richiesta
+   esplicita — stesso trattamento già fatto per Poster Arena, Corsia e Onda
+   d'Urto. .team-row è la classe dedicata aggiunta in
+   app/[slug]/squadre/page.tsx. */
+.theme-broadcast .team-row {
+  padding-left: 1rem;
 }
 
 .theme-broadcast .bottom-nav {
