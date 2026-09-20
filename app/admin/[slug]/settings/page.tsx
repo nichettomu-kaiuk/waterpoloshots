@@ -170,6 +170,24 @@ export default function AdminSettingsPage() {
       setOriginalSubtitle(trimmedSubtitle || null);
     }
 
+    // Il sito pubblico è in cache (ISR, 15s — vedi app/[slug]/layout.tsx):
+    // senza questa chiamata, tema/colori/logo appena salvati restavano
+    // "vecchi" sul sito finché la cache non scadeva da sola. Best-effort:
+    // se fallisce (rete assente, ecc.) le impostazioni sono comunque salvate
+    // correttamente, il sito si aggiornerà comunque entro 15s.
+    try {
+      await fetch("/api/revalidate-championship", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: newSlug,
+          previousSlug: newSlug !== championship.slug ? championship.slug : undefined,
+        }),
+      });
+    } catch {
+      // ignorato volutamente: vedi commento sopra.
+    }
+
     setSaving(false);
     setSavedMsg(true);
     setTimeout(() => setSavedMsg(false), 1800);
