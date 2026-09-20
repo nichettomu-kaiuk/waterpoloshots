@@ -35,7 +35,7 @@ export default async function SquadrePage({ params }: { params: { slug: string }
                   className="site-card flex items-center gap-4 border-b border-line py-4 transition active:scale-[0.99]"
                 >
                   {t.logo_url ? (
-                    <span className="cap-badge relative inline-block h-14 w-14 shrink-0">
+                    <span className="cap-badge cap-badge-plain relative inline-block h-14 w-14 shrink-0">
                       <Image
                         src={t.logo_url}
                         alt={t.name}
@@ -45,7 +45,7 @@ export default async function SquadrePage({ params }: { params: { slug: string }
                       />
                     </span>
                   ) : (
-                    <span className="cap-badge relative inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-lg text-muted">
+                    <span className="cap-badge cap-badge-plain relative inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-lg text-muted">
                       {t.name.slice(0, 2).toUpperCase()}
                     </span>
                   )}
