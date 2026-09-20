@@ -10,11 +10,17 @@ import AdminChampionshipShell from "@/components/admin/AdminChampionshipShell";
 // (teams, players, matches, venues, news, settings) via useChampionship().
 //
 // Also builds the same Hero used everywhere else on the site — identical on
-// every admin page for this championship (Dashboard, Partite, Squadre,
-// Giocatori, Piscine, News, Impostazioni all get the exact same one, title/
+// every admin page for this championship (Dashboard, Impostazioni, News,
+// Squadre, Giocatori, Partite, Piscine all get the exact same one, title/
 // subtitle/active round included) — Hero is an async Server Component, so
 // it has to be rendered here rather than inside AdminChampionshipShell
 // itself ("use client"), same reasoning as app/admin/login/page.tsx.
+//
+// themeClass/brandVars (colori e classe strutturale del tema scelto per
+// QUESTO campionato) sono passati a AdminChampionshipShell, che li applica a
+// un unico wrapper attorno a tutta la sezione admin del campionato (header,
+// pagine, barra di navigazione inferiore) — non più solo attorno a Hero come
+// in precedenza — così l'intera sezione Admin segue il tema, non solo Hero.
 export default async function AdminChampionshipLayout({
   children,
   params,
@@ -26,14 +32,10 @@ export default async function AdminChampionshipLayout({
   const [settings, live] = await Promise.all([getSettings(championship.id), getLiveMatches(championship.id)]);
   const { brandVars, themeClass } = getThemeVars(settings);
 
-  const hero = (
-    <div className={themeClass} style={brandVars}>
-      <Hero championshipId={championship.id} settings={settings} live={live} />
-    </div>
-  );
+  const hero = <Hero championshipId={championship.id} settings={settings} live={live} />;
 
   return (
-    <AdminChampionshipShell championship={championship} hero={hero}>
+    <AdminChampionshipShell championship={championship} hero={hero} themeClass={themeClass} brandVars={brandVars}>
       {children}
     </AdminChampionshipShell>
   );

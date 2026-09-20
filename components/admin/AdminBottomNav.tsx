@@ -8,20 +8,25 @@ import clsx from "clsx";
 // Admin counterpart of components/BottomNav.tsx (public site): same fixed
 // bottom bar look, colors and behavior (it reuses the .bottom-nav /
 // .bottom-nav-item classes from globals.css, so it automatically matches
-// whatever the current theme's active-state styling looks like), just
-// pointed at the current championship's admin routes instead of the public
-// ones. This mirrors the same links already offered by the horizontal chip
-// nav in AdminChampionshipShell above the page content — that one stays for
-// quick scanning of every section at a glance, this one keeps them reachable
-// with a thumb on mobile without scrolling back to the top of the page.
+// whatever the current theme's active-state styling looks like — including,
+// since AdminChampionshipShell now wraps this nav in the championship's
+// theme class/colors too, the theme actually chosen for that campionato and
+// not just the default one), just pointed at the current championship's
+// admin routes instead of the public ones. It's the only nav in the admin
+// section (the horizontal one that used to sit above the page content was
+// removed as a duplicate).
+//
+// Ordine richiesto esplicitamente dall'utente (non alfabetico né legato al
+// flusso di lavoro): Dashboard, Impostazioni, News, Squadre, Giocatori,
+// Partite, Piscine.
 const items = [
   { href: "", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/matches", label: "Partite", icon: Shield },
+  { href: "/settings", label: "Impostazioni", icon: Palette },
+  { href: "/news", label: "News", icon: Newspaper },
   { href: "/teams", label: "Squadre", icon: Users },
   { href: "/players", label: "Giocatori", icon: UserRound },
+  { href: "/matches", label: "Partite", icon: Shield },
   { href: "/venues", label: "Piscine", icon: MapPinned },
-  { href: "/news", label: "News", icon: Newspaper },
-  { href: "/settings", label: "Impostazioni", icon: Palette },
 ];
 
 export default function AdminBottomNav({ base }: { base: string }) {
