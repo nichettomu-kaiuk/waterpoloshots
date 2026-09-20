@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ArrowLeft, LayoutDashboard, Shield, Users, UserRound, MapPinned, Palette, Newspaper } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ChampionshipProvider } from "@/lib/admin-championship-context";
 import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import type { Championship } from "@/lib/supabase/types";
 
+// La barra di navigazione qui sopra (Dashboard/Partite/Squadre/Giocatori/
+// Piscine/News/Impostazioni) è stata rimossa su richiesta esplicita: era
+// doppia rispetto ad AdminBottomNav qui sotto, che offre le stesse
+// destinazioni in basso. Resta solo l'header con il nome del campionato e
+// il link per tornare all'elenco campionati.
 export default function AdminChampionshipShell({
   championship,
   hero,
@@ -16,17 +20,7 @@ export default function AdminChampionshipShell({
   hero?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
   const base = `/admin/${championship.slug}`;
-  const links = [
-    { href: base, label: "Dashboard", icon: LayoutDashboard },
-    { href: `${base}/matches`, label: "Partite", icon: Shield },
-    { href: `${base}/teams`, label: "Squadre", icon: Users },
-    { href: `${base}/players`, label: "Giocatori", icon: UserRound },
-    { href: `${base}/venues`, label: "Piscine", icon: MapPinned },
-    { href: `${base}/news`, label: "News", icon: Newspaper },
-    { href: `${base}/settings`, label: "Impostazioni", icon: Palette },
-  ];
 
   return (
     <ChampionshipProvider championship={championship}>
@@ -40,23 +34,6 @@ export default function AdminChampionshipShell({
           <p className="text-[11px] uppercase tracking-widest text-gold">Pannello di controllo</p>
           <h1 className="font-display text-xl font-bold">{championship.name}</h1>
         </header>
-
-        <nav className="scrollbar-none flex gap-2 overflow-x-auto border-b border-line px-5 py-3 lg:px-8">
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                pathname === href
-                  ? "border-primary text-white"
-                  : "border-line text-muted hover:border-primary hover:text-white"
-              }`}
-            >
-              <Icon size={13} />
-              {label}
-            </Link>
-          ))}
-        </nav>
 
         <div className="px-5 pb-24 pt-5 lg:px-8">{children}</div>
       </div>
