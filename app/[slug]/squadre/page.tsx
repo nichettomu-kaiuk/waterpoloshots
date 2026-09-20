@@ -25,14 +25,14 @@ export default async function SquadrePage({ params }: { params: { slug: string }
         {teams.length === 0 ? (
           <p className="text-sm text-muted">Nessuna squadra registrata ancora.</p>
         ) : (
-          <div className="grid gap-x-8 sm:grid-cols-2">
+          <div className="squadre-grid grid gap-x-8 sm:grid-cols-2">
             {teams.map((t) => {
               const info = rank.get(t.id);
               return (
                 <Link
                   key={t.id}
                   href={`/${params.slug}/squadra/${t.id}`}
-                  className="site-card flex items-center gap-4 border-b border-line py-4 transition active:scale-[0.99]"
+                  className="site-card team-row flex items-center gap-4 border-b border-line py-4 transition active:scale-[0.99]"
                 >
                   {t.logo_url ? (
                     <span className="cap-badge cap-badge-plain relative inline-block h-14 w-14 shrink-0">

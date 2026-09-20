@@ -784,6 +784,32 @@ body {
   font-weight: 700;
 }
 
+/* Classifica: meno spazio tra la posizione e il logo squadra, su richiesta
+   esplicita. Le due celle (.rank-box e quella successiva, "Squadra") sono
+   entrambe "sticky" per restare visibili durante lo scroll orizzontale della
+   tabella su mobile, e condividono lo stesso sfondo (bg-surface): un lieve
+   scarto tra i loro offset sticky e la larghezza reale, introdotto riducendo
+   il padding solo qui (invece che regolare anche "left-8" nel markup), non è
+   percepibile proprio perché lo sfondo è identico su entrambe. */
+.theme-poster .rank-box {
+  padding-right: 4px;
+}
+.theme-poster .rank-box + td {
+  padding-left: 4px;
+}
+
+/* Pagina Squadre: un po' più di respiro tra un rigo e l'altro (row-gap, il
+   grid ha solo gap-x nel markup) e, a sinistra del logo, lo stesso spazio
+   (1rem) già presente tra logo e nome (gap-4 nel markup) — per simmetria, su
+   richiesta esplicita. .squadre-grid/.team-row sono classi dedicate aggiunte
+   in app/[slug]/squadre/page.tsx solo per questo aggancio CSS. */
+.theme-poster .squadre-grid {
+  row-gap: 12px;
+}
+.theme-poster .team-row {
+  padding-left: 1rem;
+}
+
 .theme-poster .podium-pedestal {
   border: 2px solid var(--color-fg);
   border-bottom: none;
