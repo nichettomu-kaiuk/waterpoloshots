@@ -281,20 +281,17 @@ export default function AdminSettingsPage() {
               <Palette size={13} /> Aspetto grafico
             </p>
 
-            {/* Listbox nativa (<select size>) a selezione singola: mostra
-                tutti i temi come un vero elenco, non un menu a tendina da
-                aprire, con un solo click per scegliere e senza dover
-                gestire da zero l'accessibilità da tastiera/screen reader.
-                Solo il nome del tema qui — la variante scura/chiara si
-                sceglie a parte con le due checkbox subito sotto. */}
+            {/* Tendina nativa (<select>, un solo rigo visibile con la
+                freccetta a lato, si apre al click): solo il nome del tema
+                qui — la variante scura/chiara si sceglie a parte con le due
+                checkbox subito sotto. */}
             <select
-              size={THEME_OPTIONS.length}
               value={baseTheme}
               onChange={(e) => handleThemeSelect(e.target.value as BaseTheme)}
-              className="w-full rounded-xl border border-line bg-surface-raised text-sm outline-none focus:border-primary"
+              className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             >
               {THEME_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="px-3 py-2">
+                <option key={opt.value} value={opt.value}>
                   {opt.label} — {opt.hint}
                 </option>
               ))}
@@ -316,7 +313,6 @@ export default function AdminSettingsPage() {
                   onChange={() => handleVariantSelect(false)}
                   className="accent-primary"
                 />
-                <span className="h-3 w-3 shrink-0 rounded-full border border-line bg-ink" />
                 Scuro
               </label>
               <label
@@ -330,7 +326,6 @@ export default function AdminSettingsPage() {
                   onChange={() => handleVariantSelect(true)}
                   className="accent-primary"
                 />
-                <span className="h-3 w-3 shrink-0 rounded-full border border-line bg-white" />
                 Chiaro
               </label>
             </div>
