@@ -41,6 +41,22 @@ const emptySettings: Omit<Settings, "id" | "championship_id"> = {
 
 type ImageField = "logo_url" | "home_bg_url" | "header_bg_url" | "info_image_url";
 
+// Solo il nome del tema, senza le varianti "-light": quelle sono scelte a
+// parte con le due checkbox Scuro/Chiaro (vedi più sotto), non più con una
+// voce separata per ciascun tema come nella vecchia lista.
+type BaseTheme = "classic" | "lane" | "regulation" | "impact" | "broadcast" | "poster" | "tabellone" | "magazine";
+
+const THEME_OPTIONS: { value: BaseTheme; label: string; hint: string }[] = [
+  { value: "classic", label: "Classico", hint: "Card arrotondate, stile attuale" },
+  { value: "lane", label: "Corsia", hint: "Card a biglietto, hero diagonale" },
+  { value: "regulation", label: "Regolamento", hint: "Card piatte, badge a cuffia" },
+  { value: "impact", label: "Onda d'Urto", hint: "Energico: diagonali, card a biglietto dorate" },
+  { value: "broadcast", label: "Broadcast Gold", hint: "Premium TV: hairline dorate, card vetro" },
+  { value: "poster", label: "Poster Arena", hint: "Manifesto: blocchi netti, badge squadrati" },
+  { value: "tabellone", label: "Tabellone", hint: "Sportivo: angoli squadrati, podio in classifica" },
+  { value: "magazine", label: "Magazine", hint: "Editoriale: fascia rossa, card piatte, Space Grotesk" },
+];
+
 // Public Supabase Storage URLs look like:
 // https://<project>.supabase.co/storage/v1/object/public/branding/<path>
 // We only ever store the public URL, so deleting/replacing needs the path
@@ -172,18 +188,13 @@ export default function AdminSettingsPage() {
 
     // Il sito pubblico è in cache (ISR, 15s — vedi app/[slug]/layout.tsx):
     // senza questa chiamata, tema/colori/logo appena salvati restavano
-    // "vecchi" sul sito finché la cache non scadeva da sola. Best-effort:
+    // "vecchi" sul sito finché la cache non scadeva da sola. Nessun
+    // parametro da passare: la route invalida il layout condiviso da tutti
+    // i campionati (vedi il suo stesso commento sul perché). Best-effort:
     // se fallisce (rete assente, ecc.) le impostazioni sono comunque salvate
     // correttamente, il sito si aggiornerà comunque entro 15s.
     try {
-      await fetch("/api/revalidate-championship", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: newSlug,
-          previousSlug: newSlug !== championship.slug ? championship.slug : undefined,
-        }),
-      });
+      await fetch("/api/revalidate-championship", { method: "POST" });
     } catch {
       // ignorato volutamente: vedi commento sopra.
     }
@@ -208,6 +219,26 @@ export default function AdminSettingsPage() {
     // middleware check before the cleared auth cookie is visible to it — a
     // full page load always sees the up-to-date cookie.
     window.location.href = "/admin/login";
+  }
+
+  // form.theme resta un unico valore (es. "lane-light"), come richiesto dal
+  // resto dell'app (getThemeVars in lib/theme.ts, la colonna DB) — qui viene
+  // solo "scomposto" in due controlli separati: la listbox sceglie il nome
+  // del tema, le due checkbox sotto la variante scura/chiara.
+  const isLightTheme = form.theme.endsWith("-light");
+  const baseTheme = (isLightTheme ? form.theme.replace("-light", "") : form.theme) as BaseTheme;
+
+  function handleThemeSelect(value: BaseTheme) {
+    setForm({ ...form, theme: (isLightTheme ? `${value}-light` : value) as AppTheme });
+  }
+
+  // Le due checkbox sono alternative tra loro (come due radio button, su
+  // richiesta esplicita vanno comunque implementate come checkbox): ognuna,
+  // quando attivata, forza sempre e solo la propria variante — cliccare
+  // quella già selezionata non la "spegne" mai, perché non esisterebbe un
+  // tema valido corrispondente a "nessuna delle due".
+  function handleVariantSelect(light: boolean) {
+    setForm({ ...form, theme: (light ? `${baseTheme}-light` : baseTheme) as AppTheme });
   }
 
   const imageFields: { field: ImageField; label: string; hint: string }[] = [
@@ -249,50 +280,66 @@ export default function AdminSettingsPage() {
             <p className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted">
               <Palette size={13} /> Aspetto grafico
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  { value: "classic", label: "Classico", hint: "Card arrotondate, stile attuale", dark: true },
-                  { value: "classic-light", label: "Classico Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "lane", label: "Corsia", hint: "Card a biglietto, hero diagonale", dark: true },
-                  { value: "lane-light", label: "Corsia Chiara", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "regulation", label: "Regolamento", hint: "Card piatte, badge a cuffia", dark: true },
-                  { value: "regulation-light", label: "Regolamento Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "impact", label: "Onda d'Urto", hint: "Energico: diagonali, card a biglietto dorate", dark: true },
-                  { value: "impact-light", label: "Onda d'Urto Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "broadcast", label: "Broadcast Gold", hint: "Premium TV: hairline dorate, card vetro", dark: true },
-                  { value: "broadcast-light", label: "Broadcast Gold Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "poster", label: "Poster Arena", hint: "Manifesto: blocchi netti, badge squadrati", dark: true },
-                  { value: "poster-light", label: "Poster Arena Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "tabellone", label: "Tabellone", hint: "Sportivo: angoli squadrati, podio in classifica", dark: true },
-                  { value: "tabellone-light", label: "Tabellone Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                  { value: "magazine", label: "Magazine", hint: "Editoriale: fascia rossa, card piatte, Space Grotesk", dark: true },
-                  { value: "magazine-light", label: "Magazine Chiaro", hint: "Stesse forme, sfondo bianco", dark: false },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setForm({ ...form, theme: opt.value })}
-                  className={`rounded-xl border px-3 py-3 text-left transition ${
-                    form.theme === opt.value ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
-                  }`}
-                >
-                  <span
-                    className={`mb-1.5 inline-block h-3 w-3 rounded-full border ${
-                      opt.dark ? "border-line bg-ink" : "border-line bg-white"
-                    }`}
-                  />
-                  <p className="text-sm font-semibold">{opt.label}</p>
-                  <p className="mt-0.5 text-[11px] text-muted">{opt.hint}</p>
-                </button>
+
+            {/* Listbox nativa (<select size>) a selezione singola: mostra
+                tutti i temi come un vero elenco, non un menu a tendina da
+                aprire, con un solo click per scegliere e senza dover
+                gestire da zero l'accessibilità da tastiera/screen reader.
+                Solo il nome del tema qui — la variante scura/chiara si
+                sceglie a parte con le due checkbox subito sotto. */}
+            <select
+              size={THEME_OPTIONS.length}
+              value={baseTheme}
+              onChange={(e) => handleThemeSelect(e.target.value as BaseTheme)}
+              className="w-full rounded-xl border border-line bg-surface-raised text-sm outline-none focus:border-primary"
+            >
+              {THEME_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value} className="px-3 py-2">
+                  {opt.label} — {opt.hint}
+                </option>
               ))}
+            </select>
+
+            {/* Due checkbox invece di un'unica scelta scuro/chiaro, su
+                richiesta esplicita, ma selezionabili solo in alternativa
+                l'una all'altra (vedi handleVariantSelect): premerne una
+                seleziona sempre e solo quella, mai nessuna delle due. */}
+            <div className="flex gap-2">
+              <label
+                className={`flex flex-1 cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
+                  !isLightTheme ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={!isLightTheme}
+                  onChange={() => handleVariantSelect(false)}
+                  className="accent-primary"
+                />
+                <span className="h-3 w-3 shrink-0 rounded-full border border-line bg-ink" />
+                Scuro
+              </label>
+              <label
+                className={`flex flex-1 cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
+                  isLightTheme ? "border-primary bg-primary/10" : "border-line bg-surface-raised"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isLightTheme}
+                  onChange={() => handleVariantSelect(true)}
+                  className="accent-primary"
+                />
+                <span className="h-3 w-3 shrink-0 rounded-full border border-line bg-white" />
+                Chiaro
+              </label>
             </div>
+
             <p className="text-[11px] text-muted">
-              Cambia l&apos;aspetto grafico dell&apos;intero sito. Le versioni &quot;Chiaro&quot; hanno le stesse forme
-              e gli stessi colori d&apos;accento, solo con sfondo bianco e testo scuro al posto di sfondo nero e
-              testo chiaro. Ricorda di premere &quot;Salva impostazioni&quot; qui sotto per rendere effettiva la
-              scelta.
+              Cambia l&apos;aspetto grafico dell&apos;intero sito. La variante &quot;Chiaro&quot; ha le stesse forme e
+              gli stessi colori d&apos;accento del tema scelto, solo con sfondo bianco e testo scuro al posto di
+              sfondo nero e testo chiaro. Ricorda di premere &quot;Salva impostazioni&quot; qui sotto per rendere
+              effettiva la scelta.
             </p>
           </div>
 
