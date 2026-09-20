@@ -119,6 +119,22 @@ body {
   border-radius: 999px;
 }
 
+/* Effetto hover sui pulsanti della barra di navigazione inferiore — sia
+   quella pubblica (components/BottomNav.tsx) sia quella Admin
+   (components/admin/AdminBottomNav.tsx), che condividono queste classi — su
+   richiesta esplicita, uguale in TUTTI i temi: per questo sta qui fuori da
+   ogni blocco `.theme-*`, e usa il token colore corrente (--color-fg,
+   bianco sui temi scuri, quasi nero sui temi "-light") invece di un colore
+   fisso, così il contrasto resta corretto qualunque sia il tema attivo.
+   Escluso il pulsante già attivo (.is-active): mantiene l'evidenziazione
+   specifica del tema invece di essere "spenta" dall'hover. */
+.bottom-nav-item {
+  transition: background-color 0.15s ease;
+}
+.bottom-nav-item:not(.is-active):hover {
+  background-color: color-mix(in srgb, var(--color-fg) 8%, transparent);
+}
+
 /* ────────────────────────────────────────────────────────────────────────
    Theme: "Corsia" (lane)
    A second visual identity for the whole site, toggled in
@@ -220,6 +236,14 @@ body {
 }
 .theme-lane .bottom-nav-item.is-active span {
   color: var(--color-ink);
+}
+
+/* Pagina Squadre: lo stesso spazio già presente tra logo e nome (gap-4,
+   1rem, nel markup) aggiunto anche a sinistra del logo, su richiesta
+   esplicita — stesso trattamento già fatto per il tema Poster Arena.
+   .team-row è la classe dedicata aggiunta in app/[slug]/squadre/page.tsx. */
+.theme-lane .team-row {
+  padding-left: 1rem;
 }
 
 /* ────────────────────────────────────────────────────────────────────────
