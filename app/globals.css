@@ -617,6 +617,24 @@ body {
   border-color: var(--color-gold) !important;
 }
 
+/* Tre punti dove il badge dorato non è voluto: il logo squadra in
+   Classifica (unica tabella del sito con un .cap-badge dentro, da qui la
+   selezione strutturale "table .cap-badge"), il logo squadra in Squadre e
+   la foto giocatore in Giocatori (qui serve una classe dedicata,
+   .cap-badge-plain, perché entrambe le pagine riusano lo stesso
+   .site-card/.cap-badge di altri punti del sito — es. mini-classifica in
+   home, rosa nel dettaglio squadra, marcatori — che devono mantenere la
+   cornice dorata). Azzerare interamente il bordo (non solo il colore)
+   perché la richiesta è "nessuna cornice", non "una cornice più discreta".
+*/
+.theme-broadcast table .cap-badge,
+.theme-broadcast table .cap-badge img,
+.theme-broadcast .cap-badge-plain,
+.theme-broadcast .cap-badge-plain img {
+  border-width: 0 !important;
+  border-color: transparent !important;
+}
+
 .theme-broadcast .rank-box span {
   display: inline-flex;
   align-items: center;
@@ -879,24 +897,10 @@ body {
   );
 }
 
-/* Podio in classifica: 1°/2° in rosso pieno, 3° in oro tenue —
-   caratteristica esclusiva di questo tema (reintrodotta dopo essere stata
-   rimossa per errore: resta un'eccezione deliberata, SOLO per Tabellone —
-   Magazine non la riprende più, vedi la sua sezione più sotto). */
-.theme-tabellone .site-card table tbody tr:nth-child(-n + 2) .rank-box span {
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 4px;
-  font-weight: 700;
-}
-.theme-tabellone .site-card table tbody tr:nth-child(3) .rank-box span {
-  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
-  /* Fixed dark neutral rather than --color-ink: ink flips to white in the
-     "-light" variant, which would leave this text unreadable on gold. */
-  color: #0a0a0b;
-  border-radius: 4px;
-  font-weight: 700;
-}
+/* Nessuna posizione evidenziata in classifica per questo tema: era stato
+   introdotto un podio (1°/2° in rosso, 3° in oro) e poi rimosso di nuovo su
+   richiesta esplicita — non reintrodurlo. Resta solo il dimensionamento
+   neutro di .rank-box qui sotto. */
 .theme-tabellone .rank-box span {
   display: inline-flex;
   align-items: center;
