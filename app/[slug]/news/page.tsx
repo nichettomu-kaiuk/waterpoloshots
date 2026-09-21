@@ -10,7 +10,7 @@ export default async function NewsArchivePage({ params }: { params: { slug: stri
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero championshipId={championship.id} />
+      <Hero championshipId={championship.id} slug={params.slug} />
       <div className="px-5 py-6 lg:px-8">
         <div className="mb-5 flex items-center gap-2">
           <Newspaper size={20} className="text-gold" />

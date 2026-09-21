@@ -13,7 +13,7 @@ export default async function SquadraPage({ params }: { params: { slug: string; 
   if (!team) {
     return (
       <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        <Hero championshipId={championship.id} />
+        <Hero championshipId={championship.id} slug={params.slug} />
         <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">Squadra non trovata.</div>
       </main>
     );
@@ -21,7 +21,7 @@ export default async function SquadraPage({ params }: { params: { slug: string; 
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero championshipId={championship.id} />
+      <Hero championshipId={championship.id} slug={params.slug} />
       <div className="px-5 py-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">

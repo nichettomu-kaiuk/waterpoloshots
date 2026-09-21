@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Facebook, Youtube } from "lucide-react";
+import { Facebook, Youtube, Lock } from "lucide-react";
 import { getSettings, getLiveMatches } from "@/lib/queries";
 import { optimizedBg } from "@/lib/optimizedImage";
 import type { Match, Settings } from "@/lib/supabase/types";
@@ -26,8 +26,16 @@ import LiveBadge from "./LiveBadge";
 // name/subtitle/matchday would be misleading before login — but still wants
 // the hero to occupy exactly the same height as every other admin page's
 // hero, not a shorter one.
+//
+// slug is optional and only passed by public /[slug]/... pages: when
+// present, it docks the Admin-access shortcut next to the Facebook/YouTube
+// icons here in the hero (it used to be a fixed button floating over every
+// page, moved here on explicit request). Admin-side call sites (the admin
+// dashboard, the login page, AdminChampionshipShell) simply don't pass it,
+// so the link never appears while already inside /admin.
 export default async function Hero({
   championshipId,
+  slug,
   settings: settingsProp,
   live: liveProp,
   showTitle = true,
@@ -36,6 +44,7 @@ export default async function Hero({
   blankIdentity = false,
 }: {
   championshipId: string;
+  slug?: string;
   settings?: Settings | null;
   live?: Match[];
   showTitle?: boolean;
@@ -132,6 +141,15 @@ export default async function Hero({
                 >
                   <Youtube size={15} />
                 </Link>
+                {slug && (
+                  <Link
+                    href={`/admin/${slug}`}
+                    aria-label="Pannello Admin"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
+                  >
+                    <Lock size={15} />
+                  </Link>
+                )}
               </div>
             </div>
           </div>

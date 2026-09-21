@@ -13,7 +13,7 @@ export default async function NewsPostPage({ params }: { params: { slug: string;
   if (!post) {
     return (
       <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        <Hero championshipId={championship.id} />
+        <Hero championshipId={championship.id} slug={params.slug} />
         <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">
           Post non trovato.
           <div className="mt-4">
@@ -26,7 +26,7 @@ export default async function NewsPostPage({ params }: { params: { slug: string;
 
   return (
     <main className="mx-auto w-full max-w-md pb-6 lg:max-w-3xl">
-      <Hero championshipId={championship.id} />
+      <Hero championshipId={championship.id} slug={params.slug} />
       {post.image_url && (
         <div className="detail-hero-image relative h-56 w-full lg:mt-6 lg:h-72 lg:rounded-3xl lg:overflow-hidden">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" priority />

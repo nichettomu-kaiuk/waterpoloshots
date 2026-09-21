@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getChampionshipOrNotFound } from "@/lib/championship";
 import { Users, UserRound, MapPinned, Radio, Shield, Target, Newspaper } from "lucide-react";
+import SignOutCard from "@/components/admin/SignOutCard";
 
 export default async function AdminChampionshipDashboard({ params }: { params: { slug: string } }) {
   const championship = await getChampionshipOrNotFound(params.slug);
@@ -57,6 +58,7 @@ export default async function AdminChampionshipDashboard({ params }: { params: {
             <p className="text-xs text-muted">{label}</p>
           </Link>
         ))}
+        <SignOutCard slug={championship.slug} />
       </div>
 
       <div className="mt-6 rounded-2xl border border-line bg-surface-raised p-4 text-sm text-muted">

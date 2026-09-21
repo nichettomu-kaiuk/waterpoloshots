@@ -28,7 +28,7 @@ export default async function HomePage({ params }: { params: { slug: string } })
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero championshipId={id} settings={settings} live={live} />
+      <Hero championshipId={id} slug={params.slug} settings={settings} live={live} />
 
       {/* Live band: the matchday headline from the mockups. Renders only
           while at least one match is live. */}

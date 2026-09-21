@@ -2,48 +2,33 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Info, Lock, X, Mail } from "lucide-react";
+import { X, Mail } from "lucide-react";
 import type { Settings } from "@/lib/supabase/types";
 
 const DEFAULT_INFO_TEXT =
   "(c) 2026 Nicola De Santis - Waterpolo Shots. Tutti i diritti sono riservati.";
 
-// Two small fixed corner icons shared across the whole app: an "i" info
-// popup (always visible) and the Admin shortcut (hidden while already
-// inside /admin, which has its own nav). Kept as one component so their
-// spacing is managed together instead of two independently-positioned
-// fixed elements guessing at each other's width.
-export default function TopRightControls({ settings, slug }: { settings: Settings | null; slug: string }) {
-  const pathname = usePathname();
+// Testo informativo mostrato in fondo a ogni pagina pubblica (reso dentro il
+// flex flex-col min-h-screen di app/[slug]/layout.tsx, come ultimo elemento
+// con mt-auto: resta ancorato in fondo anche sulle pagine corte, senza
+// bisogno di scroll). Al posto del vecchio pulsante fisso con l'icona "i" in
+// alto a destra (rimosso su richiesta esplicita), cliccando questo testo si
+// apre la stessa finestra Credits di prima. Il pulsante di accesso
+// all'area Admin che viveva accanto al vecchio pulsante "i" è stato invece
+// spostato dentro l'header/hero (vedi components/Hero.tsx).
+export default function TopRightControls({ settings }: { settings: Settings | null }) {
   const [infoOpen, setInfoOpen] = useState(false);
-  const isAdminSection = pathname.startsWith("/admin");
-
   const infoText = settings?.info_text?.trim() || DEFAULT_INFO_TEXT;
 
   return (
     <>
-      <div className="fixed right-3 top-3 z-40 flex items-center gap-2">
-        <button
-          onClick={() => setInfoOpen(true)}
-          aria-label="Credits"
-          className="corner-icon flex h-8 w-8 items-center justify-center rounded-full border border-gold/50 bg-ink/70 text-gold backdrop-blur transition hover:border-gold hover:bg-gold/10"
-        >
-          <Info size={15} strokeWidth={2.5} />
-        </button>
-
-        {!isAdminSection && (
-          <Link
-            href={`/admin/${slug}`}
-            aria-label="Pannello Admin"
-            className="corner-icon flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
-          >
-            <Lock size={15} />
-          </Link>
-        )}
-      </div>
+      <button
+        onClick={() => setInfoOpen(true)}
+        className="mt-auto w-full px-5 pb-3 pt-6 text-center text-[11px] leading-relaxed text-muted transition hover:text-gold hover:underline"
+      >
+        {infoText}
+      </button>
 
       {infoOpen &&
         typeof document !== "undefined" &&

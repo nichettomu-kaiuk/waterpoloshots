@@ -16,7 +16,7 @@ export default async function GiocatorePage({ params }: { params: { slug: string
   if (!player) {
     return (
       <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-        <Hero championshipId={championship.id} />
+        <Hero championshipId={championship.id} slug={params.slug} />
         <div className="px-5 py-10 text-center text-sm text-muted lg:px-8">Giocatore non trovato.</div>
       </main>
     );
@@ -38,7 +38,7 @@ export default async function GiocatorePage({ params }: { params: { slug: string
 
   return (
     <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      <Hero championshipId={championship.id} />
+      <Hero championshipId={championship.id} slug={params.slug} />
       <div className="px-5 py-6 lg:px-8">
         <p className="mb-3 text-xs text-muted">
           <Link href={`/${params.slug}/giocatori`} className="hover:text-primary">Giocatori</Link>

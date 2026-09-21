@@ -71,8 +71,10 @@ export default async function ChampionshipLayout({
       className={`${display.variable} ${body.variable} ${mono.variable} ${magazine.variable} ${themeClass}`}
     >
       <body className="font-body min-h-screen antialiased" style={brandVars}>
-        <div className="flex min-h-screen flex-col pb-24">{children}</div>
-        <TopRightControls settings={settings} slug={params.slug} />
+        <div className="flex min-h-screen flex-col pb-24">
+          {children}
+          <TopRightControls settings={settings} />
+        </div>
         <BottomNav />
         <CookieConsent />
       </body>
