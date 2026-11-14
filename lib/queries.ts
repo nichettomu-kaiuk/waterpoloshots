@@ -9,7 +9,7 @@ import type { Championship, Match, NewsPost, Player, Settings, StandingRow, Team
 // `championshipId` — this is what lets the same codebase serve many
 // independent championships side by side.
 
-export async function getChampionships(): Promise<Championship[]> {
+export async function getChampionship(): Promise<Championship[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase.from("championships").select("*").order("created_at", { ascending: true });
