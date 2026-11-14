@@ -1,46 +1,38 @@
-import { getChampionships, getSettings, getLiveMatches } from "@/lib/queries";
-import { getThemeVars } from "@/lib/theme";
-import Hero from "@/components/Hero";
-import AdminChampionshipsList from "@/components/admin/AdminChampionshipsList";
+import { createClient } from "@/lib/supabase/server";
+import { Users, UserRound, MapPinned, Radio } from "lucide-react";
 
-// Server Component wrapper (same reasoning as app/admin/login/page.tsx): the
-// "Campionati" list doesn't belong to one specific championship, so — like
-// the login page — it shows the first one's (oldest) branding as its Hero,
-// with title/subtitle/active round blanked (only Settings shows those,
-// since that's the one page actively editing them). blankIdentity (not
-// showTitle/showSubtitle/showActiveRound = false) keeps those elements in
-// the layout with invisible text, so the hero still takes up exactly the
-// same height as every other admin page's hero instead of coming out
-// shorter.
-//
-// The container is now "max-w-md lg:max-w-5xl xl:max-w-6xl", matching
-// AdminChampionshipShell and the login page: this page used to be its own
-// narrower "max-w-3xl" with no Hero at all, which is what made the admin
-// header look inconsistent depending on which admin page you were on.
-export default async function AdminPage() {
-  const championships = await getChampionships();
-  const featured = championships[0] ?? null;
-  const [featuredSettings, featuredLive] = featured
-    ? await Promise.all([getSettings(featured.id), getLiveMatches(featured.id)])
-    : [null, []];
+export default async function AdminDashboard() {
+  const supabase = createClient();
 
-  const { brandVars, themeClass } = getThemeVars(featuredSettings);
+  const [teams, players, venues, liveMatches] = await Promise.all([
+    supabase.from("teams").select("*", { count: "exact", head: true }),
+    supabase.from("players").select("*", { count: "exact", head: true }),
+    supabase.from("venues").select("*", { count: "exact", head: true }),
+    supabase.from("matches").select("*", { count: "exact", head: true }).eq("status", "live"),
+  ]);
+
+  const stats = [
+    { label: "Squadre", value: teams.count ?? 0, icon: Users },
+    { label: "Giocatori", value: players.count ?? 0, icon: UserRound },
+    { label: "Campi", value: venues.count ?? 0, icon: MapPinned },
+    { label: "Match live", value: liveMatches.count ?? 0, icon: Radio },
+  ];
 
   return (
-    <div className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
-      {featured && (
-        <div className={themeClass} style={brandVars}>
-          <Hero
-            championshipId={featured.id}
-            settings={featuredSettings}
-            live={featuredLive}
-            blankIdentity
-          />
-        </div>
-      )}
+    <div>
+      <h2 className="mb-4 font-display text-lg font-bold">Panoramica</h2>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {stats.map(({ label, value, icon: Icon }) => (
+          <div key={label} className="rounded-2xl border border-line bg-surface p-4">
+            <Icon size={18} className="mb-2 text-primary" />
+            <p className="font-display text-2xl font-bold">{value}</p>
+            <p className="text-xs text-muted">{label}</p>
+          </div>
+        ))}
+      </div>
 
-      <div className="px-5 pt-5 lg:px-8">
-        <AdminChampionshipsList />
+      <div className="mt-6 rounded-2xl border border-line bg-surface-raised p-4 text-sm text-muted">
+        Usa il menu qui sopra per gestire partite, squadre, giocatori, campi e il branding del torneo.
       </div>
     </div>
   );

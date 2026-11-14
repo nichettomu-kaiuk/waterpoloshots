@@ -1,77 +1,40 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Facebook, Youtube, Lock } from "lucide-react";
+import { Facebook, Youtube } from "lucide-react";
 import { getSettings, getLiveMatches } from "@/lib/queries";
-import { optimizedBg } from "@/lib/optimizedImage";
 import type { Match, Settings } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 
 // Shared across every public page (fetches its own data unless the caller
 // already has it — the home page passes settings/live down to avoid
 // double-querying, since it needs the same data for its own sections).
-// championshipId is required so Hero knows which championship to fetch for
-// when the caller doesn't already have settings/live in hand.
-// showTitle/showSubtitle/showActiveRound default to true (every [slug] page
-// wants the full hero); the selector page (app/(site)/page.tsx) and
-// app/admin/page.tsx turn them off (element not rendered at all, hero comes
-// out shorter) when they preview a championship's branding without
-// repeating its name/text, since those pages already have their own heading
-// below.
-//
-// blankIdentity is different: it keeps showTitle/showSubtitle/showActiveRound
-// on (so the same elements are rendered, at the same size, taking up the
-// same vertical space) but makes their text invisible. Used by
-// app/admin/login/page.tsx, which isn't scoped to one specific championship
-// — the "featured" one shown there is just a branding stand-in, so its
-// name/subtitle/matchday would be misleading before login — but still wants
-// the hero to occupy exactly the same height as every other admin page's
-// hero, not a shorter one.
-//
-// slug is optional and only passed by public /[slug]/... pages: when
-// present, it docks the Admin-access shortcut next to the Facebook/YouTube
-// icons here in the hero (it used to be a fixed button floating over every
-// page, moved here on explicit request). Admin-side call sites (the admin
-// dashboard, the login page, AdminChampionshipShell) simply don't pass it,
-// so the link never appears while already inside /admin.
 export default async function Hero({
-  championshipId,
-  slug,
   settings: settingsProp,
   live: liveProp,
-  showTitle = true,
-  showSubtitle = true,
-  showActiveRound = true,
-  blankIdentity = false,
 }: {
-  championshipId: string;
-  slug?: string;
   settings?: Settings | null;
   live?: Match[];
-  showTitle?: boolean;
-  showSubtitle?: boolean;
-  showActiveRound?: boolean;
-  blankIdentity?: boolean;
-}) {
-  const settings = settingsProp !== undefined ? settingsProp : await getSettings(championshipId);
-  const live = liveProp !== undefined ? liveProp : await getLiveMatches(championshipId);
-  // "invisible" (not "hidden"/no render): keeps the element's box in the
-  // layout so the hero's height doesn't change, just its text disappears.
-  const identityClass = blankIdentity ? "invisible" : "";
+} = {}) {
+  const settings = settingsProp !== undefined ? settingsProp : await getSettings();
+  const live = liveProp !== undefined ? liveProp : await getLiveMatches();
 
   return (
-    <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">
+    <section className="app-hero relative overflow-hidden water-texture px-5 pb-12 pt-10">
       {settings?.home_bg_url && (
         <>
-          {/* Background image — dimensioni e maschera gestite dalla classe
-              .hero-bg (globals.css): su smartphone "contain" invece di
-              "cover", così la foto non viene mai ritagliata (solo ridotta
-              quanto basta per starci intera), ancorata in alto e centrata
-              in orizzontale; da tablet in su torna "cover". Il vignette
-              sfumato sui bordi è lo stesso su ogni dimensione. */}
+          {/* Background image with soft faded edges — a radial mask fades
+              the photo to transparent toward every side so it blends into
+              the page instead of ending in a hard rectangle. */}
           <div
-            className="absolute inset-0 hero-bg"
+            className="absolute inset-0"
             style={{
-              backgroundImage: `url(${optimizedBg(settings.home_bg_url)})`,
+              backgroundImage: `url(${settings.home_bg_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
+              maskImage:
+                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
             }}
           />
           <div className="absolute inset-0 bg-ink/45" />
@@ -82,11 +45,9 @@ export default async function Hero({
         </>
       )}
       <div className="relative">
-        {showActiveRound && (
-          <p className={`hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold ${identityClass}`}>
-            {settings?.active_round ?? "Girone di andata"}
-          </p>
-        )}
+        <p className="hero-eyebrow text-xs uppercase tracking-[0.2em] text-gold">
+          {settings?.active_round ?? "Girone di andata"}
+        </p>
 
         {live.length > 0 && (
           <div className="mt-2">
@@ -98,27 +59,19 @@ export default async function Hero({
           {settings?.logo_url && (
             <Image
               src={settings.logo_url}
-              alt={settings.tournament_title ?? "Logo campionato"}
+              alt={settings.tournament_title ?? "Logo torneo"}
               width={60}
               height={60}
               className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
             />
           )}
           <div className="min-w-0 flex-1">
-            {/* Ombra leggera dietro al testo: aiuta la leggibilità del
-                titolo quando l'hero ha uno sfondo mosso (foto caricata,
-                wash diagonali di alcuni temi, texture) — quasi invisibile
-                su sfondi piatti, dove non serve. */}
-            {showTitle && (
-              <h1
-                className={`font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)] ${identityClass}`}
-              >
-                {settings?.tournament_title ?? "Serie B - Girone 3"}
-              </h1>
-            )}
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
+              {settings?.tournament_title ?? "Serie B - Girone 3"}
+            </h1>
             <div className="mt-1 flex items-center justify-between gap-3">
-              {showSubtitle && settings?.tournament_subtitle ? (
-                <p className={`text-sm text-muted ${identityClass}`}>{settings.tournament_subtitle}</p>
+              {settings?.tournament_subtitle ? (
+                <p className="text-sm text-muted">{settings.tournament_subtitle}</p>
               ) : (
                 <span />
               )}
@@ -141,15 +94,6 @@ export default async function Hero({
                 >
                   <Youtube size={15} />
                 </Link>
-                {slug && (
-                  <Link
-                    href={`/admin/${slug}`}
-                    aria-label="Pannello Admin"
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/50 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
-                  >
-                    <Lock size={15} />
-                  </Link>
-                )}
               </div>
             </div>
           </div>
