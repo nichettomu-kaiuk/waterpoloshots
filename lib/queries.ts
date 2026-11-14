@@ -200,6 +200,19 @@ export async function getChampionshipBySlug(slug: string): Promise<Championship 
   }
 }
 
+export async function getChampionships(): Promise<Championship[]> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("championships")
+      .select("*")
+      .order("name", { ascending: true });
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // Computes the team standings from completed matches. Kept in the app layer
 // (rather than a DB view) so it stays easy to read and adjust point rules.
 export async function getStandings(roundType?: string): Promise<StandingRow[]> {
