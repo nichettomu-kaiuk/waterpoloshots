@@ -108,7 +108,7 @@ export default async function HomePage() {
               </h2>
               <div className="space-y-3">
                 {live.map((m) => (
-                  <MatchCard key={m.id} match={m} stacked />
+                  <MatchCard key={m.id} match={m} />
                 ))}
               </div>
             </section>
@@ -124,7 +124,7 @@ export default async function HomePage() {
               </div>
               <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {upcoming.map((m) => (
-                  <MatchCard key={m.id} match={m} bare stacked />
+                  <MatchCard key={m.id} match={m} bare />
                 ))}
               </div>
             </section>
@@ -144,7 +144,7 @@ export default async function HomePage() {
             ) : (
               <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {recent.map((m) => (
-                  <MatchCard key={m.id} match={m} bare stacked />
+                  <MatchCard key={m.id} match={m} bare />
                 ))}
               </div>
             )}
