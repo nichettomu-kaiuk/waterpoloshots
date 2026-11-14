@@ -186,20 +186,6 @@ export async function getTopScorers(limit = 10): Promise<Player[]> {
   }
 }
 
-export async function getChampionshipBySlug(slug: string): Promise<Championship | null> {
-  try {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("championships")
-      .select("*")
-      .eq("slug", slug)
-      .maybeSingle();
-    return data ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export async function getChampionships(): Promise<Championship[]> {
   try {
     const supabase = createClient();
