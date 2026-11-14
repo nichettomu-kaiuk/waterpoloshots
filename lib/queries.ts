@@ -1,13 +1,42 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
+import type { Championship, Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
 
 // Every function degrades gracefully to `null`/`[]` if Supabase env vars are
 // missing, so the UI can be previewed before the project is connected.
+//
+// Every query below (except the two championship look-ups themselves, and
+// the single-row look-ups by their own unique id) is scoped to one
+// `championshipId` — this is what lets the same codebase serve many
+// independent championships side by side.
 
-export async function getSettings(): Promise<Settings | null> {
+export async function getChampionships(): Promise<Championship[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("settings").select("*").limit(1).maybeSingle();
+    const { data } = await supabase.from("championships").select("*").order("created_at", { ascending: true });
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getChampionshipBySlug(slug: string): Promise<Championship | null> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase.from("championships").select("*").eq("slug", slug).maybeSingle();
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getSettings(championshipId: string): Promise<Settings | null> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("settings")
+      .select("*")
+      .eq("championship_id", championshipId)
+      .maybeSingle();
     return data ?? null;
   } catch {
     return null;
@@ -15,18 +44,19 @@ export async function getSettings(): Promise<Settings | null> {
 }
 
 const MATCH_SELECT = `
-  id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata, stream_url,
+  id, championship_id, home_team_id, away_team_id, venue_id, date_time, status, home_score, away_score, round_type, giornata, stream_url,
   home_team:teams!matches_home_team_id_fkey ( id, name, logo_url, created_at ),
   away_team:teams!matches_away_team_id_fkey ( id, name, logo_url, created_at ),
   venue:venues ( id, name, location_tag, address )
 `;
 
-export async function getLiveMatches(): Promise<Match[]> {
+export async function getLiveMatches(championshipId: string): Promise<Match[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("championship_id", championshipId)
       .eq("status", "live")
       .order("date_time", { ascending: true });
     return (data as unknown as Match[]) ?? [];
@@ -35,12 +65,13 @@ export async function getLiveMatches(): Promise<Match[]> {
   }
 }
 
-export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
+export async function getUpcomingMatches(championshipId: string, limit = 5): Promise<Match[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("championship_id", championshipId)
       .eq("status", "scheduled")
       .order("date_time", { ascending: true })
       .limit(limit);
@@ -50,12 +81,13 @@ export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
   }
 }
 
-export async function getRecentResults(limit = 5): Promise<Match[]> {
+export async function getRecentResults(championshipId: string, limit = 5): Promise<Match[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("championship_id", championshipId)
       .eq("status", "completed")
       .order("date_time", { ascending: false })
       .limit(limit);
@@ -65,12 +97,13 @@ export async function getRecentResults(limit = 5): Promise<Match[]> {
   }
 }
 
-export async function getAllMatches(roundType?: string, search?: string): Promise<Match[]> {
+export async function getAllMatches(championshipId: string, roundType?: string, search?: string): Promise<Match[]> {
   try {
     const supabase = createClient();
     let query = supabase
       .from("matches")
       .select(MATCH_SELECT)
+      .eq("championship_id", championshipId)
       .order("giornata", { ascending: true })
       .order("date_time", { ascending: true });
     if (roundType) query = query.eq("round_type", roundType);
@@ -90,12 +123,13 @@ export async function getAllMatches(roundType?: string, search?: string): Promis
   }
 }
 
-export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
+export async function getNewsPosts(championshipId: string, limit = 6): Promise<NewsPost[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("news_posts")
       .select("*")
+      .eq("championship_id", championshipId)
       .order("created_at", { ascending: false })
       .limit(limit);
     return data ?? [];
@@ -104,6 +138,9 @@ export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
   }
 }
 
+// Fetched by its own unique id — no championshipId needed to look it up,
+// but callers should still only ever link to posts from their own
+// championship's list.
 export async function getNewsPost(id: string): Promise<NewsPost | null> {
   try {
     const supabase = createClient();
@@ -114,10 +151,14 @@ export async function getNewsPost(id: string): Promise<NewsPost | null> {
   }
 }
 
-export async function getTeams(): Promise<Team[]> {
+export async function getTeams(championshipId: string): Promise<Team[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("teams").select("*").order("name");
+    const { data } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("championship_id", championshipId)
+      .order("name");
     return data ?? [];
   } catch {
     return [];
@@ -149,22 +190,27 @@ export async function getPlayer(playerId: string): Promise<{ player: Player | nu
   }
 }
 
-export async function getVenues(): Promise<Venue[]> {
+export async function getVenues(championshipId: string): Promise<Venue[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase.from("venues").select("*").order("name");
+    const { data } = await supabase
+      .from("venues")
+      .select("*")
+      .eq("championship_id", championshipId)
+      .order("name");
     return data ?? [];
   } catch {
     return [];
   }
 }
 
-export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
+export async function getAllPlayers(championshipId: string): Promise<(Player & { team?: Team })[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("players")
-      .select("*, team:teams(*)")
+      .select("*, team:teams!inner(*)")
+      .eq("team.championship_id", championshipId)
       .order("last_name");
     return (data as unknown as (Player & { team?: Team })[]) ?? [];
   } catch {
@@ -172,12 +218,13 @@ export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
   }
 }
 
-export async function getTopScorers(limit = 10): Promise<Player[]> {
+export async function getTopScorers(championshipId: string, limit = 10): Promise<Player[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase
       .from("players")
-      .select("*, team:teams(*)")
+      .select("*, team:teams!inner(*)")
+      .eq("team.championship_id", championshipId)
       .order("goals_count", { ascending: false })
       .limit(limit);
     return (data as unknown as Player[]) ?? [];
@@ -188,11 +235,15 @@ export async function getTopScorers(limit = 10): Promise<Player[]> {
 
 // Computes the team standings from completed matches. Kept in the app layer
 // (rather than a DB view) so it stays easy to read and adjust point rules.
-export async function getStandings(roundType?: string): Promise<StandingRow[]> {
+export async function getStandings(championshipId: string, roundType?: string): Promise<StandingRow[]> {
   try {
     const supabase = createClient();
-    const teamsRes = await supabase.from("teams").select("*");
-    let matchQuery = supabase.from("matches").select("*").eq("status", "completed");
+    const teamsRes = await supabase.from("teams").select("*").eq("championship_id", championshipId);
+    let matchQuery = supabase
+      .from("matches")
+      .select("*")
+      .eq("championship_id", championshipId)
+      .eq("status", "completed");
     if (roundType) matchQuery = matchQuery.eq("round_type", roundType);
     const matchesRes = await matchQuery;
 
