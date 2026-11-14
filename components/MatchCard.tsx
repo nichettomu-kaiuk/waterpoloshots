@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import { MapPin, Video } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/supabase/types";
@@ -19,29 +18,50 @@ function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "short" });
 }
 
-function TeamLogo({ url, name }: { url: string | null | undefined; name: string | undefined }) {
+function TeamLogo({
+  url,
+  name,
+  size = 36,
+}: {
+  url: string | null | undefined;
+  name: string | undefined;
+  size?: number;
+}) {
+  const dim = { width: size, height: size };
   if (url) {
     return (
-      <span className="cap-badge relative inline-block h-9 w-9 shrink-0">
+      <span className="cap-badge relative inline-block shrink-0" style={dim}>
         <Image
           src={url}
           alt={name ?? "Squadra"}
-          width={36}
-          height={36}
-          className="h-9 w-9 rounded-full border border-line object-cover"
+          width={size}
+          height={size}
+          style={dim}
+          className="rounded-full border border-line object-cover"
         />
       </span>
     );
   }
   return (
-    <span className="cap-badge relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-xs font-display text-muted">
+    <span
+      className="cap-badge relative inline-flex shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-xs font-display text-muted"
+      style={dim}
+    >
       {(name ?? "??").slice(0, 2).toUpperCase()}
     </span>
   );
 }
 
-export default function MatchCard({ match, bare = false }: { match: Match; bare?: boolean }) {
-  const { slug } = useParams<{ slug: string }>();
+export default function MatchCard({
+  match,
+  bare = false,
+  stacked = false,
+}: {
+  match: Match;
+  bare?: boolean;
+  /** Logo su un rigo, nome squadra sotto; "vs"/risultato al centro */
+  stacked?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   const statusLabel =
@@ -87,35 +107,68 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
               </span>
             )}
           </div>
-          <ShareButton title={`${home} vs ${away}`} text={shareText} path={`/${slug}/calendario`} />
+          <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center gap-2">
-            <TeamLogo url={match.home_team?.logo_url} name={match.home_team?.name} />
-            <span className="truncate text-sm font-medium">{match.home_team?.name ?? "TBD"}</span>
-          </div>
-
-          <div className="px-3 text-center">
-            {match.status === "scheduled" ? (
-              <span className="font-display text-lg text-muted">vs</span>
-            ) : (
-              <span
-                className={clsx(
-                  "match-score font-display tabular text-xl font-bold",
-                  match.status === "live" ? "text-primary" : "text-white"
-                )}
-              >
-                {match.home_score} - {match.away_score}
+        {stacked ? (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+            <div className="flex min-w-0 flex-col items-center gap-1.5">
+              <TeamLogo url={match.home_team?.logo_url} name={match.home_team?.name} size={44} />
+              <span className="w-full break-words text-center text-xs font-medium leading-tight">
+                {match.home_team?.name ?? "TBD"}
               </span>
-            )}
-          </div>
+            </div>
 
-          <div className="flex flex-1 items-center justify-end gap-2">
-            <span className="truncate text-right text-sm font-medium">{match.away_team?.name ?? "TBD"}</span>
-            <TeamLogo url={match.away_team?.logo_url} name={match.away_team?.name} />
+            <div className="px-3 text-center">
+              {match.status === "scheduled" ? (
+                <span className="font-display text-lg text-muted">vs</span>
+              ) : (
+                <span
+                  className={clsx(
+                    "match-score font-display tabular text-xl font-bold",
+                    match.status === "live" ? "text-primary" : "text-white"
+                  )}
+                >
+                  {match.home_score} - {match.away_score}
+                </span>
+              )}
+            </div>
+
+            <div className="flex min-w-0 flex-col items-center gap-1.5">
+              <TeamLogo url={match.away_team?.logo_url} name={match.away_team?.name} size={44} />
+              <span className="w-full break-words text-center text-xs font-medium leading-tight">
+                {match.away_team?.name ?? "TBD"}
+              </span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div className="flex flex-1 items-center gap-2">
+              <TeamLogo url={match.home_team?.logo_url} name={match.home_team?.name} />
+              <span className="truncate text-sm font-medium">{match.home_team?.name ?? "TBD"}</span>
+            </div>
+
+            <div className="px-3 text-center">
+              {match.status === "scheduled" ? (
+                <span className="font-display text-lg text-muted">vs</span>
+              ) : (
+                <span
+                  className={clsx(
+                    "match-score font-display tabular text-xl font-bold",
+                    match.status === "live" ? "text-primary" : "text-white"
+                  )}
+                >
+                  {match.home_score} - {match.away_score}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-1 items-center justify-end gap-2">
+              <span className="truncate text-right text-sm font-medium">{match.away_team?.name ?? "TBD"}</span>
+              <TeamLogo url={match.away_team?.logo_url} name={match.away_team?.name} />
+            </div>
+          </div>
+        )}
 
         {match.venue && (
           <div className="mt-3 flex items-center gap-1 text-[11px] text-muted">
