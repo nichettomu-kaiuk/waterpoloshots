@@ -105,7 +105,7 @@ export default function CalendarClient({
                     </p>
                     <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                       {giornataMatches.map((m) => (
-                        <MatchCard key={m.id} match={m} bare stacked />
+                        <MatchCard key={m.id} match={m} bare />
                       ))}
                     </div>
                   </div>
