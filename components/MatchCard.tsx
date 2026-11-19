@@ -55,7 +55,7 @@ function TeamLogo({
 export default function MatchCard({
   match,
   bare = false,
-  stacked = false,
+  stacked = true,
 }: {
   match: Match;
   bare?: boolean;
