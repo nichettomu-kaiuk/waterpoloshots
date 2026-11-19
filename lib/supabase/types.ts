@@ -2,25 +2,15 @@ export type MatchStatus = "scheduled" | "live" | "completed";
 export type RoundType = "andata" | "ritorno";
 export type PlayerRole = "portiere" | "difensore" | "centroboa" | "attaccante";
 
-// A championship ("campionato") is one full instance of the tournament
-// template — its own teams, calendar, standings, news and branding. The
-// public site's first page (app/(site)/page.tsx) lists these so a visitor
-// can pick one; Admin → Campionati can create/delete them.
-export interface Championship {
-  id: string;
-  slug: string;
-  name: string;
-  subtitle: string | null;
-  created_at: string;
-}
-
 export interface Team {
   id: string;
-  championship_id: string;
   name: string;
   logo_url: string | null;
   venue_id: string | null;
   coach_name: string | null;
+  logo_large_scale: number;
+  logo_large_x: number;
+  logo_large_y: number;
   created_at: string;
   venue?: Venue;
 }
@@ -38,7 +28,6 @@ export interface Player {
 
 export interface Venue {
   id: string;
-  championship_id: string;
   name: string;
   location_tag: string | null;
   address: string | null;
@@ -46,7 +35,6 @@ export interface Venue {
 
 export interface Match {
   id: string;
-  championship_id: string;
   home_team_id: string;
   away_team_id: string;
   venue_id: string | null;
@@ -72,32 +60,16 @@ export interface MatchGoal {
   created_at: string;
 }
 
-// "magazine" / "magazine-light": the 8th theme — editorial/sports-magazine
-// look (Space Grotesk, flat 2px-radius cards, solid red hero band). Full
-// implementation lives in globals.css (`.theme-magazine`), the admin picker
-// (app/admin/settings/page.tsx) and the settings_theme_check DB constraint.
-// See PROJECT_STATUS.md, "Sistema temi", for how it was integrated.
 export type AppTheme =
   | "classic"
   | "lane"
   | "regulation"
-  | "impact"
-  | "broadcast"
-  | "poster"
-  | "magazine"
-  | "tabellone"
   | "classic-light"
   | "lane-light"
-  | "regulation-light"
-  | "impact-light"
-  | "broadcast-light"
-  | "poster-light"
-  | "magazine-light"
-  | "tabellone-light";
+  | "regulation-light";
 
 export interface Settings {
   id: string;
-  championship_id: string;
   tournament_title: string;
   tournament_subtitle: string | null;
   logo_url: string | null;
@@ -114,7 +86,6 @@ export interface Settings {
 
 export interface NewsPost {
   id: string;
-  championship_id: string;
   title: string;
   content: string;
   image_url: string | null;

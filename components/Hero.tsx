@@ -8,34 +8,33 @@ import LiveBadge from "./LiveBadge";
 // Shared across every public page (fetches its own data unless the caller
 // already has it — the home page passes settings/live down to avoid
 // double-querying, since it needs the same data for its own sections).
-// championshipId is required so Hero knows which championship to fetch for
-// when the caller doesn't already have settings/live in hand.
 export default async function Hero({
-  championshipId,
   settings: settingsProp,
   live: liveProp,
 }: {
-  championshipId: string;
   settings?: Settings | null;
   live?: Match[];
-}) {
-  const settings = settingsProp !== undefined ? settingsProp : await getSettings(championshipId);
-  const live = liveProp !== undefined ? liveProp : await getLiveMatches(championshipId);
+} = {}) {
+  const settings = settingsProp !== undefined ? settingsProp : await getSettings();
+  const live = liveProp !== undefined ? liveProp : await getLiveMatches();
 
   return (
-    <section className="app-hero relative overflow-hidden water-texture px-5 pb-10 pt-8">
+    <section className="app-hero relative overflow-hidden water-texture px-5 pb-12 pt-10">
       {settings?.home_bg_url && (
         <>
-          {/* Background image — dimensioni e maschera gestite dalla classe
-              .hero-bg (globals.css): su smartphone "contain" invece di
-              "cover", così la foto non viene mai ritagliata (solo ridotta
-              quanto basta per starci intera), ancorata in alto e centrata
-              in orizzontale; da tablet in su torna "cover". Il vignette
-              sfumato sui bordi è lo stesso su ogni dimensione. */}
+          {/* Background image with soft faded edges — a radial mask fades
+              the photo to transparent toward every side so it blends into
+              the page instead of ending in a hard rectangle. */}
           <div
-            className="absolute inset-0 hero-bg"
+            className="absolute inset-0"
             style={{
               backgroundImage: `url(${settings.home_bg_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
+              maskImage:
+                "radial-gradient(ellipse 75% 70% at 50% 32%, black 20%, transparent 100%)",
             }}
           />
           <div className="absolute inset-0 bg-ink/45" />
@@ -67,11 +66,7 @@ export default async function Hero({
             />
           )}
           <div className="min-w-0 flex-1">
-            {/* Ombra leggera dietro al testo: aiuta la leggibilità del
-                titolo quando l'hero ha uno sfondo mosso (foto caricata,
-                wash diagonali di alcuni temi, texture) — quasi invisibile
-                su sfondi piatti, dove non serve. */}
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-normal [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
               {settings?.tournament_title ?? "Serie B - Girone 3"}
             </h1>
             <div className="mt-1 flex items-center justify-between gap-3">

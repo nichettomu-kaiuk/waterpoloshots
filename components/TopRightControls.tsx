@@ -16,7 +16,7 @@ const DEFAULT_INFO_TEXT =
 // inside /admin, which has its own nav). Kept as one component so their
 // spacing is managed together instead of two independently-positioned
 // fixed elements guessing at each other's width.
-export default function TopRightControls({ settings, slug }: { settings: Settings | null; slug: string }) {
+export default function TopRightControls({ settings }: { settings: Settings | null }) {
   const pathname = usePathname();
   const [infoOpen, setInfoOpen] = useState(false);
   const isAdminSection = pathname.startsWith("/admin");
@@ -36,7 +36,7 @@ export default function TopRightControls({ settings, slug }: { settings: Setting
 
         {!isAdminSection && (
           <Link
-            href={`/admin/${slug}`}
+            href="/admin"
             aria-label="Pannello Admin"
             className="corner-icon flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/70 text-muted backdrop-blur transition hover:border-gold hover:text-gold"
           >
@@ -49,11 +49,11 @@ export default function TopRightControls({ settings, slug }: { settings: Setting
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70"
             onClick={() => setInfoOpen(false)}
           >
             <div
-              className="w-full max-w-md animate-rise rounded-3xl border border-line bg-surface p-6"
+              className="w-full max-w-md animate-rise rounded-t-3xl border-t border-line bg-surface p-6 pb-8"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">

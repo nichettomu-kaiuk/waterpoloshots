@@ -18,23 +18,16 @@ function formatDate(iso: string) {
 // News archive grid where cards sit side by side.
 export default function NewsCard({
   post,
-  slug,
   variant = "vertical",
-  className,
 }: {
   post: NewsPost;
-  slug: string;
   variant?: "vertical" | "horizontal";
-  // Classi extra sul contenitore esterno (es. per farla occupare più
-  // colonne in una griglia — vedi la Home, dove l'ultima news "orfana" in
-  // una riga dispari riceve `lg:col-span-2`).
-  className?: string;
 }) {
   if (variant === "horizontal") {
     return (
       <Link
-        href={`/${slug}/news/${post.id}`}
-        className={`flex w-full animate-rise items-center gap-3 rounded-2xl border border-line bg-surface p-3 transition active:scale-[0.99]${className ? ` ${className}` : ""}`}
+        href={`/news/${post.id}`}
+        className="flex w-full animate-rise items-center gap-3 rounded-2xl border border-line bg-surface p-3 transition active:scale-[0.99]"
       >
         {post.image_url ? (
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl">
@@ -56,7 +49,7 @@ export default function NewsCard({
   }
 
   return (
-    <article className={`news-card flex animate-rise items-center overflow-hidden rounded-2xl border border-line bg-surface${className ? ` ${className}` : ""}`}>
+    <article className="news-card flex animate-rise items-center overflow-hidden rounded-2xl border border-line bg-surface">
       {post.image_url ? (
         <div className="relative m-3 h-[90px] w-[90px] shrink-0 overflow-hidden rounded-xl">
           <Image src={post.image_url} alt={post.title} fill className="object-cover" />
@@ -71,7 +64,7 @@ export default function NewsCard({
         <h3 className="mb-1.5 font-display text-base font-bold leading-snug">{post.title}</h3>
         <p className="mb-3 line-clamp-3 text-sm text-muted">{excerpt(post.content)}</p>
         <Link
-          href={`/${slug}/news/${post.id}`}
+          href={`/news/${post.id}`}
           className="inline-flex items-center gap-1 text-xs font-semibold text-primary"
         >
           Leggi tutto <ArrowRight size={13} />

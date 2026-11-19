@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import { MapPin, Video } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/supabase/types";
@@ -41,7 +40,6 @@ function TeamLogo({ url, name }: { url: string | null | undefined; name: string 
 }
 
 export default function MatchCard({ match, bare = false }: { match: Match; bare?: boolean }) {
-  const { slug } = useParams<{ slug: string }>();
   const [open, setOpen] = useState(false);
 
   const statusLabel =
@@ -87,7 +85,7 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
               </span>
             )}
           </div>
-          <ShareButton title={`${home} vs ${away}`} text={shareText} path={`/${slug}/calendario`} />
+          <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
         </div>
 
         <div className="flex items-center justify-between">
