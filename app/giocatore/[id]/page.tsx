@@ -62,22 +62,11 @@ export default async function GiocatorePage({ params }: { params: { id: string }
             </div>
           </div>
 
-          {/* Body: large team-logo watermark + player photo, info panel —
-              always side-by-side, even on mobile. */}
+          {/* Body: player photo + info panel — always side-by-side, even on
+              mobile. (Il watermark col logo squadra in grande è stato
+              rimosso su richiesta esplicita: lo sfondo resta pieno `bg-ink`.) */}
           <div className="flex flex-row">
             <div className="relative flex min-h-[280px] flex-1 items-end justify-center overflow-hidden bg-ink sm:min-h-[380px] lg:min-h-[460px]">
-              {team?.logo_url && (
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `url(${team.logo_url})`,
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: `${team.logo_large_scale ?? 100}%`,
-                    backgroundPosition: `${team.logo_large_x ?? 50}% ${team.logo_large_y ?? 50}%`,
-                    opacity: 0.15,
-                  }}
-                />
-              )}
               {player.photo_url ? (
                 <Image
                   src={player.photo_url}

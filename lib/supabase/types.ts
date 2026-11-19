@@ -8,9 +8,6 @@ export interface Team {
   logo_url: string | null;
   venue_id: string | null;
   coach_name: string | null;
-  logo_large_scale: number;
-  logo_large_x: number;
-  logo_large_y: number;
   created_at: string;
   venue?: Venue;
 }
@@ -64,9 +61,15 @@ export type AppTheme =
   | "classic"
   | "lane"
   | "regulation"
+  | "impact"
+  | "broadcast"
+  | "poster"
   | "classic-light"
   | "lane-light"
-  | "regulation-light";
+  | "regulation-light"
+  | "impact-light"
+  | "broadcast-light"
+  | "poster-light";
 
 export interface Settings {
   id: string;
