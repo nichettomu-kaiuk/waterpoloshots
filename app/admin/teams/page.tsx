@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Trash2, Pencil, Upload, X, Move } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { uploadToBranding } from "@/lib/upload";
+import AdminError from "@/components/AdminError";
 import type { Team, Venue } from "@/lib/supabase/types";
 
 export default function AdminTeamsPage() {
@@ -20,12 +22,16 @@ export default function AdminTeamsPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingLogoUrl, setEditingLogoUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const [{ data: t }, { data: v }] = await Promise.all([
+    const [{ data: t, error: teamsError }, { data: v, error: venuesError }] = await Promise.all([
       supabase.from("teams").select("*, venue:venues(*)").order("name"),
       supabase.from("venues").select("*").order("name"),
     ]);
+    if (teamsError || venuesError) {
+      setError(`Impossibile caricare i dati: ${(teamsError ?? venuesError)!.message}`);
+    }
     setTeams((t as any) ?? []);
     setVenues(v ?? []);
   }
@@ -63,18 +69,22 @@ export default function AdminTeamsPage() {
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
+    setError(null);
 
     let logo_url: string | null | undefined = undefined;
     if (logoFile) {
-      const path = `teams/${Date.now()}-${logoFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, logoFile);
-      if (!uploadError) {
-        logo_url = supabase.storage.from("branding").getPublicUrl(path).data.publicUrl;
+      const upload = await uploadToBranding(supabase, "teams", logoFile);
+      if (upload.error) {
+        setError(`Caricamento logo non riuscito: ${upload.error}. La squadra non è stata salvata.`);
+        setSaving(false);
+        return;
       }
+      logo_url = upload.url;
     }
 
+    let writeError: { message: string } | null = null;
     if (editingId) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("teams")
         .update({
           name: name.trim(),
@@ -86,23 +96,45 @@ export default function AdminTeamsPage() {
           ...(logo_url !== undefined ? { logo_url } : {}),
         })
         .eq("id", editingId);
+      writeError = updateError;
     } else {
-      await supabase.from("teams").insert({
+      const { error: insertError } = await supabase.from("teams").insert({
         name: name.trim(),
         coach_name: coachName.trim() || null,
         venue_id: venueId || null,
         logo_url: logo_url ?? null,
       });
+      writeError = insertError;
     }
 
-    cancelEdit();
     setSaving(false);
+    if (writeError) {
+      setError(`Salvataggio non riuscito: ${writeError.message}`);
+      return;
+    }
+    cancelEdit();
     load();
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Eliminare questa squadra e tutti i giocatori collegati?")) return;
-    await supabase.from("teams").delete().eq("id", id);
+    setError(null);
+    // Deleting a team cascades to its players AND to every match it plays
+    // (with their goals), which changes the standings and everyone's
+    // scorer tally — so say exactly how much is about to disappear.
+    const { count: matchCount } = await supabase
+      .from("matches")
+      .select("id", { count: "exact", head: true })
+      .or(`home_team_id.eq.${id},away_team_id.eq.${id}`);
+    const matchesNote =
+      matchCount && matchCount > 0
+        ? ` ${matchCount === 1 ? "Verrà eliminata anche 1 partita" : `Verranno eliminate anche ${matchCount} partite`} della squadra, con i relativi gol e risultati (la classifica cambierà).`
+        : "";
+    if (!confirm(`Eliminare questa squadra e tutti i giocatori collegati?${matchesNote} L'operazione non è reversibile.`)) return;
+    const { error: deleteError } = await supabase.from("teams").delete().eq("id", id);
+    if (deleteError) {
+      setError(`Eliminazione non riuscita: ${deleteError.message}`);
+      return;
+    }
     if (editingId === id) cancelEdit();
     load();
   }
@@ -110,6 +142,8 @@ export default function AdminTeamsPage() {
   return (
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Squadre</h2>
+
+      <AdminError message={error} />
 
       <form onSubmit={handleSubmit} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         {editingId && (

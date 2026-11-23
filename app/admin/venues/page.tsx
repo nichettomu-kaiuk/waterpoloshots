@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import AdminError from "@/components/AdminError";
 import type { Venue } from "@/lib/supabase/types";
 
 export default function AdminVenuesPage() {
@@ -10,9 +11,11 @@ export default function AdminVenuesPage() {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [form, setForm] = useState({ name: "", location_tag: "", address: "" });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const { data } = await supabase.from("venues").select("*").order("name");
+    const { data, error: loadError } = await supabase.from("venues").select("*").order("name");
+    if (loadError) setError(`Impossibile caricare le piscine: ${loadError.message}`);
     setVenues(data ?? []);
   }
 
@@ -24,25 +27,37 @@ export default function AdminVenuesPage() {
     e.preventDefault();
     if (!form.name.trim()) return;
     setSaving(true);
-    await supabase.from("venues").insert({
+    setError(null);
+    const { error: insertError } = await supabase.from("venues").insert({
       name: form.name.trim(),
       location_tag: form.location_tag.trim() || null,
       address: form.address.trim() || null,
     });
-    setForm({ name: "", location_tag: "", address: "" });
     setSaving(false);
+    if (insertError) {
+      setError(`Salvataggio non riuscito: ${insertError.message}`);
+      return;
+    }
+    setForm({ name: "", location_tag: "", address: "" });
     load();
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Eliminare questa piscina?")) return;
-    await supabase.from("venues").delete().eq("id", id);
+    setError(null);
+    const { error: deleteError } = await supabase.from("venues").delete().eq("id", id);
+    if (deleteError) {
+      setError(`Eliminazione non riuscita: ${deleteError.message}`);
+      return;
+    }
     load();
   }
 
   return (
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Piscine</h2>
+
+      <AdminError message={error} />
 
       <form onSubmit={handleAdd} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <input

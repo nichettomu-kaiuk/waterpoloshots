@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Trash2, Upload, Pencil, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { brandingPath } from "@/lib/upload";
 import type { NewsPost } from "@/lib/supabase/types";
 
 const emptyForm = { title: "", content: "" };
@@ -63,7 +64,7 @@ export default function AdminNewsPage() {
 
     let image_url: string | null | undefined = undefined;
     if (imageFile) {
-      const path = `news/${Date.now()}-${imageFile.name}`;
+      const path = brandingPath("news", imageFile.name);
       const { error: uploadError } = await supabase.storage.from("branding").upload(path, imageFile);
       if (uploadError) {
         setError(`Caricamento immagine fallito: ${uploadError.message}`);
@@ -185,7 +186,7 @@ export default function AdminNewsPage() {
                   <p className="truncate text-sm font-medium">{p.title}</p>
                   <p className="line-clamp-2 text-[11px] text-muted">{p.content}</p>
                   <p className="mt-1 text-[10px] text-muted">
-                    {new Date(p.created_at).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric" })}
+                    {new Date(p.created_at).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric", timeZone: "Europe/Rome" })}
                   </p>
                 </div>
               </div>

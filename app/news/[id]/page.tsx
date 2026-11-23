@@ -44,6 +44,7 @@ export default async function NewsPostPage({ params }: { params: { id: string } 
             day: "2-digit",
             month: "long",
             year: "numeric",
+            timeZone: "Europe/Rome",
           })}
         </p>
         <h1 className="mt-1 font-display text-2xl font-bold leading-tight">{post.title}</h1>

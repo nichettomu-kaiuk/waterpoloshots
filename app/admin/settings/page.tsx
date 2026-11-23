@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { brandingPath } from "@/lib/upload";
+import AdminError from "@/components/AdminError";
 import type { AppTheme, Settings } from "@/lib/supabase/types";
 
 const BUCKET = "branding";
@@ -45,6 +47,7 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
   const [busyField, setBusyField] = useState<ImageField | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -57,9 +60,12 @@ export default function AdminSettingsPage() {
   }, []);
 
   async function uploadImage(file: File, folder: string) {
-    const path = `${folder}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file);
-    if (error) return null;
+    const path = brandingPath(folder, file.name);
+    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file);
+    if (uploadError) {
+      setError(`Caricamento immagine non riuscito: ${uploadError.message}`);
+      return null;
+    }
     return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
   }
 
@@ -68,6 +74,7 @@ export default function AdminSettingsPage() {
   async function handleReplace(field: ImageField, file: File | null) {
     if (!file) return;
     setBusyField(field);
+    setError(null);
     const previousUrl = form[field];
     const url = await uploadImage(file, field);
     if (url) {
@@ -95,13 +102,24 @@ export default function AdminSettingsPage() {
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
+    let saveError: { message: string } | null = null;
     if (settingsId) {
-      await supabase.from("settings").update(form).eq("id", settingsId);
+      const { error: updateError } = await supabase.from("settings").update(form).eq("id", settingsId);
+      saveError = updateError;
     } else {
-      const { data } = await supabase.from("settings").insert(form).select().single();
+      const { data, error: insertError } = await supabase.from("settings").insert(form).select().single();
       if (data) setSettingsId(data.id);
+      saveError = insertError;
     }
     setSaving(false);
+    if (saveError) {
+      // Don't flash "salvato" when nothing was saved.
+      setError(
+        `Salvataggio non riuscito: ${saveError.message}. Se l'errore cita una colonna mancante, esegui il blocco di migrazione in fondo a supabase/schema.sql.`
+      );
+      return;
+    }
     setSavedMsg(true);
     setTimeout(() => setSavedMsg(false), 1800);
     router.refresh();
@@ -123,6 +141,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="max-w-4xl space-y-5">
       <h2 className="font-display text-lg font-bold">Branding &amp; impostazioni</h2>
+
+      <AdminError message={error} />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="space-y-5">

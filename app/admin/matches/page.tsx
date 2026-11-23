@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Wand2, ChevronRight, Video, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import AdminError from "@/components/AdminError";
 import type { Match, MatchStatus, RoundType, Team, Venue } from "@/lib/supabase/types";
 
 const statusLabels: Record<MatchStatus, string> = {
@@ -27,9 +28,10 @@ export default function AdminMatchesPage() {
   });
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const [{ data: m }, { data: t }, { data: v }] = await Promise.all([
+    const [{ data: m, error: matchesError }, { data: t }, { data: v }] = await Promise.all([
       supabase
         .from("matches")
         .select("*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*), venue:venues(*)")
@@ -38,6 +40,7 @@ export default function AdminMatchesPage() {
       supabase.from("teams").select("*").order("name"),
       supabase.from("venues").select("*").order("name"),
     ]);
+    if (matchesError) setError(`Impossibile caricare le partite: ${matchesError.message}`);
     setMatches((m as any) ?? []);
     setTeams(t ?? []);
     setVenues(v ?? []);
@@ -55,7 +58,8 @@ export default function AdminMatchesPage() {
       return;
     }
     setSaving(true);
-    await supabase.from("matches").insert({
+    setError(null);
+    const { error: insertError } = await supabase.from("matches").insert({
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       venue_id: form.venue_id || null,
@@ -66,8 +70,12 @@ export default function AdminMatchesPage() {
       home_score: 0,
       away_score: 0,
     });
-    setForm({ ...form, home_team_id: "", away_team_id: "", date_time: "" });
     setSaving(false);
+    if (insertError) {
+      setError(`Creazione partita non riuscita: ${insertError.message}`);
+      return;
+    }
+    setForm({ ...form, home_team_id: "", away_team_id: "", date_time: "" });
     load();
   }
 
@@ -119,8 +127,13 @@ export default function AdminMatchesPage() {
   }
 
   async function handleDeleteMatch(id: string) {
-    if (!confirm("Eliminare questa partita? L'operazione non è reversibile.")) return;
-    await supabase.from("matches").delete().eq("id", id);
+    if (!confirm("Eliminare questa partita? Verranno rimossi anche i suoi gol (i marcatori si aggiornano di conseguenza). L'operazione non è reversibile.")) return;
+    setError(null);
+    const { error: deleteError } = await supabase.from("matches").delete().eq("id", id);
+    if (deleteError) {
+      setError(`Eliminazione non riuscita: ${deleteError.message}`);
+      return;
+    }
     load();
   }
 
@@ -133,7 +146,16 @@ export default function AdminMatchesPage() {
       )
     )
       return;
-    await supabase.from("matches").delete().eq("round_type", round).eq("giornata", giornataNum);
+    setError(null);
+    const { error: deleteError } = await supabase
+      .from("matches")
+      .delete()
+      .eq("round_type", round)
+      .eq("giornata", giornataNum);
+    if (deleteError) {
+      setError(`Eliminazione giornata non riuscita: ${deleteError.message}`);
+      return;
+    }
     load();
   }
 
@@ -157,6 +179,8 @@ export default function AdminMatchesPage() {
   return (
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Partite</h2>
+
+      <AdminError message={error} />
 
       <form onSubmit={handleAdd} className="mb-4 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         <div className="flex gap-2">
@@ -269,7 +293,7 @@ export default function AdminMatchesPage() {
                                     {m.home_team?.name} <span className="text-muted">vs</span> {m.away_team?.name}
                                   </p>
                                   <p className="text-[11px] text-muted">
-                                    {m.date_time ? new Date(m.date_time).toLocaleString("it-IT") : "Data da definire"}
+                                    {m.date_time ? new Date(m.date_time).toLocaleString("it-IT", { timeZone: "Europe/Rome" }) : "Data da definire"}
                                     {" · "}
                                     {statusLabels[m.status]}
                                     {needsDetails && <span className="ml-1 text-gold">· da completare</span>}

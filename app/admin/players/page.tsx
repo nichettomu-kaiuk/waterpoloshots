@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { fetchGoalCounts, withGoalCounts } from "@/lib/goals";
+import { uploadToBranding } from "@/lib/upload";
+import AdminError from "@/components/AdminError";
 import type { Player, PlayerRole, Team } from "@/lib/supabase/types";
 
 const roles: PlayerRole[] = ["portiere", "difensore", "centroboa", "attaccante"];
@@ -22,14 +25,19 @@ export default function AdminPlayersPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const [{ data: teamsData }, { data: playersData }] = await Promise.all([
+    const [{ data: teamsData, error: teamsError }, { data: playersData, error: playersError }] = await Promise.all([
       supabase.from("teams").select("*").order("name"),
       supabase.from("players").select("*, team:teams(*)").order("last_name"),
     ]);
+    if (teamsError || playersError) {
+      setError(`Impossibile caricare i dati: ${(teamsError ?? playersError)!.message}`);
+    }
+    const counts = await fetchGoalCounts(supabase);
     setTeams(teamsData ?? []);
-    setPlayers((playersData as any) ?? []);
+    setPlayers(withGoalCounts((playersData as any) ?? [], counts));
   }
 
   useEffect(() => {
@@ -59,18 +67,22 @@ export default function AdminPlayersPage() {
     e.preventDefault();
     if (!form.team_id || !form.first_name || !form.last_name || !form.cap_number) return;
     setSaving(true);
+    setError(null);
 
     let photo_url: string | null | undefined = undefined;
     if (photoFile) {
-      const path = `players/${Date.now()}-${photoFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, photoFile);
-      if (!uploadError) {
-        photo_url = supabase.storage.from("branding").getPublicUrl(path).data.publicUrl;
+      const upload = await uploadToBranding(supabase, "players", photoFile);
+      if (upload.error) {
+        setError(`Caricamento foto non riuscito: ${upload.error}. Il giocatore non è stato salvato.`);
+        setSaving(false);
+        return;
       }
+      photo_url = upload.url;
     }
 
+    let writeError: { message: string } | null = null;
     if (editingId) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("players")
         .update({
           team_id: form.team_id,
@@ -81,8 +93,9 @@ export default function AdminPlayersPage() {
           ...(photo_url !== undefined ? { photo_url } : {}),
         })
         .eq("id", editingId);
+      writeError = updateError;
     } else {
-      await supabase.from("players").insert({
+      const { error: insertError } = await supabase.from("players").insert({
         team_id: form.team_id,
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
@@ -91,16 +104,26 @@ export default function AdminPlayersPage() {
         photo_url: photo_url ?? null,
         goals_count: 0,
       });
+      writeError = insertError;
     }
 
-    cancelEdit();
     setSaving(false);
+    if (writeError) {
+      setError(`Salvataggio non riuscito: ${writeError.message}`);
+      return;
+    }
+    cancelEdit();
     load();
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Eliminare questo giocatore?")) return;
-    await supabase.from("players").delete().eq("id", id);
+    if (!confirm("Eliminare questo giocatore? Verranno rimossi anche i gol che ha segnato.")) return;
+    setError(null);
+    const { error: deleteError } = await supabase.from("players").delete().eq("id", id);
+    if (deleteError) {
+      setError(`Eliminazione non riuscita: ${deleteError.message}`);
+      return;
+    }
     if (editingId === id) cancelEdit();
     load();
   }
@@ -108,6 +131,8 @@ export default function AdminPlayersPage() {
   return (
     <div>
       <h2 className="mb-4 font-display text-lg font-bold">Giocatori</h2>
+
+      <AdminError message={error} />
 
       <form onSubmit={handleSubmit} className="mb-6 max-w-xl space-y-2 rounded-2xl border border-line bg-surface p-4">
         {editingId && (

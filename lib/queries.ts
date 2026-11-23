@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { fetchGoalCounts, withGoalCounts } from "@/lib/goals";
 import type { Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
 
 // Every function degrades gracefully to `null`/`[]` if Supabase env vars are
@@ -131,7 +132,8 @@ export async function getTeamWithRoster(teamId: string): Promise<{ team: Team | 
       supabase.from("teams").select("*").eq("id", teamId).maybeSingle(),
       supabase.from("players").select("*").eq("team_id", teamId).order("cap_number"),
     ]);
-    return { team: team ?? null, players: players ?? [] };
+    const counts = await fetchGoalCounts(supabase);
+    return { team: team ?? null, players: withGoalCounts(players ?? [], counts) };
   } catch {
     return { team: null, players: [] };
   }
@@ -143,7 +145,8 @@ export async function getPlayer(playerId: string): Promise<{ player: Player | nu
     const { data: player } = await supabase.from("players").select("*").eq("id", playerId).maybeSingle();
     if (!player) return { player: null, team: null };
     const { data: team } = await supabase.from("teams").select("*").eq("id", player.team_id).maybeSingle();
-    return { player, team: team ?? null };
+    const counts = await fetchGoalCounts(supabase);
+    return { player: withGoalCounts([player], counts)[0], team: team ?? null };
   } catch {
     return { player: null, team: null };
   }
@@ -166,7 +169,8 @@ export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
       .from("players")
       .select("*, team:teams(*)")
       .order("last_name");
-    return (data as unknown as (Player & { team?: Team })[]) ?? [];
+    const counts = await fetchGoalCounts(supabase);
+    return withGoalCounts((data as unknown as (Player & { team?: Team })[]) ?? [], counts);
   } catch {
     return [];
   }
@@ -175,12 +179,18 @@ export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
 export async function getTopScorers(limit = 10): Promise<Player[]> {
   try {
     const supabase = createClient();
-    const { data } = await supabase
-      .from("players")
-      .select("*, team:teams(*)")
-      .order("goals_count", { ascending: false })
-      .limit(limit);
-    return (data as unknown as Player[]) ?? [];
+    const { data } = await supabase.from("players").select("*, team:teams(*)");
+    const counts = await fetchGoalCounts(supabase);
+    const players = withGoalCounts((data as unknown as Player[]) ?? [], counts);
+    // Goals desc, then surname/first name so ties always come out in the
+    // same order.
+    players.sort(
+      (a, b) =>
+        b.goals_count - a.goals_count ||
+        a.last_name.localeCompare(b.last_name, "it") ||
+        a.first_name.localeCompare(b.first_name, "it")
+    );
+    return players.slice(0, limit);
   } catch {
     return [];
   }

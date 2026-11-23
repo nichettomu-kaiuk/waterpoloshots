@@ -124,7 +124,7 @@ export default async function HomePage() {
               </div>
               <div className="grouped-card animate-rise divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {upcoming.map((m) => (
-                  <MatchCard key={m.id} match={m} bare stacked />
+                  <MatchCard key={m.id} match={m} bare />
                 ))}
               </div>
             </section>

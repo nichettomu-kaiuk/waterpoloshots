@@ -9,7 +9,7 @@ function excerpt(text: string, maxLength = 140) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Rome" });
 }
 
 // "horizontal": compact full-width row with a small image — used on the home

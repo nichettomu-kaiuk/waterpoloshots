@@ -158,7 +158,7 @@ export default function MatchDetailModal({ match, onClose }: { match: Match; onC
           <div className="flex items-center gap-2 text-muted">
             <Clock size={15} />
             {date
-              ? `${date.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })} · ${date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}`
+              ? `${date.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" })} · ${date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" })}`
               : "Data da definire"}
           </div>
           {match.venue && (

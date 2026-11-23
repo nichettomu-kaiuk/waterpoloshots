@@ -120,8 +120,9 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   }
 
   // Adds a goal for a team, with or without a known scorer: logs the
-  // match_goals row, bumps the player's personal tally (if any), then
-  // recomputes the match score from the ledger.
+  // match_goals row, then recomputes the match score from the ledger. The
+  // scorer's season total is derived from the same ledger when it's read,
+  // so there is no separate counter to keep in sync.
   async function addGoal(teamId: string, player: Player | null) {
     if (!match || busy) return;
     setBusy(true);
@@ -136,24 +137,13 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       return;
     }
 
-    if (player) {
-      const { data: freshPlayer } = await supabase.from("players").select("goals_count").eq("id", player.id).single();
-      const current = freshPlayer?.goals_count ?? player.goals_count;
-      const { error: playerError } = await supabase
-        .from("players")
-        .update({ goals_count: current + 1 })
-        .eq("id", player.id);
-      if (playerError) setGoalError(`Gol registrato, ma non ho potuto aggiornare il marcatore: ${playerError.message}`);
-    }
-
     await syncScoreFromGoals();
     await load();
     setBusy(false);
   }
 
-  // Removes a previously logged goal: deletes the match_goals row, restores
-  // the player's personal tally (if one was credited), then recomputes the
-  // match score from what's left in the ledger.
+  // Removes a previously logged goal: deletes the match_goals row, then
+  // recomputes the match score from what's left in the ledger.
   async function removeGoal(goal: GoalRow) {
     if (!match || busy) return;
     setBusy(true);
@@ -164,17 +154,6 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       setGoalError(`Impossibile rimuovere il gol: ${deleteError.message}`);
       setBusy(false);
       return;
-    }
-
-    if (goal.player_id) {
-      const { data: freshPlayer } = await supabase.from("players").select("goals_count").eq("id", goal.player_id).single();
-      if (freshPlayer) {
-        const { error: playerError } = await supabase
-          .from("players")
-          .update({ goals_count: Math.max(0, freshPlayer.goals_count - 1) })
-          .eq("id", goal.player_id);
-        if (playerError) setGoalError(`Gol rimosso, ma non ho potuto aggiornare il marcatore: ${playerError.message}`);
-      }
     }
 
     await syncScoreFromGoals();
@@ -197,7 +176,8 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   async function saveMatch() {
     if (!match) return;
     setSaving(true);
-    await supabase
+    setGoalError(null);
+    const { error: saveError } = await supabase
       .from("matches")
       .update({
         date_time: dateTime ? new Date(dateTime).toISOString() : null,
@@ -207,6 +187,11 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       })
       .eq("id", match.id);
     setSaving(false);
+    if (saveError) {
+      // Stay on the page so nothing the admin typed is lost.
+      setGoalError(`Salvataggio non riuscito: ${saveError.message}`);
+      return;
+    }
     router.push("/admin/matches");
   }
 
