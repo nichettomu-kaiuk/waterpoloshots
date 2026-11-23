@@ -176,7 +176,8 @@ export async function getAllPlayers(): Promise<(Player & { team?: Team })[]> {
   }
 }
 
-export async function getTopScorers(limit = 10): Promise<Player[]> {
+// No limit by default: the scorers ranking must list every player with goals.
+export async function getTopScorers(limit?: number): Promise<Player[]> {
   try {
     const supabase = createClient();
     const { data } = await supabase.from("players").select("*, team:teams(*)");
@@ -190,7 +191,7 @@ export async function getTopScorers(limit = 10): Promise<Player[]> {
         a.last_name.localeCompare(b.last_name, "it") ||
         a.first_name.localeCompare(b.first_name, "it")
     );
-    return players.slice(0, limit);
+    return limit === undefined ? players : players.slice(0, limit);
   } catch {
     return [];
   }

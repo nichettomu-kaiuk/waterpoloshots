@@ -6,7 +6,7 @@ import ShareButton from "@/components/ShareButton";
 import Podium from "@/components/Podium";
 
 export default async function ClassifichePage() {
-  const [standings, allScorers] = await Promise.all([getStandings(), getTopScorers(15)]);
+  const [standings, allScorers] = await Promise.all([getStandings(), getTopScorers()]);
   const scorers = allScorers.filter((p) => p.goals_count > 0);
 
   return (
