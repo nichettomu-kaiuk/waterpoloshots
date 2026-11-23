@@ -18,28 +18,52 @@ function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "short", timeZone: "Europe/Rome" });
 }
 
-function TeamLogo({ url, name }: { url: string | null | undefined; name: string | undefined }) {
+function TeamLogo({
+  url,
+  name,
+  size = 36,
+}: {
+  url: string | null | undefined;
+  name: string | undefined;
+  size?: number;
+}) {
+  const box = { width: size, height: size };
   if (url) {
     return (
-      <span className="cap-badge relative inline-block h-9 w-9 shrink-0">
+      <span className="cap-badge relative inline-block shrink-0" style={box}>
         <Image
           src={url}
           alt={name ?? "Squadra"}
-          width={36}
-          height={36}
-          className="h-9 w-9 rounded-full border border-line object-cover"
+          width={size}
+          height={size}
+          className="rounded-full border border-line object-cover"
+          style={box}
         />
       </span>
     );
   }
   return (
-    <span className="cap-badge relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-xs font-display text-muted">
+    <span
+      className="cap-badge relative inline-flex shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised text-xs font-display text-muted"
+      style={box}
+    >
       {(name ?? "??").slice(0, 2).toUpperCase()}
     </span>
   );
 }
 
-export default function MatchCard({ match, bare = false }: { match: Match; bare?: boolean }) {
+// `stacked`: logos on one row with "vs" / the score centred between them and
+// the team names underneath each logo (used by "Prossimi match" and the
+// calendar). Without it the original inline layout is kept.
+export default function MatchCard({
+  match,
+  bare = false,
+  stacked = false,
+}: {
+  match: Match;
+  bare?: boolean;
+  stacked?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   const statusLabel =
@@ -88,6 +112,38 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
           <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
         </div>
 
+        {stacked ? (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 gap-y-2">
+            <div className="flex justify-center">
+              <TeamLogo url={match.home_team?.logo_url} name={match.home_team?.name} size={48} />
+            </div>
+            <div className="px-2 text-center">
+              {match.status === "scheduled" ? (
+                <span className="font-display text-lg text-muted">vs</span>
+              ) : (
+                <span
+                  className={clsx(
+                    "match-score font-display tabular text-xl font-bold",
+                    match.status === "live" ? "text-primary" : "text-white"
+                  )}
+                >
+                  {match.home_score} - {match.away_score}
+                </span>
+              )}
+            </div>
+            <div className="flex justify-center">
+              <TeamLogo url={match.away_team?.logo_url} name={match.away_team?.name} size={48} />
+            </div>
+
+            <span className="line-clamp-2 break-words text-center text-sm font-medium leading-tight">
+              {match.home_team?.name ?? "TBD"}
+            </span>
+            <span aria-hidden />
+            <span className="line-clamp-2 break-words text-center text-sm font-medium leading-tight">
+              {match.away_team?.name ?? "TBD"}
+            </span>
+          </div>
+        ) : (
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center gap-2">
             <TeamLogo url={match.home_team?.logo_url} name={match.home_team?.name} />
@@ -114,6 +170,7 @@ export default function MatchCard({ match, bare = false }: { match: Match; bare?
             <TeamLogo url={match.away_team?.logo_url} name={match.away_team?.name} />
           </div>
         </div>
+        )}
 
         {match.venue && (
           <div className="mt-3 flex items-center gap-1 text-[11px] text-muted">
