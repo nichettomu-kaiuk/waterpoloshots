@@ -3,7 +3,7 @@ import Image from "next/image";
 import { getStandings, getTopScorers } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
-import Podium from "@/components/Podium";
+import ScorersList from "@/components/ScorersList";
 
 export default async function ClassifichePage() {
   const [standings, allScorers] = await Promise.all([getStandings(), getTopScorers()]);
@@ -25,11 +25,11 @@ export default async function ClassifichePage() {
           <p className="text-sm text-muted">Nessun risultato confermato ancora.</p>
         ) : (
           <div className="site-card overflow-x-auto rounded-2xl border border-line">
-            <table className="w-full min-w-[560px] text-sm">
+            <table className="w-full min-w-[470px] text-sm">
               <thead className="bg-surface-raised text-[11px] uppercase text-muted">
                 <tr>
-                  <th className="sticky left-0 bg-surface-raised px-3 py-2 text-left">#</th>
-                  <th className="sticky left-8 bg-surface-raised px-3 py-2 text-left">Squadra</th>
+                  <th className="sticky left-0 w-6 min-w-[24px] max-w-[24px] bg-surface-raised px-0 py-2 text-center">#</th>
+                  <th className="sticky left-6 bg-surface-raised px-2 py-2 text-left">Squadra</th>
                   <th className="px-2 py-2 text-center">Pt</th>
                   <th className="px-2 py-2 text-center">G</th>
                   <th className="px-2 py-2 text-center">V</th>
@@ -43,8 +43,8 @@ export default async function ClassifichePage() {
               <tbody>
                 {standings.map((row, i) => (
                   <tr key={row.team.id} className="border-t border-line bg-surface">
-                    <td className="rank-box sticky left-0 bg-surface px-3 py-2.5 text-muted"><span>{i + 1}</span></td>
-                    <td className="sticky left-8 bg-surface px-3 py-2.5">
+                    <td className="rank-box sticky left-0 w-6 min-w-[24px] max-w-[24px] bg-surface px-0 py-2.5 text-center text-muted"><span>{i + 1}</span></td>
+                    <td className="sticky left-6 bg-surface px-2 py-2.5">
                       <Link href={`/squadra/${row.team.id}`} className="flex items-center gap-2 font-medium">
                         {row.team.logo_url ? (
                           <span className="cap-badge relative inline-block h-[22px] w-[22px] shrink-0">
@@ -61,7 +61,7 @@ export default async function ClassifichePage() {
                             {row.team.name.slice(0, 2).toUpperCase()}
                           </span>
                         )}
-                        <span className="whitespace-nowrap">{row.team.name}</span>
+                        <span className="max-w-[110px] break-words leading-tight">{row.team.name}</span>
                       </Link>
                     </td>
                     <td className="px-2 py-2.5 text-center tabular font-display font-bold text-gold">
@@ -94,7 +94,7 @@ export default async function ClassifichePage() {
         {scorers.length === 0 ? (
           <p className="text-sm text-muted">Nessun gol registrato ancora.</p>
         ) : (
-          <Podium scorers={scorers} />
+          <ScorersList scorers={scorers} />
         )}
       </div>
     </main>

@@ -319,16 +319,7 @@ body {
   background: var(--color-line);
 }
 
-/* ── Remaining surfaces: podium steps, News detail image, corner icons ── */
-
-.theme-lane .podium-pedestal,
-.theme-regulation .podium-pedestal {
-  border-radius: 0 !important;
-}
-.theme-regulation .podium-pedestal {
-  border-top: 2px solid var(--color-gold-dim);
-  background: linear-gradient(to top, rgba(212, 175, 55, 0.12), transparent);
-}
+/* ── Remaining surfaces: News detail image, corner icons ── */
 
 .theme-lane .detail-hero-image,
 .theme-regulation .detail-hero-image {

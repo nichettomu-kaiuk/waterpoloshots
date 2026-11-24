@@ -1,6 +1,12 @@
 export type MatchStatus = "scheduled" | "live" | "completed";
 export type RoundType = "andata" | "ritorno";
-export type PlayerRole = "portiere" | "difensore" | "centroboa" | "attaccante";
+export type PlayerRole =
+  | "portiere"
+  | "difensore"
+  | "centrovasca"
+  | "centroboa"
+  | "attaccante"
+  | "universale";
 
 export interface Team {
   id: string;

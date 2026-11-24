@@ -31,7 +31,7 @@ create table players (
   last_name text not null,
   cap_number int not null,
   photo_url text,
-  position text check (position in ('portiere','difensore','centroboa','attaccante')),
+  position text check (position in ('portiere','difensore','centrovasca','centroboa','attaccante','universale')),
   goals_count int not null default 0
 );
 
@@ -212,3 +212,11 @@ alter table settings add constraint settings_theme_check
 -- Adds: match_goals.created_at, so the per-match goal log (Admin → Partite →
 -- modifica partita) can be listed in the order goals were actually added.
 alter table match_goals add column if not exists created_at timestamptz not null default now();
+
+-- Adds: two more player roles, 'centrovasca' and 'universale'. A player whose
+-- role is unknown keeps players.position = NULL (the check allows NULL).
+-- Needed for Admin → Giocatori: without it, saving a player with one of the
+-- new roles fails with a check-constraint error.
+alter table players drop constraint if exists players_position_check;
+alter table players add constraint players_position_check
+  check (position in ('portiere','difensore','centrovasca','centroboa','attaccante','universale'));

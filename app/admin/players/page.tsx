@@ -9,7 +9,8 @@ import { uploadToBranding } from "@/lib/upload";
 import AdminError from "@/components/AdminError";
 import type { Player, PlayerRole, Team } from "@/lib/supabase/types";
 
-const roles: PlayerRole[] = ["portiere", "difensore", "centroboa", "attaccante"];
+// An empty value means "role unknown" and is stored as NULL.
+const roles: PlayerRole[] = ["portiere", "difensore", "centrovasca", "centroboa", "attaccante", "universale"];
 
 export default function AdminPlayersPage() {
   const supabase = createClient();
@@ -20,7 +21,7 @@ export default function AdminPlayersPage() {
     first_name: "",
     last_name: "",
     cap_number: "",
-    position: "attaccante" as PlayerRole,
+    position: "" as PlayerRole | "", // default: ruolo non specificato
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -51,7 +52,7 @@ export default function AdminPlayersPage() {
       first_name: player.first_name,
       last_name: player.last_name,
       cap_number: String(player.cap_number),
-      position: (player.position ?? "attaccante") as PlayerRole,
+      position: (player.position ?? "") as PlayerRole | "",
     });
     setPhotoFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -59,7 +60,7 @@ export default function AdminPlayersPage() {
 
   function cancelEdit() {
     setEditingId(null);
-    setForm({ team_id: "", first_name: "", last_name: "", cap_number: "", position: "attaccante" });
+    setForm({ team_id: "", first_name: "", last_name: "", cap_number: "", position: "" });
     setPhotoFile(null);
   }
 
@@ -89,7 +90,7 @@ export default function AdminPlayersPage() {
           first_name: form.first_name.trim(),
           last_name: form.last_name.trim(),
           cap_number: Number(form.cap_number),
-          position: form.position,
+          position: form.position || null,
           ...(photo_url !== undefined ? { photo_url } : {}),
         })
         .eq("id", editingId);
@@ -100,7 +101,7 @@ export default function AdminPlayersPage() {
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
         cap_number: Number(form.cap_number),
-        position: form.position,
+        position: form.position || null,
         photo_url: photo_url ?? null,
         goals_count: 0,
       });
@@ -177,9 +178,10 @@ export default function AdminPlayersPage() {
           />
           <select
             value={form.position}
-            onChange={(e) => setForm({ ...form, position: e.target.value as PlayerRole })}
+            onChange={(e) => setForm({ ...form, position: e.target.value as PlayerRole | "" })}
             className="w-1/2 rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
           >
+            <option value="">Ruolo non specificato</option>
             {roles.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
