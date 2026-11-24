@@ -1,21 +1,28 @@
 import { createClient } from "@/lib/supabase/server";
-import { Users, UserRound, MapPinned, Radio } from "lucide-react";
+import { Users, UserRound, MapPinned, Radio, CalendarDays, Goal, Newspaper } from "lucide-react";
 
 export default async function AdminDashboard() {
   const supabase = createClient();
 
-  const [teams, players, venues, liveMatches] = await Promise.all([
+  const [teams, players, venues, matches, liveMatches, goals, news] = await Promise.all([
     supabase.from("teams").select("*", { count: "exact", head: true }),
     supabase.from("players").select("*", { count: "exact", head: true }),
     supabase.from("venues").select("*", { count: "exact", head: true }),
+    supabase.from("matches").select("*", { count: "exact", head: true }),
     supabase.from("matches").select("*", { count: "exact", head: true }).eq("status", "live"),
+    // Every goal is one row in match_goals (with or without a known scorer).
+    supabase.from("match_goals").select("*", { count: "exact", head: true }),
+    supabase.from("news_posts").select("*", { count: "exact", head: true }),
   ]);
 
   const stats = [
     { label: "Squadre", value: teams.count ?? 0, icon: Users },
     { label: "Giocatori", value: players.count ?? 0, icon: UserRound },
-    { label: "Campi", value: venues.count ?? 0, icon: MapPinned },
+    { label: "Piscine", value: venues.count ?? 0, icon: MapPinned },
+    { label: "Partite", value: matches.count ?? 0, icon: CalendarDays },
     { label: "Match live", value: liveMatches.count ?? 0, icon: Radio },
+    { label: "Gol fatti", value: goals.count ?? 0, icon: Goal },
+    { label: "News", value: news.count ?? 0, icon: Newspaper },
   ];
 
   return (
@@ -32,7 +39,7 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="mt-6 rounded-2xl border border-line bg-surface-raised p-4 text-sm text-muted">
-        Usa il menu qui sopra per gestire partite, squadre, giocatori, campi e il branding del torneo.
+        Usa il menu qui sopra per gestire partite, squadre, giocatori, piscine, news e il branding del torneo.
       </div>
     </div>
   );
