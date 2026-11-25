@@ -18,6 +18,10 @@ export default async function ClassifichePage() {
           <ShareButton title="Classifiche" path="/classifiche" />
         </div>
 
+        {/* Mobile: the two rankings stack. Desktop (lg+): side by side, the
+            team standings on the left and the scorers on the right. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <section className="min-w-0">
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-muted">
           Classifica
         </h2>
@@ -88,7 +92,10 @@ export default async function ClassifichePage() {
           </p>
         )}
 
-        <h2 id="marcatori" className="mb-3 mt-8 font-display text-sm font-semibold uppercase tracking-widest text-muted">
+        </section>
+
+        <section className="min-w-0">
+        <h2 id="marcatori" className="mb-3 mt-8 font-display text-sm font-semibold uppercase tracking-widest text-muted lg:mt-0">
           Marcatori
         </h2>
         {scorers.length === 0 ? (
@@ -96,6 +103,8 @@ export default async function ClassifichePage() {
         ) : (
           <ScorersList scorers={scorers} />
         )}
+        </section>
+        </div>
       </div>
     </main>
   );
