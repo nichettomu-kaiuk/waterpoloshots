@@ -114,8 +114,12 @@ export default async function HomePage() {
             </section>
           )}
 
+          {/* Mobile: stacked (Prossimi match, then Ultimi risultati). Desktop
+              (lg+): side by side, Ultimi risultati on the left and Prossimi
+              match on the right. */}
+          <div className="lg:grid lg:grid-cols-2 lg:items-start">
           {upcoming.length > 0 && (
-            <section className="px-5 py-4">
+            <section className="px-5 py-4 lg:order-2">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                   Prossimi match
@@ -130,9 +134,11 @@ export default async function HomePage() {
             </section>
           )}
 
-          <div className="px-5"><LaneRope /></div>
+          <div className="px-5 lg:hidden"><LaneRope /></div>
 
-          <section className="px-5 py-4">
+          <section
+            className={`px-5 py-4 lg:order-1${upcoming.length === 0 ? " lg:col-span-2" : ""}`}
+          >
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-display text-sm font-semibold uppercase tracking-widest text-muted">
                 Ultimi risultati
@@ -149,6 +155,7 @@ export default async function HomePage() {
               </div>
             )}
           </section>
+          </div>
         </div>
       </div>
     </main>
