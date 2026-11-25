@@ -16,8 +16,8 @@ export default async function HomePage() {
   const [settings, live, upcoming, recent, news] = await Promise.all([
     getSettings(),
     getLiveMatches(),
-    getUpcomingMatches(4),
-    getRecentResults(4),
+    getUpcomingMatches(5),
+    getRecentResults(5),
     getNewsPosts(2),
   ]);
 

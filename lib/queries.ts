@@ -58,7 +58,9 @@ export async function getRecentResults(limit = 5): Promise<Match[]> {
       .from("matches")
       .select(MATCH_SELECT)
       .eq("status", "completed")
-      .order("date_time", { ascending: false })
+      // Newest first; a completed match with no date goes last instead of
+      // first (Postgres puts NULLs first in descending order).
+      .order("date_time", { ascending: false, nullsFirst: false })
       .limit(limit);
     return (data as unknown as Match[]) ?? [];
   } catch {
