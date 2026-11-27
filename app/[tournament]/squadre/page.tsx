@@ -1,0 +1,55 @@
+import Link from "next/link";
+import Image from "next/image";
+import { Users } from "lucide-react";
+import { notFound } from "next/navigation";
+import { getTeams, getTournamentBySlug } from "@/lib/queries";
+import Hero from "@/components/Hero";
+
+export default async function SquadrePage({ params }: { params: { tournament: string } }) {
+  const tournament = await getTournamentBySlug(params.tournament);
+  if (!tournament) notFound();
+  const teams = await getTeams(tournament.id);
+
+  return (
+    <main className="mx-auto w-full max-w-md lg:max-w-5xl xl:max-w-6xl">
+      <Hero tournament={tournament} />
+      <div className="px-5 py-6 lg:px-8">
+        <div className="mb-5 flex items-center gap-2">
+          <Users size={20} className="text-primary" />
+          <h1 className="font-display text-2xl font-bold">Squadre</h1>
+        </div>
+
+        {teams.length === 0 ? (
+          <p className="text-sm text-muted">Nessuna squadra registrata ancora.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
+            {teams.map((t) => (
+              <Link
+                key={t.id}
+                href={`/${tournament.slug}/squadra/${t.id}`}
+                className="site-card flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface p-4 text-center transition active:scale-95"
+              >
+                {t.logo_url ? (
+                  <span className="cap-badge relative inline-block h-14 w-14 shrink-0">
+                    <Image
+                      src={t.logo_url}
+                      alt={t.name}
+                      width={56}
+                      height={56}
+                      className="h-14 w-14 rounded-full border border-line object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span className="cap-badge relative inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-line bg-surface-raised font-display text-lg text-muted">
+                    {t.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <span className="text-sm font-medium">{t.name}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

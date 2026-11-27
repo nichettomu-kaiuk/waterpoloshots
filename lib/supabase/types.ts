@@ -10,6 +10,7 @@ export type PlayerRole =
 
 export interface Team {
   id: string;
+  tournament_id: string;
   name: string;
   logo_url: string | null;
   venue_id: string | null;
@@ -34,6 +35,7 @@ export interface Player {
 
 export interface Venue {
   id: string;
+  tournament_id: string;
   name: string;
   location_tag: string | null;
   address: string | null;
@@ -41,6 +43,7 @@ export interface Venue {
 
 export interface Match {
   id: string;
+  tournament_id: string;
   home_team_id: string;
   away_team_id: string;
   venue_id: string | null;
@@ -74,8 +77,11 @@ export type AppTheme =
   | "lane-light"
   | "regulation-light";
 
+// One row = one tournament (see the multi-tournament block in schema.sql).
 export interface Settings {
   id: string;
+  slug: string;
+  created_at: string;
   tournament_title: string;
   tournament_subtitle: string | null;
   logo_url: string | null;
@@ -92,11 +98,14 @@ export interface Settings {
 
 export interface NewsPost {
   id: string;
+  tournament_id: string;
   title: string;
   content: string;
   image_url: string | null;
   created_at: string;
 }
+
+export type Tournament = Settings;
 
 export interface StandingRow {
   team: Team;

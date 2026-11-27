@@ -220,3 +220,59 @@ alter table match_goals add column if not exists created_at timestamptz not null
 alter table players drop constraint if exists players_position_check;
 alter table players add constraint players_position_check
   check (position in ('portiere','difensore','centrovasca','centroboa','attaccante','universale'));
+
+-- ══ MULTI-TOURNAMENT (several championships on the same site) ══════════════
+-- Each row of `settings` is now ONE TOURNAMENT: its title/subtitle/branding
+-- AND its public path (slug = Titolo torneo + Sottotitolo, e.g.
+-- /serie-b-girone-3-stagione-2026). Teams, venues, matches and news belong
+-- to a tournament through tournament_id; players hang off their team and
+-- goals off their match, so they follow automatically.
+--
+-- !! REQUIRED: the site reads tournaments by slug, so until this block has
+-- !! run the public pages show "database da aggiornare". Safe to re-run.
+-- Existing data is assigned to the existing tournament (the oldest
+-- `settings` row).
+
+alter table settings add column if not exists created_at timestamptz not null default now();
+alter table settings add column if not exists slug text;
+
+-- Slug for tournaments that don't have one yet. Same rules as lib/slug.ts.
+update settings
+set slug = coalesce(
+  nullif(
+    trim(both '-' from regexp_replace(
+      lower(translate(
+        coalesce(tournament_title, '') || ' ' || coalesce(tournament_subtitle, ''),
+        'àáâäèéêëìíîïòóôöùúûüçÀÁÂÄÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÇ',
+        'aaaaeeeeiiiioooouuuucAAAAEEEEIIIIOOOOUUUUC'
+      )),
+      '[^a-z0-9]+', '-', 'g'
+    )),
+    ''
+  ),
+  'torneo'
+)
+where slug is null;
+
+alter table settings alter column slug set not null;
+create unique index if not exists settings_slug_idx on settings(slug);
+
+alter table teams     add column if not exists tournament_id uuid references settings(id) on delete cascade;
+alter table venues    add column if not exists tournament_id uuid references settings(id) on delete cascade;
+alter table matches   add column if not exists tournament_id uuid references settings(id) on delete cascade;
+alter table news_posts add column if not exists tournament_id uuid references settings(id) on delete cascade;
+
+update teams      set tournament_id = (select id from settings order by created_at, id limit 1) where tournament_id is null;
+update venues     set tournament_id = (select id from settings order by created_at, id limit 1) where tournament_id is null;
+update matches    set tournament_id = (select id from settings order by created_at, id limit 1) where tournament_id is null;
+update news_posts set tournament_id = (select id from settings order by created_at, id limit 1) where tournament_id is null;
+
+alter table teams      alter column tournament_id set not null;
+alter table venues     alter column tournament_id set not null;
+alter table matches    alter column tournament_id set not null;
+alter table news_posts alter column tournament_id set not null;
+
+create index if not exists teams_tournament_id_idx      on teams(tournament_id);
+create index if not exists venues_tournament_id_idx     on venues(tournament_id);
+create index if not exists matches_tournament_id_idx    on matches(tournament_id);
+create index if not exists news_posts_tournament_id_idx on news_posts(tournament_id);

@@ -18,15 +18,17 @@ function formatDate(iso: string) {
 // News archive grid where cards sit side by side.
 export default function NewsCard({
   post,
+  slug,
   variant = "vertical",
 }: {
   post: NewsPost;
+  slug: string; // tournament slug, for the link to the post
   variant?: "vertical" | "horizontal";
 }) {
   if (variant === "horizontal") {
     return (
       <Link
-        href={`/news/${post.id}`}
+        href={`/${slug}/news/${post.id}`}
         className="flex w-full animate-rise items-center gap-3 rounded-2xl border border-line bg-surface p-3 transition active:scale-[0.99]"
       >
         {post.image_url ? (
@@ -64,7 +66,7 @@ export default function NewsCard({
         <h3 className="mb-1.5 font-display text-base font-bold leading-snug">{post.title}</h3>
         <p className="mb-3 line-clamp-3 text-sm text-muted">{excerpt(post.content)}</p>
         <Link
-          href={`/news/${post.id}`}
+          href={`/${slug}/news/${post.id}`}
           className="inline-flex items-center gap-1 text-xs font-semibold text-primary"
         >
           Leggi tutto <ArrowRight size={13} />

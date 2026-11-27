@@ -8,24 +8,25 @@ import clsx from "clsx";
 // Mirrors the quick-nav bento-grid on the home page, plus Home restored in
 // its original first position. Classifica + Marcatori are merged into one
 // "Classifiche" page/link.
+// Paths are relative to the tournament: they get "/<slug>" in front.
 const items = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/calendario", label: "Calendario", icon: CalendarDays },
-  { href: "/classifiche", label: "Classifiche", icon: Trophy },
-  { href: "/squadre", label: "Squadre", icon: Users },
-  { href: "/giocatori", label: "Giocatori", icon: UserRound },
-  { href: "/news", label: "News", icon: Newspaper },
+  { path: "", label: "Home", icon: Home },
+  { path: "/calendario", label: "Calendario", icon: CalendarDays },
+  { path: "/classifiche", label: "Classifiche", icon: Trophy },
+  { path: "/squadre", label: "Squadre", icon: Users },
+  { path: "/giocatori", label: "Giocatori", icon: UserRound },
+  { path: "/news", label: "News", icon: Newspaper },
 ];
 
-export default function BottomNav() {
+export default function BottomNav({ slug }: { slug: string }) {
   const pathname = usePathname();
 
   return (
     <nav className="bottom-nav fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-line bg-ink/95 backdrop-blur lg:max-w-5xl xl:max-w-6xl">
       <ul className="grid grid-cols-6">
-        {items.map(({ href, label, icon: Icon }) => {
-          const basePath = href.split("#")[0];
-          const active = pathname === basePath;
+        {items.map(({ path, label, icon: Icon }) => {
+          const href = `/${slug}${path}`;
+          const active = pathname === href;
           return (
             <li key={href}>
               <Link

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchGoalCounts, withGoalCounts } from "@/lib/goals";
 import { uploadToBranding } from "@/lib/upload";
 import AdminError from "@/components/AdminError";
+import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { Player, PlayerRole, Team } from "@/lib/supabase/types";
 
 // An empty value means "role unknown" and is stored as NULL.
@@ -28,11 +29,21 @@ export default function AdminPlayersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { current } = useAdminTournament();
+  const tournamentId = current?.id;
+
   async function load() {
-    const [{ data: teamsData, error: teamsError }, { data: playersData, error: playersError }] = await Promise.all([
-      supabase.from("teams").select("*").order("name"),
-      supabase.from("players").select("*, team:teams(*)").order("last_name"),
-    ]);
+    if (!tournamentId) return;
+    // Players belong to a tournament through their team.
+    const { data: teamsData, error: teamsError } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .order("name");
+    const teamIds = (teamsData ?? []).map((t: Team) => t.id);
+    const { data: playersData, error: playersError } = teamIds.length
+      ? await supabase.from("players").select("*, team:teams(*)").in("team_id", teamIds).order("last_name")
+      : { data: [], error: null };
     if (teamsError || playersError) {
       setError(`Impossibile caricare i dati: ${(teamsError ?? playersError)!.message}`);
     }
@@ -43,7 +54,8 @@ export default function AdminPlayersPage() {
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournamentId]);
 
   function startEdit(player: Player) {
     setEditingId(player.id);

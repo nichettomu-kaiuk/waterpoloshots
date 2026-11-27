@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Plus, Trash2, Upload, Pencil, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { brandingPath } from "@/lib/upload";
+import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { NewsPost } from "@/lib/supabase/types";
 
 const emptyForm = { title: "", content: "" };
@@ -23,11 +24,16 @@ export default function AdminNewsPage() {
   // silently — if the `news_posts` table doesn't exist yet (schema.sql not
   // applied) or RLS blocks the write, you'll see exactly why here instead
   // of a post that "looks" published but never actually saved.
+  const { current } = useAdminTournament();
+  const tournamentId = current?.id;
+
   async function load() {
+    if (!tournamentId) return;
     setLoading(true);
     const { data, error } = await supabase
       .from("news_posts")
       .select("*")
+      .eq("tournament_id", tournamentId)
       .order("created_at", { ascending: false });
     if (error) {
       setError(`Impossibile caricare le news: ${error.message}`);
@@ -40,7 +46,8 @@ export default function AdminNewsPage() {
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournamentId]);
 
   function startEdit(post: NewsPost) {
     setEditingId(post.id);
@@ -58,7 +65,7 @@ export default function AdminNewsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim() || !form.content.trim()) return;
+    if (!form.title.trim() || !form.content.trim() || !tournamentId) return;
     setSaving(true);
     setError(null);
 
@@ -90,6 +97,7 @@ export default function AdminNewsPage() {
       }
     } else {
       const { error: insertError } = await supabase.from("news_posts").insert({
+        tournament_id: tournamentId,
         title: form.title.trim(),
         content: form.content.trim(),
         image_url: image_url ?? null,

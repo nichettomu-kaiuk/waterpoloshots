@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import AdminError from "@/components/AdminError";
+import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { Venue } from "@/lib/supabase/types";
 
 export default function AdminVenuesPage() {
@@ -13,22 +14,32 @@ export default function AdminVenuesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { current } = useAdminTournament();
+  const tournamentId = current?.id;
+
   async function load() {
-    const { data, error: loadError } = await supabase.from("venues").select("*").order("name");
+    if (!tournamentId) return;
+    const { data, error: loadError } = await supabase
+      .from("venues")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .order("name");
     if (loadError) setError(`Impossibile caricare le piscine: ${loadError.message}`);
     setVenues(data ?? []);
   }
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournamentId]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || !tournamentId) return;
     setSaving(true);
     setError(null);
     const { error: insertError } = await supabase.from("venues").insert({
+      tournament_id: tournamentId,
       name: form.name.trim(),
       location_tag: form.location_tag.trim() || null,
       address: form.address.trim() || null,

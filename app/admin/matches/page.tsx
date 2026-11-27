@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Wand2, ChevronRight, Video, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import AdminError from "@/components/AdminError";
+import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { Match, MatchStatus, RoundType, Team, Venue } from "@/lib/supabase/types";
 
 const statusLabels: Record<MatchStatus, string> = {
@@ -30,15 +31,20 @@ export default function AdminMatchesPage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { current } = useAdminTournament();
+  const tournamentId = current?.id;
+
   async function load() {
+    if (!tournamentId) return;
     const [{ data: m, error: matchesError }, { data: t }, { data: v }] = await Promise.all([
       supabase
         .from("matches")
         .select("*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*), venue:venues(*)")
+        .eq("tournament_id", tournamentId)
         .order("giornata", { ascending: true })
         .order("date_time", { ascending: true }),
-      supabase.from("teams").select("*").order("name"),
-      supabase.from("venues").select("*").order("name"),
+      supabase.from("teams").select("*").eq("tournament_id", tournamentId).order("name"),
+      supabase.from("venues").select("*").eq("tournament_id", tournamentId).order("name"),
     ]);
     if (matchesError) setError(`Impossibile caricare le partite: ${matchesError.message}`);
     setMatches((m as any) ?? []);
@@ -48,11 +54,12 @@ export default function AdminMatchesPage() {
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournamentId]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.home_team_id || !form.away_team_id || !form.date_time) return;
+    if (!form.home_team_id || !form.away_team_id || !form.date_time || !tournamentId) return;
     if (form.home_team_id === form.away_team_id) {
       alert("Seleziona due squadre diverse.");
       return;
@@ -60,6 +67,7 @@ export default function AdminMatchesPage() {
     setSaving(true);
     setError(null);
     const { error: insertError } = await supabase.from("matches").insert({
+      tournament_id: tournamentId,
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       venue_id: form.venue_id || null,
@@ -84,6 +92,7 @@ export default function AdminMatchesPage() {
   // doesn't already exist. Date and venue are left empty on purpose — the
   // admin only has to fill those in per match.
   async function handleGenerateRitorno() {
+    if (!tournamentId) return;
     setGenerating(true);
     const andata = matches.filter((m) => m.round_type === "andata");
     const ritorno = matches.filter((m) => m.round_type === "ritorno");
@@ -95,6 +104,7 @@ export default function AdminMatchesPage() {
     const toInsert = andata
       .filter((m) => !existingKeys.has(`${m.giornata}-${m.away_team_id}-${m.home_team_id}`))
       .map((m) => ({
+        tournament_id: tournamentId,
         home_team_id: m.away_team_id,
         away_team_id: m.home_team_id,
         venue_id: null,

@@ -6,12 +6,18 @@ import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { brandingPath } from "@/lib/upload";
+import { isReservedSlug, tournamentSlug } from "@/lib/slug";
 import AdminError from "@/components/AdminError";
+import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { AppTheme, Settings } from "@/lib/supabase/types";
 
 const BUCKET = "branding";
 
-const emptySettings: Omit<Settings, "id"> = {
+// Editable part of a tournament (id, public path and creation date are not
+// edited directly: the path is derived from title + subtitle).
+type SettingsForm = Omit<Settings, "id" | "slug" | "created_at">;
+
+const emptySettings: SettingsForm = {
   tournament_title: "Serie B - Girone 3",
   tournament_subtitle: "",
   logo_url: null,
@@ -42,22 +48,46 @@ function pathFromPublicUrl(url: string): string | null {
 export default function AdminSettingsPage() {
   const supabase = createClient();
   const router = useRouter();
-  const [settingsId, setSettingsId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptySettings);
+  const { current, tournaments, reload } = useAdminTournament();
+  const [form, setForm] = useState<SettingsForm>(emptySettings);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
   const [busyField, setBusyField] = useState<ImageField | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // The form edits the tournament currently selected in the Admin header.
+  // Keyed on the id only, so reloading the tournament list after a save
+  // doesn't wipe what's being typed.
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from("settings").select("*").limit(1).maybeSingle();
-      if (data) {
-        setSettingsId(data.id);
-        setForm(data);
-      }
-    })();
-  }, []);
+    if (!current) return;
+    const { id: _id, slug: _slug, created_at: _createdAt, ...rest } = current;
+    setForm(rest);
+    setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current?.id]);
+
+  // Public path this tournament will have: title + subtitle. It only changes
+  // when one of them was edited.
+  const titleChanged =
+    !!current &&
+    (form.tournament_title !== current.tournament_title ||
+      (form.tournament_subtitle ?? "") !== (current.tournament_subtitle ?? ""));
+  const previewSlug = !current
+    ? ""
+    : titleChanged
+      ? tournamentSlug(form.tournament_title, form.tournament_subtitle)
+      : current.slug;
+
+  // New tournaments start from a copy of another one's look, so several
+  // tournaments can point at the same stored image. A file may only be
+  // removed from storage when no other tournament still uses it.
+  function usedByAnotherTournament(url: string): boolean {
+    return tournaments.some(
+      (t) =>
+        t.id !== current?.id &&
+        [t.logo_url, t.home_bg_url, t.header_bg_url, t.info_image_url].includes(url)
+    );
+  }
 
   async function uploadImage(file: File, folder: string) {
     const path = brandingPath(folder, file.name);
@@ -81,7 +111,9 @@ export default function AdminSettingsPage() {
       setForm((f) => ({ ...f, [field]: url }));
       if (previousUrl) {
         const previousPath = pathFromPublicUrl(previousUrl);
-        if (previousPath) await supabase.storage.from(BUCKET).remove([previousPath]);
+        if (previousPath && !usedByAnotherTournament(previousUrl)) {
+          await supabase.storage.from(BUCKET).remove([previousPath]);
+        }
       }
     }
     setBusyField(null);
@@ -95,23 +127,33 @@ export default function AdminSettingsPage() {
     if (!confirm("Eliminare questa immagine?")) return;
     setBusyField(field);
     const path = pathFromPublicUrl(url);
-    if (path) await supabase.storage.from(BUCKET).remove([path]);
+    if (path && !usedByAnotherTournament(url)) await supabase.storage.from(BUCKET).remove([path]);
     setForm((f) => ({ ...f, [field]: null }));
     setBusyField(null);
   }
 
   async function handleSave() {
-    setSaving(true);
+    if (!current) return;
     setError(null);
-    let saveError: { message: string } | null = null;
-    if (settingsId) {
-      const { error: updateError } = await supabase.from("settings").update(form).eq("id", settingsId);
-      saveError = updateError;
-    } else {
-      const { data, error: insertError } = await supabase.from("settings").insert(form).select().single();
-      if (data) setSettingsId(data.id);
-      saveError = insertError;
+    if (!form.tournament_title.trim()) {
+      setError("Il titolo del torneo non può essere vuoto.");
+      return;
     }
+    if (titleChanged) {
+      if (isReservedSlug(previewSlug)) {
+        setError(`L'indirizzo "/${previewSlug}" è riservato: cambia titolo o sottotitolo.`);
+        return;
+      }
+      if (tournaments.some((t) => t.id !== current.id && t.slug === previewSlug)) {
+        setError(`Esiste già un altro torneo con l'indirizzo "/${previewSlug}": cambia titolo o sottotitolo.`);
+        return;
+      }
+    }
+    setSaving(true);
+    const { error: saveError } = await supabase
+      .from("settings")
+      .update({ ...form, slug: previewSlug })
+      .eq("id", current.id);
     setSaving(false);
     if (saveError) {
       // Don't flash "salvato" when nothing was saved.
@@ -120,6 +162,7 @@ export default function AdminSettingsPage() {
       );
       return;
     }
+    await reload();
     setSavedMsg(true);
     setTimeout(() => setSavedMsg(false), 1800);
     router.refresh();
@@ -160,6 +203,15 @@ export default function AdminSettingsPage() {
               onChange={(e) => setForm({ ...form, tournament_subtitle: e.target.value })}
               className="w-full rounded-xl border border-line bg-surface-raised px-3 py-2 text-sm outline-none focus:border-primary"
             />
+            <p className="rounded-xl bg-surface-raised px-3 py-2 text-xs text-muted">
+              Indirizzo pubblico: <span className="font-medium text-white">/{previewSlug || "…"}</span>
+              {titleChanged && (
+                <span className="mt-1 block text-gold">
+                  Cambiando titolo o sottotitolo l&apos;indirizzo cambia: i vecchi link condivisi di questo torneo
+                  smetteranno di funzionare.
+                </span>
+              )}
+            </p>
             <label className="block text-xs text-muted">Giornata attiva</label>
             <input
               value={form.active_round ?? ""}

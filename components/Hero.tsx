@@ -1,22 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Youtube } from "lucide-react";
-import { getSettings, getLiveMatches } from "@/lib/queries";
+import { getLiveMatches } from "@/lib/queries";
 import type { Match, Settings } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 
-// Shared across every public page (fetches its own data unless the caller
-// already has it — the home page passes settings/live down to avoid
-// double-querying, since it needs the same data for its own sections).
+// Shared across every public page of a tournament (fetches the live matches
+// unless the caller already has them — the home page passes them down to
+// avoid double-querying, since it needs the same data for its own sections).
 export default async function Hero({
-  settings: settingsProp,
+  tournament,
   live: liveProp,
 }: {
-  settings?: Settings | null;
+  tournament: Settings;
   live?: Match[];
-} = {}) {
-  const settings = settingsProp !== undefined ? settingsProp : await getSettings();
-  const live = liveProp !== undefined ? liveProp : await getLiveMatches();
+}) {
+  const settings = tournament;
+  const live = liveProp !== undefined ? liveProp : await getLiveMatches(tournament.id);
 
   return (
     <section className="app-hero relative overflow-hidden water-texture px-5 pb-12 pt-10">

@@ -19,7 +19,7 @@ function withPositions(players: Player[]): { position: number; player: Player }[
   return rows;
 }
 
-export default function ScorersList({ scorers }: { scorers: Player[] }) {
+export default function ScorersList({ scorers, slug }: { scorers: Player[]; slug: string }) {
   const rows = withPositions(scorers);
 
   return (
@@ -31,7 +31,7 @@ export default function ScorersList({ scorers }: { scorers: Player[] }) {
         >
           <div className="flex items-center gap-3">
             <span className="w-6 text-center font-display text-sm font-semibold text-muted">{position}</span>
-            <Link href={`/giocatore/${player.id}`} className="text-sm">
+            <Link href={`/${slug}/giocatore/${player.id}`} className="text-sm">
               {player.first_name} {player.last_name}
             </Link>
           </div>

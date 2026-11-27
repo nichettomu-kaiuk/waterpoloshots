@@ -6,6 +6,7 @@ import { Plus, Trash2, Pencil, Upload, X, Move } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadToBranding } from "@/lib/upload";
 import AdminError from "@/components/AdminError";
+import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { Team, Venue } from "@/lib/supabase/types";
 
 export default function AdminTeamsPage() {
@@ -24,10 +25,14 @@ export default function AdminTeamsPage() {
   const [editingLogoUrl, setEditingLogoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { current } = useAdminTournament();
+  const tournamentId = current?.id;
+
   async function load() {
+    if (!tournamentId) return;
     const [{ data: t, error: teamsError }, { data: v, error: venuesError }] = await Promise.all([
-      supabase.from("teams").select("*, venue:venues(*)").order("name"),
-      supabase.from("venues").select("*").order("name"),
+      supabase.from("teams").select("*, venue:venues(*)").eq("tournament_id", tournamentId).order("name"),
+      supabase.from("venues").select("*").eq("tournament_id", tournamentId).order("name"),
     ]);
     if (teamsError || venuesError) {
       setError(`Impossibile caricare i dati: ${(teamsError ?? venuesError)!.message}`);
@@ -38,7 +43,8 @@ export default function AdminTeamsPage() {
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournamentId]);
 
   function startEdit(team: Team) {
     setEditingId(team.id);
@@ -67,7 +73,7 @@ export default function AdminTeamsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !tournamentId) return;
     setSaving(true);
     setError(null);
 
@@ -99,6 +105,7 @@ export default function AdminTeamsPage() {
       writeError = updateError;
     } else {
       const { error: insertError } = await supabase.from("teams").insert({
+        tournament_id: tournamentId,
         name: name.trim(),
         coach_name: coachName.trim() || null,
         venue_id: venueId || null,

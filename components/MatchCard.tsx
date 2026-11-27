@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 import { MapPin, Video } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/supabase/types";
@@ -65,6 +66,9 @@ export default function MatchCard({
   stacked?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  // MatchCard only appears under /<tournament>/...; the share link points at
+  // that tournament's calendar.
+  const { tournament: tournamentSlug } = useParams<{ tournament: string }>();
 
   const statusLabel =
     match.status === "live" ? null : match.status === "completed" ? "Terminata" : "Programmata";
@@ -109,7 +113,7 @@ export default function MatchCard({
               </span>
             )}
           </div>
-          <ShareButton title={`${home} vs ${away}`} text={shareText} path="/calendario" />
+          <ShareButton title={`${home} vs ${away}`} text={shareText} path={`/${tournamentSlug}/calendario`} />
         </div>
 
         {stacked ? (

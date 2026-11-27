@@ -43,7 +43,7 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    const [{ data: m }, { data: v }, { data: g, error: goalsReadError }] = await Promise.all([
+    const [{ data: m }, { data: g, error: goalsReadError }] = await Promise.all([
       supabase
         .from("matches")
         .select(
@@ -51,7 +51,6 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
         )
         .eq("id", params.id)
         .maybeSingle(),
-      supabase.from("venues").select("*").order("name"),
       supabase
         .from("match_goals")
         .select("*")
@@ -78,8 +77,15 @@ export default function AdminMatchEditPage({ params }: { params: { id: string } 
       ]);
       setHomeRoster(hp ?? []);
       setAwayRoster(ap ?? []);
+
+      // Only the pools of this match's own tournament can be picked.
+      const { data: v } = await supabase
+        .from("venues")
+        .select("*")
+        .eq("tournament_id", (m as any).tournament_id)
+        .order("name");
+      setVenues(v ?? []);
     }
-    setVenues(v ?? []);
     setGoals((g as any) ?? []);
     setLoading(false);
   }
