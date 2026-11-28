@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getAllMatches, getTournamentBySlug } from "@/lib/queries";
+import { getAllMatches, getTournamentBySlug, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import CalendarClient from "./CalendarClient";
 
@@ -12,6 +12,9 @@ export default async function CalendarioPage({
 }) {
   const tournament = await getTournamentBySlug(params.tournament);
   if (!tournament) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(tournament.id);
   const matches = await getAllMatches(tournament.id, searchParams.girone, searchParams.q);
 
   return (

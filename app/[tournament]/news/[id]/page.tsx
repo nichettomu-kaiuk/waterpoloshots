@@ -2,13 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getNewsPost, getTournamentBySlug } from "@/lib/queries";
+import { getNewsPost, getTournamentBySlug, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function NewsPostPage({ params }: { params: { tournament: string; id: string } }) {
   const tournament = await getTournamentBySlug(params.tournament);
   if (!tournament) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(tournament.id);
   const slug = tournament.slug;
   const post = await getNewsPost(tournament.id, params.id);
 

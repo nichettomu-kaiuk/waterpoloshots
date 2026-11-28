@@ -6,6 +6,7 @@ import { Upload, Save, LogOut, Pencil, Trash2, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { brandingPath } from "@/lib/upload";
+import { optimizeImage, MAX_DIMENSION } from "@/lib/image";
 import { isReservedSlug, tournamentSlug } from "@/lib/slug";
 import AdminError from "@/components/AdminError";
 import { useAdminTournament } from "@/components/admin/AdminTournament";
@@ -90,8 +91,17 @@ export default function AdminSettingsPage() {
   }
 
   async function uploadImage(file: File, folder: string) {
-    const path = brandingPath(folder, file.name);
-    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file);
+    // Shrunk and re-encoded in the browser first (see lib/image.ts): the two
+    // background fields can be large, the others are logos / small pictures.
+    const maxDimension =
+      folder === "home_bg_url" || folder === "header_bg_url"
+        ? MAX_DIMENSION.background
+        : folder === "info_image_url"
+          ? MAX_DIMENSION.news
+          : MAX_DIMENSION.logo;
+    const prepared = await optimizeImage(file, maxDimension);
+    const path = brandingPath(folder, prepared.name);
+    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, prepared);
     if (uploadError) {
       setError(`Caricamento immagine non riuscito: ${uploadError.message}`);
       return null;

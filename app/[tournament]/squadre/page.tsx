@@ -2,12 +2,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { Users } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getTeams, getTournamentBySlug } from "@/lib/queries";
+import { getTeams, getTournamentBySlug, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 
 export default async function SquadrePage({ params }: { params: { tournament: string } }) {
   const tournament = await getTournamentBySlug(params.tournament);
   if (!tournament) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(tournament.id);
   const teams = await getTeams(tournament.id);
 
   return (

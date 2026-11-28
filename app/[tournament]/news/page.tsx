@@ -1,12 +1,15 @@
 import { Newspaper } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getNewsPosts, getTournamentBySlug } from "@/lib/queries";
+import { getNewsPosts, getTournamentBySlug, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import NewsCard from "@/components/NewsCard";
 
 export default async function NewsArchivePage({ params }: { params: { tournament: string } }) {
   const tournament = await getTournamentBySlug(params.tournament);
   if (!tournament) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(tournament.id);
   const news = await getNewsPosts(tournament.id, 100);
 
   return (

@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { MapPin, Video } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
-import MatchDetailModal from "./MatchDetailModal";
 import ShareButton from "./ShareButton";
+
+// Loaded only when a card is opened: it pulls in the Supabase browser client,
+// which no page needs otherwise.
+const MatchDetailModal = dynamic(() => import("./MatchDetailModal"), { ssr: false });
 
 function formatTime(iso: string | null) {
   if (!iso) return null;

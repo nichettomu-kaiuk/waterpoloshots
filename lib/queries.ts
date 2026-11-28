@@ -1,5 +1,7 @@
 import { cache } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { fetchGoalCounts, withGoalCounts } from "@/lib/goals";
 import type { Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from "@/lib/supabase/types";
 
@@ -14,9 +16,10 @@ import type { Match, NewsPost, Player, Settings, StandingRow, Team, Venue } from
 // `error` is set when the query itself fails — typically because the
 // multi-tournament migration at the bottom of supabase/schema.sql has not
 // been run yet.
-export async function getTournaments(): Promise<{ tournaments: Settings[]; error: string | null }> {
+async function readTournaments(
+  supabase: SupabaseClient
+): Promise<{ tournaments: Settings[]; error: string | null }> {
   try {
-    const supabase = createClient();
     const { data, error } = await supabase
       .from("settings")
       .select("*")
@@ -29,6 +32,16 @@ export async function getTournaments(): Promise<{ tournaments: Settings[]; error
   }
 }
 
+// Public pages: cached (see lib/supabase/public.ts).
+export async function getTournaments() {
+  return readTournaments(createPublicClient());
+}
+
+// Admin panel: never cached, so it always shows what was just saved.
+export async function getTournamentsFresh() {
+  return readTournaments(createClient());
+}
+
 export async function getDefaultTournament(): Promise<Settings | null> {
   const { tournaments } = await getTournaments();
   return tournaments[0] ?? null;
@@ -37,7 +50,7 @@ export async function getDefaultTournament(): Promise<Settings | null> {
 // Cached per request: the layout and the page both need it.
 export const getTournamentBySlug = cache(async (slug: string): Promise<Settings | null> => {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase.from("settings").select("*").eq("slug", slug).maybeSingle();
     return (data as Settings) ?? null;
   } catch {
@@ -52,9 +65,11 @@ const MATCH_SELECT = `
   venue:venues ( id, name, location_tag, address )
 `;
 
-export async function getLiveMatches(tournamentId: string): Promise<Match[]> {
+// Memoised per request: pages start it at the top (in parallel with their own
+// queries) and the Hero, which renders later, reuses the same promise.
+export const getLiveMatches = cache(async (tournamentId: string): Promise<Match[]> => {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
@@ -65,11 +80,11 @@ export async function getLiveMatches(tournamentId: string): Promise<Match[]> {
   } catch {
     return [];
   }
-}
+});
 
 export async function getUpcomingMatches(tournamentId: string, limit = 5): Promise<Match[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
@@ -85,7 +100,7 @@ export async function getUpcomingMatches(tournamentId: string, limit = 5): Promi
 
 export async function getRecentResults(tournamentId: string, limit = 5): Promise<Match[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("matches")
       .select(MATCH_SELECT)
@@ -103,7 +118,7 @@ export async function getRecentResults(tournamentId: string, limit = 5): Promise
 
 export async function getAllMatches(tournamentId: string, roundType?: string, search?: string): Promise<Match[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     let query = supabase
       .from("matches")
       .select(MATCH_SELECT)
@@ -129,7 +144,7 @@ export async function getAllMatches(tournamentId: string, roundType?: string, se
 
 export async function getNewsPosts(tournamentId: string, limit = 6): Promise<NewsPost[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("news_posts")
       .select("*")
@@ -144,7 +159,7 @@ export async function getNewsPosts(tournamentId: string, limit = 6): Promise<New
 
 export async function getNewsPost(tournamentId: string, id: string): Promise<NewsPost | null> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("news_posts")
       .select("*")
@@ -159,7 +174,7 @@ export async function getNewsPost(tournamentId: string, id: string): Promise<New
 
 export async function getTeams(tournamentId: string): Promise<Team[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase.from("teams").select("*").eq("tournament_id", tournamentId).order("name");
     return data ?? [];
   } catch {
@@ -172,7 +187,7 @@ export async function getTeamWithRoster(
   teamId: string
 ): Promise<{ team: Team | null; players: Player[] }> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data: team } = await supabase
       .from("teams")
       .select("*")
@@ -194,7 +209,7 @@ export async function getPlayer(
   playerId: string
 ): Promise<{ player: Player | null; team: Team | null }> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data: player } = await supabase.from("players").select("*").eq("id", playerId).maybeSingle();
     if (!player) return { player: null, team: null };
     const { data: team } = await supabase
@@ -213,7 +228,7 @@ export async function getPlayer(
 
 export async function getVenues(tournamentId: string): Promise<Venue[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase.from("venues").select("*").eq("tournament_id", tournamentId).order("name");
     return data ?? [];
   } catch {
@@ -225,7 +240,7 @@ export async function getVenues(tournamentId: string): Promise<Venue[]> {
 // instead of an embedded-filter join, which has proven fragile on some
 // Supabase projects).
 async function playersOfTournament(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   tournamentId: string
 ): Promise<(Player & { team?: Team })[]> {
   const { data: teams } = await supabase.from("teams").select("*").eq("tournament_id", tournamentId);
@@ -241,7 +256,7 @@ async function playersOfTournament(
 
 export async function getAllPlayers(tournamentId: string): Promise<(Player & { team?: Team })[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const data = (await playersOfTournament(supabase, tournamentId)).sort((a, b) =>
       a.last_name.localeCompare(b.last_name, "it")
     );
@@ -255,7 +270,7 @@ export async function getAllPlayers(tournamentId: string): Promise<(Player & { t
 // No limit by default: the scorers ranking must list every player with goals.
 export async function getTopScorers(tournamentId: string, limit?: number): Promise<Player[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const data = await playersOfTournament(supabase, tournamentId);
     const counts = await fetchGoalCounts(supabase);
     const players = withGoalCounts(data, counts);
@@ -277,7 +292,7 @@ export async function getTopScorers(tournamentId: string, limit?: number): Promi
 // (rather than a DB view) so it stays easy to read and adjust point rules.
 export async function getStandings(tournamentId: string, roundType?: string): Promise<StandingRow[]> {
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const teamsRes = await supabase.from("teams").select("*").eq("tournament_id", tournamentId);
     let matchQuery = supabase
       .from("matches")

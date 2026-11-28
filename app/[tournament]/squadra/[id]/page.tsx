@@ -1,13 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTeamWithRoster, getTournamentBySlug } from "@/lib/queries";
+import { getTeamWithRoster, getTournamentBySlug, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function SquadraPage({ params }: { params: { tournament: string; id: string } }) {
   const tournament = await getTournamentBySlug(params.tournament);
   if (!tournament) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(tournament.id);
   const slug = tournament.slug;
   const { team, players: roster } = await getTeamWithRoster(tournament.id, params.id);
   const players = [...roster].sort((a, b) => a.cap_number - b.cap_number);

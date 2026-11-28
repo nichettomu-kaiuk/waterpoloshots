@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, Trophy, Newspaper, Users, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
+import { optimizedImageUrl } from "@/lib/image-url";
 import { getTournamentBySlug, getLiveMatches, getUpcomingMatches, getRecentResults, getNewsPosts } from "@/lib/queries";
 import MatchCard from "@/components/MatchCard";
 import Hero from "@/components/Hero";
@@ -38,7 +39,7 @@ export default async function HomePage({ params }: { params: { tournament: strin
         style={
           tournament.header_bg_url
             ? {
-                backgroundImage: `url(${tournament.header_bg_url})`,
+                backgroundImage: `url(${optimizedImageUrl(tournament.header_bg_url, 1080, 50)})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }

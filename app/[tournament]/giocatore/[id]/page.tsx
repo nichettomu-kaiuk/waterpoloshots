@@ -2,13 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getPlayer, getTournamentBySlug, getTeamWithRoster } from "@/lib/queries";
+import { optimizedImageUrl } from "@/lib/image-url";
+import { getPlayer, getTournamentBySlug, getTeamWithRoster, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 
 export default async function GiocatorePage({ params }: { params: { tournament: string; id: string } }) {
   const settings = await getTournamentBySlug(params.tournament);
   if (!settings) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(settings.id);
   const slug = settings.slug;
   const { player, team } = await getPlayer(settings.id, params.id);
 
@@ -71,7 +75,7 @@ export default async function GiocatorePage({ params }: { params: { tournament: 
                 <div
                   className="absolute inset-0"
                   style={{
-                    backgroundImage: `url(${team.logo_url})`,
+                    backgroundImage: `url(${optimizedImageUrl(team.logo_url, 828, 50)})`,
                     backgroundRepeat: "no-repeat",
                     backgroundSize: `${team.logo_large_scale ?? 100}%`,
                     backgroundPosition: `${team.logo_large_x ?? 50}% ${team.logo_large_y ?? 50}%`,

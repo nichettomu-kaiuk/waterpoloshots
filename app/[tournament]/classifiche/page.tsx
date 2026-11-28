@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getStandings, getTopScorers, getTournamentBySlug } from "@/lib/queries";
+import { getStandings, getTopScorers, getTournamentBySlug, getLiveMatches } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import ShareButton from "@/components/ShareButton";
 import ScorersList from "@/components/ScorersList";
@@ -9,6 +9,9 @@ import ScorersList from "@/components/ScorersList";
 export default async function ClassifichePage({ params }: { params: { tournament: string } }) {
   const tournament = await getTournamentBySlug(params.tournament);
   if (!tournament) notFound();
+  // The Hero (rendered later) needs the live matches: start loading them now,
+  // in parallel with this page's own queries.
+  getLiveMatches(tournament.id);
   const slug = tournament.slug;
   const [standings, allScorers] = await Promise.all([getStandings(tournament.id), getTopScorers(tournament.id)]);
   const scorers = allScorers.filter((p) => p.goals_count > 0);

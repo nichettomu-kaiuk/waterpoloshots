@@ -276,3 +276,18 @@ create index if not exists teams_tournament_id_idx      on teams(tournament_id);
 create index if not exists venues_tournament_id_idx     on venues(tournament_id);
 create index if not exists matches_tournament_id_idx    on matches(tournament_id);
 create index if not exists news_posts_tournament_id_idx on news_posts(tournament_id);
+
+-- ══ PERFORMANCE (faster scorers ranking and goal lookups) ══════════════════
+-- player_goal_totals: one row per scorer with their total goals. The site
+-- reads this instead of downloading every goal ever scored to count them.
+-- Optional but recommended: without it the site falls back to the slower
+-- count. Safe to re-run.
+create or replace view player_goal_totals as
+  select player_id, count(*)::int as goals
+  from match_goals
+  where player_id is not null
+  group by player_id;
+grant select on player_goal_totals to anon, authenticated;
+
+create index if not exists match_goals_player_id_idx on match_goals(player_id);
+create index if not exists matches_tournament_status_date_idx on matches(tournament_id, status, date_time);

@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Youtube } from "lucide-react";
+import ReactDOM from "react-dom";
 import { getLiveMatches } from "@/lib/queries";
+import { optimizedImageUrl } from "@/lib/image-url";
 import type { Match, Settings } from "@/lib/supabase/types";
 import LiveBadge from "./LiveBadge";
 
@@ -18,6 +20,11 @@ export default async function Hero({
   const settings = tournament;
   const live = liveProp !== undefined ? liveProp : await getLiveMatches(tournament.id);
 
+  // The hero background is the largest image above the fold: serve it resized
+  // (through the image optimizer) and tell the browser to fetch it early.
+  const heroBg = settings.home_bg_url ? optimizedImageUrl(settings.home_bg_url, 1080, 60) : null;
+  if (heroBg) ReactDOM.preload(heroBg, { as: "image", fetchPriority: "high" });
+
   return (
     <section className="app-hero relative overflow-hidden water-texture px-5 pb-12 pt-10">
       {settings?.home_bg_url && (
@@ -28,7 +35,7 @@ export default async function Hero({
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${settings.home_bg_url})`,
+              backgroundImage: `url(${heroBg})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               WebkitMaskImage:
@@ -62,6 +69,7 @@ export default async function Hero({
               alt={settings.tournament_title ?? "Logo torneo"}
               width={60}
               height={60}
+              priority
               className="h-[60px] w-[60px] shrink-0 self-center rounded-full border border-gold/50 object-cover"
             />
           )}

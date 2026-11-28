@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Plus, Trash2, Upload, Pencil, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { brandingPath } from "@/lib/upload";
+import { optimizeImage, MAX_DIMENSION } from "@/lib/image";
 import { useAdminTournament } from "@/components/admin/AdminTournament";
 import type { NewsPost } from "@/lib/supabase/types";
 
@@ -71,8 +72,10 @@ export default function AdminNewsPage() {
 
     let image_url: string | null | undefined = undefined;
     if (imageFile) {
-      const path = brandingPath("news", imageFile.name);
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, imageFile);
+      // Shrunk and re-encoded in the browser first (see lib/image.ts).
+      const prepared = await optimizeImage(imageFile, MAX_DIMENSION.news);
+      const path = brandingPath("news", prepared.name);
+      const { error: uploadError } = await supabase.storage.from("branding").upload(path, prepared);
       if (uploadError) {
         setError(`Caricamento immagine fallito: ${uploadError.message}`);
         setSaving(false);

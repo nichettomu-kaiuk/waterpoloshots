@@ -7,4 +7,5 @@ export const display = Oswald({
   variable: "--font-display",
 });
 export const body = Inter({ subsets: ["latin"], variable: "--font-body" });
-export const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+// Only the "lane" theme uses the monospace font: don't preload it for everyone.
+export const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", preload: false });

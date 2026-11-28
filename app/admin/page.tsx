@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { getTournaments } from "@/lib/queries";
+import { getTournamentsFresh } from "@/lib/queries";
 import { ADMIN_TOURNAMENT_COOKIE } from "@/lib/admin-tournament";
 import { Users, UserRound, MapPinned, Radio, CalendarDays, Goal, Newspaper } from "lucide-react";
 
@@ -8,7 +8,7 @@ export default async function AdminDashboard() {
   const supabase = createClient();
 
   // The dashboard counts the tournament selected in the Admin header.
-  const { tournaments } = await getTournaments();
+  const { tournaments } = await getTournamentsFresh();
   const cookieId = cookies().get(ADMIN_TOURNAMENT_COOKIE)?.value;
   const tournament = tournaments.find((t) => t.id === cookieId) ?? tournaments[0] ?? null;
   const tid = tournament?.id ?? "";

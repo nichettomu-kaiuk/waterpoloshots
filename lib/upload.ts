@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { optimizeImage, MAX_DIMENSION } from "@/lib/image";
 
 // Supabase Storage rejects object keys containing spaces, accents,
 // apostrophes and similar characters (typical of phone/camera file names
@@ -28,10 +29,13 @@ export function brandingPath(folder: string, fileName: string): string {
 export async function uploadToBranding(
   supabase: SupabaseClient<any, any, any>,
   folder: string,
-  file: File
+  file: File,
+  maxDimension: number = MAX_DIMENSION.logo
 ): Promise<{ url: string | null; error: string | null }> {
-  const path = brandingPath(folder, file.name);
-  const { error } = await supabase.storage.from("branding").upload(path, file);
+  // Shrunk and re-encoded in the browser first (see lib/image.ts).
+  const prepared = await optimizeImage(file, maxDimension);
+  const path = brandingPath(folder, prepared.name);
+  const { error } = await supabase.storage.from("branding").upload(path, prepared);
   if (error) return { url: null, error: error.message };
   return { url: supabase.storage.from("branding").getPublicUrl(path).data.publicUrl, error: null };
 }

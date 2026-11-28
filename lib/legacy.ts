@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getDefaultTournament } from "@/lib/queries";
 
 // The site used to serve a single tournament at the root (/calendario,
@@ -16,7 +16,7 @@ export async function redirectLegacy(path: string): Promise<never> {
 export async function redirectLegacyEntity(kind: "squadra" | "giocatore" | "news", id: string): Promise<never> {
   let tournamentId: string | null = null;
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     if (kind === "squadra") {
       const { data } = await supabase.from("teams").select("tournament_id").eq("id", id).maybeSingle();
       tournamentId = data?.tournament_id ?? null;
